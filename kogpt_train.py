@@ -104,6 +104,7 @@ if __name__ == "__main__":
     
     fit_model(dataset)
 
+    model_path = './kogpt_model/'
     # save fine-tuned tokenizer & model
-    tokenizer.save_pretrained(dir_path + 'test_song_emotion_chatbot', bos_token='</s>', eos_token='</s>', pad_token='<pad>')
-    model.save_pretrained(dir_path + 'test_song_emotion_chatbot')
+    tokenizer.save_pretrained(model_path + 'song_emotion_chatbot', bos_token='</s>', eos_token='</s>', pad_token='<pad>')
+    model.save_pretrained(model_path + 'song_emotion_chatbot')

@@ -20,8 +20,8 @@ def chatbot(text):
     return  response
 
 if __name__ == "__main__":
-    save_model_path = "./data/"
-    model_name = 'sampling500_song_emotion_chatbot'
+    save_model_path = "./kogpt_model/"
+    model_name = 'song_emotion_chatbot'
     tokenizer = AutoTokenizer.from_pretrained(save_model_path + model_name,  bos_token='</s>', eos_token='</s>', pad_token='<pad>')
     model = TFGPT2LMHeadModel.from_pretrained(save_model_path + model_name)
 
