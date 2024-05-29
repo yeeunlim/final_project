@@ -6,7 +6,6 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 np.bool = np.bool_
 from tqdm import tqdm, tqdm_notebook
-import gluonnlp as nlp
 
 from kobert_tokenizer import KoBERTTokenizer
 

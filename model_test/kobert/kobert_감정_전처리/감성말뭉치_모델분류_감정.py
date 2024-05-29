@@ -1,8 +1,8 @@
 import os
 import torch
 from transformers import AdamW, BertModel
-from model.classifier import BERTClassifier, kobert_input
-from model.dataloader import WellnessTextClassificationDataset
+from kobert_model.classifier import BERTClassifier, kobert_input
+from kobert_model.dataloader import WellnessTextClassificationDataset
 from kobert_tokenizer import KoBERTTokenizer
 import torch.nn as nn
 import random
@@ -61,7 +61,7 @@ if __name__ == "__main__":
             first_line = 1
             continue
         # 문장 데이터 가져오기
-        sent = row[2].value
+        sent = row[0].value
         # 입력 데이터 생성
         data = kobert_input(tokenizer, sent, device, 512)
         # 모델에 입력하여 출력값 얻기
@@ -80,8 +80,8 @@ if __name__ == "__main__":
         # 예측된 카테고리 추출
         cate_pred = category[str(max_index)]
 
-        # 예측된 카테고리를 4번째 열에 저장
-        row[3].value = cate_pred
+        # 예측된 카테고리를 저장
+        row[1].value = cate_pred
 
     # 변경된 내용을 파일에 저장
     wb.save(corpus_file)

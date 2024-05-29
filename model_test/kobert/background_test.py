@@ -1,7 +1,7 @@
 import torch
 from transformers import AdamW, BertModel
-from model.classifier import BERTClassifier, kobert_input
-from model.dataloader import WellnessTextClassificationDataset
+from kobert_model.classifier import BERTClassifier, kobert_input
+from kobert_model.dataloader import WellnessTextClassificationDataset
 from kobert_tokenizer import KoBERTTokenizer
 import torch.nn as nn
 import random
@@ -11,8 +11,7 @@ bertmodel = BertModel.from_pretrained('skt/kobert-base-v1', return_dict=False)
 
 def load_wellness_answer():
     root_path = "."
-    category_path = f"{root_path}/data/wellness_dialog_category_감정.txt"
-    # answer_path = f"{root_path}/data/wellness_dialog_answer_감정.txt"
+    category_path = f"{root_path}/data/wellness_dialog_category_배경.txt"
 
     c_f = open(category_path, 'r')
     # a_f = open(answer_path, 'r')
@@ -40,7 +39,7 @@ def load_wellness_answer():
 if __name__ == "__main__":
     root_path = "."
     checkpoint_path = f"{root_path}/checkpoint"
-    save_ckpt_path = f"{checkpoint_path}/kobert-wellness-text-classification_감정.pth"
+    save_ckpt_path = f"{checkpoint_path}/kobert-wellness-text-classification_배경.pth"
 
     # 답변과 카테고리 불러오기
     # category, answer = load_wellness_answer()
