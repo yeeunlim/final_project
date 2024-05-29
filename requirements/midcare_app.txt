@@ -1,0 +1,6 @@
+django
+djangorestframework
+mysqlclient
+django-storages
+boto3
+django-environ
