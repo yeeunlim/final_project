@@ -4,3 +4,7 @@ mysqlclient
 django-storages
 boto3
 django-environ
+djangorestframework-simplejwt
+dj-rest-auth
+django-allauth
+django-cors-headers

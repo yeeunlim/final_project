@@ -9,4 +9,6 @@ urlpatterns = [
     # path('api/analytics/', include('analytics.urls', namespace='analytics')),
     # path('api/htp/', include('htp.urls', namespace='htp')),
     # path('api/mbti/', include('mbti.urls', namespace='mbti')),
+    path('api/auth/', include('dj_rest_auth.urls')),
+    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
 ]
