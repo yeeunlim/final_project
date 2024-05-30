@@ -16,7 +16,7 @@ from transformers.optimization import get_cosine_schedule_with_warmup
 class WellnessTextClassificationDataset(Dataset):
     def __init__(self,
                  file_path="./data/wellness_dialog_for_text_classification_배경.txt",  # 데이터 파일 경로
-                 num_label=24,  # 레이블의 수
+                 num_label=25,  # 레이블의 수
                  device='cpu',  # 디바이스 설정 (기본값: CPU)
                  max_seq_len=512,  # KoBERT 최대 시퀀스 길이
                  tokenizer=None  # 토크나이저 (기본값: None)

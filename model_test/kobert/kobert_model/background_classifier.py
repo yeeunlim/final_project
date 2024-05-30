@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.nn import CrossEntropyLoss, MSELoss
 
 class BERTClassifier(nn.Module):
-    def __init__(self, bert, num_labels=24, hidden_size=768, hidden_dropout_prob=0.1):
+    def __init__(self, bert, num_labels=25, hidden_size=768, hidden_dropout_prob=0.1):
         super(BERTClassifier, self).__init__()
         self.bert = bert  # BERT 모델
         self.num_labels = num_labels  # 분류할 레이블의 수
