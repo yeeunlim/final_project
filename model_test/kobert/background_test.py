@@ -40,7 +40,7 @@ if __name__ == "__main__":
     # 저장한 Checkpoint 불러오기
     checkpoint = torch.load(save_ckpt_path, map_location=device)
 
-    model = BERTClassifier(bertmodel, num_labels=24)  # num_labels 추가
+    model = BERTClassifier(bertmodel, num_labels=25)  # num_labels 추가
     model.load_state_dict(checkpoint['model_state_dict'])
 
     model.to(ctx)
