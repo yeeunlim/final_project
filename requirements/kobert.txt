@@ -1,5 +1,0 @@
-tqdm
-transformers
-torch
-sentencepiece
-git+https://github.com/SKTBrain/KoBERT.git#egg=kobert_tokenizer&subdirectory=kobert_hf
