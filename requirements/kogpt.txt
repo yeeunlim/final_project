@@ -1,2 +1,4 @@
-tqdm
+pandas
+torch
 transformers
+tqdm
