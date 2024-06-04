@@ -5,8 +5,8 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AdamW, BertModel
-from kobert_model.classifier import BERTClassifier
-from kobert_model.dataloader import WellnessTextClassificationDataset
+from model.background_classifier import BERTClassifier
+from model.background_dataloader import WellnessTextClassificationDataset
 from kobert_tokenizer import KoBERTTokenizer
 
 
@@ -57,8 +57,8 @@ if __name__ == '__main__':
     checkpoint_path = f"{root_path}/checkpoint"
     save_ckpt_path = f"{checkpoint_path}/kobert-wellness-text-classification_배경.pth"
 
-    n_epoch = 10
-    batch_size = 3 
+    n_epoch = 16
+    batch_size = 16 
     ctx = "cuda" if torch.cuda.is_available() else "cpu"
     device = torch.device(ctx)
     save_step = 100
