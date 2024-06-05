@@ -76,7 +76,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
 ]
 
-ROOT_URLCONF = "mindcare_prj.urls"
+ROOT_URLCONF = "mindcare_django.urls"
 
 TEMPLATES = [
     {
@@ -94,7 +94,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "mindcare_prj.wsgi.application"
+WSGI_APPLICATION = "mindcare_django.wsgi.application"
 
 
 DATABASES = {
