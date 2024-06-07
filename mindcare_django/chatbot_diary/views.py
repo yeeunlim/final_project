@@ -1,50 +1,59 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-import torch
-from transformers import AutoTokenizer, GPT2LMHeadModel
-from django.conf import settings
-
-# 토큰 상수 정의
-BOS = '</s>'
-EOS = '</s>'
-PAD = '<pad>'
-
-# 모델 및 토크나이저 초기화
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-save_model_path = settings.BASE_DIR / 'kogpt2/'
-model_name = 'kogpt2_model.pth'
-
-# 토크나이저 초기화
-tokenizer = AutoTokenizer.from_pretrained("skt/kogpt2-base-v2", bos_token=BOS, eos_token=EOS, pad_token=PAD)
-
-# GPT2 모델 초기화
-model = GPT2LMHeadModel.from_pretrained('skt/kogpt2-base-v2')
-
-# 모델의 가중치 로드
-state_dict = torch.load(save_model_path / model_name, map_location=device)
-model.load_state_dict(state_dict)
-model.to(device)
-model.eval()
-
-def chatbot(text):
-    sentence = '<unused0>' + text + '<unused1>'
-    tokenized = [tokenizer.bos_token_id] + tokenizer.encode(sentence)
-    tokenized = torch.tensor([tokenized]).to(device)
-    
-    # 질문 문장으로 "레이블 + 응답" 토큰 생성
-    result = model.generate(tokenized, min_length=15, max_length=50, repetition_penalty=1.3,
-                            do_sample=True, no_repeat_ngram_size=5, temperature=0.01,
-                            top_k=2)
-    output = tokenizer.decode(result[0].tolist())
-    response = output.split('<unused1> ')[1]
-    return response
-
-class ChatbotView(APIView):
+from kogpt2.kogpt2 import chatbot
+from kobert.kobert import classify_emotion, classify_background, emotion_responses, background_category
+        
+class ChatbotDiaryView(APIView):
     def get(self, request, *args, **kwargs):
         sentence = request.query_params.get("s", "")
         if not sentence:
-            return Response({"answer": "듣고 있어요. 더 말씀해주세요~ (끄덕끄덕)"}, status=status.HTTP_200_OK)
+            return Response({"error": "No input provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        answer = chatbot(sentence)
-        return Response({"answer": answer}, status=status.HTTP_200_OK)
+        # 챗봇 응답 생성
+        chatbot_response = chatbot(sentence)
+
+        # 감정 및 배경 분류
+        emotion_probs, max_emotion = classify_emotion(sentence)
+        background_probs, max_background = classify_background(sentence)
+
+        return Response({
+            "chatbot_response": chatbot_response,
+            "emotion_probs": emotion_probs,
+            "max_emotion": max_emotion,
+            "background_probs": background_probs,
+            "max_background": max_background,
+        }, status=status.HTTP_200_OK)
+
+class DiaryAnalysisView(APIView):
+    def post(self, request, *args, **kwargs):
+        sentences = request.data.get("sentences", [])
+        if not sentences:
+            return Response({"error": "No sentences provided"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        emotion_counts = {emotion: 0 for emotion in emotion_responses.keys()}  # Initialize emotion counts
+        background_counts = {background: 0 for background in background_category.values()}  # Initialize background counts
+        total_sentences = len(sentences)
+        
+        for sentence in sentences:
+            _, max_emotion = classify_emotion(sentence)
+            _, max_background = classify_background(sentence)
+            emotion_counts[max_emotion] += 1
+            background_counts[max_background] += 1
+        
+        # Calculate emotion and background distributions
+        emotion_distribution = {emotion: count / total_sentences for emotion, count in emotion_counts.items()}
+        background_distribution = {background: count / total_sentences for background, count in background_counts.items()}
+        
+        # Find the most frequently felt emotion and background
+        most_felt_emotion = max(emotion_counts, key=emotion_counts.get)
+        most_thought_background = max(background_counts, key=background_counts.get)
+        response_message = emotion_responses.get(most_felt_emotion, "감정 분류 결과를 찾을 수 없습니다.")
+        
+        return Response({
+            "emotion_distribution": emotion_distribution,
+            "background_distribution": background_distribution,
+            "most_felt_emotion": most_felt_emotion,
+            "most_thought_background": most_thought_background,
+            "response_message": response_message
+        }, status=status.HTTP_200_OK)
