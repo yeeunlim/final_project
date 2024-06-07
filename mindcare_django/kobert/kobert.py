@@ -11,18 +11,22 @@ background_model = 'kobert-wellness-text-classification_배경.pth'
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # KoBERT 모델 및 토크나이저 초기화
-bertmodel = None
+bertmodel_emotion = None
+bertmodel_background = None
 model_emotion = None
 model_background = None
 tokenizer = None
 
 def initialize_kobert_models():
-    global bertmodel, model_emotion, model_background, tokenizer
+    global bertmodel_emotion, bertmodel_background, model_emotion, model_background, tokenizer
 
-    if bertmodel is None:
-        bertmodel = BertModel.from_pretrained('skt/kobert-base-v1', return_dict=False)
-        model_emotion = BERTClassifier(bertmodel, num_labels=39)
-        model_background = BERTClassifier(bertmodel, num_labels=25)
+    if bertmodel_emotion is None:
+        bertmodel_emotion = BertModel.from_pretrained('skt/kobert-base-v1', return_dict=False)
+        model_emotion = BERTClassifier(bertmodel_emotion, num_labels=39)
+
+    if bertmodel_background is None:
+        bertmodel_background = BertModel.from_pretrained('skt/kobert-base-v1', return_dict=False)
+        model_background = BERTClassifier(bertmodel_background, num_labels=25)
 
     # 감정 모델 가중치 로드
     emotion_checkpoint = torch.load(root_path / emotion_model, map_location=device)

@@ -39,4 +39,5 @@ def chatbot(text):
                             top_k=2)
     output = tokenizer.decode(result[0].tolist())
     response = output.split('<unused1> ')[1]
+    response = response.replace('</s>', '')
     return response
