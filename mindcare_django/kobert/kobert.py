@@ -51,7 +51,7 @@ def load_wellness_answer(filename):
         category[data[1][:-1]] = data[0]
 
     return category
-
+    
 emotion_category = load_wellness_answer("wellness_dialog_category_감정.txt")
 background_category = load_wellness_answer("wellness_dialog_category_배경.txt")
 
@@ -81,6 +81,7 @@ def classify_emotion(sentence):
     
     # 로짓 값 추출
     logits = output[0]
+
     # 소프트맥스 적용
     softmax_logits = torch.softmax(logits, dim=-1)
     
@@ -100,6 +101,7 @@ def classify_background(sentence):
     
     # 로짓 값 추출
     logits = output[0]
+    
     # 소프트맥스 적용
     softmax_logits = torch.softmax(logits, dim=-1)
     
