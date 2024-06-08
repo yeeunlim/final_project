@@ -20,4 +20,3 @@ dj-rest-auth
 django-allauth
 django-cors-headers
 nltk
-djangorestframework.authtoken
