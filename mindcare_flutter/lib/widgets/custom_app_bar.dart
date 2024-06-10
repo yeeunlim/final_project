@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../pages/auth_helpers.dart';
+import '../pages/mypage.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
 
-  const CustomAppBar({Key? key, this.title}) : super(key: key);
+  const CustomAppBar({super.key, this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +29,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             onTap: () {
               // 홈 버튼 클릭 이벤트 처리
             },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10.0),
               child: Row(
-                children: const [
+                children: [
                   Icon(Icons.home, color: Colors.white),
                   SizedBox(width: 5),
                   Text('홈', style: TextStyle(color: Colors.white)),
@@ -42,19 +44,19 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
-            onTap: () {
-              // 마이페이지 버튼 클릭 이벤트 처리
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
-              child: Row(
-                children: const [
-                  Icon(Icons.person, color: Colors.white),
-                  SizedBox(width: 5),
-                  Text('마이페이지', style: TextStyle(color: Colors.white)),
-                ],
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MyPage()));
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10.0),
+                child: Row(
+                  children: [
+                    Icon(Icons.person, color: Colors.white),
+                    SizedBox(width: 5),
+                    Text('마이페이지', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
               ),
-            ),
           ),
         ),
         MouseRegion(
@@ -62,14 +64,15 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: GestureDetector(
             onTap: () {
               // 로그인/로그아웃 버튼 클릭 이벤트 처리
+              AuthHelpers.logout(context);
             },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10.0),
               child: Row(
-                children: const [
+                children: [
                   Icon(Icons.login, color: Colors.white),
                   SizedBox(width: 5),
-                  Text('로그인/로그아웃', style: TextStyle(color: Colors.white)),
+                  Text('로그아웃', style: TextStyle(color: Colors.white)),
                 ],
               ),
             ),
