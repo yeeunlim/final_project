@@ -22,6 +22,12 @@ from rest_framework import status
 from django.contrib.auth import authenticate, login
 from dj_rest_auth.views import LoginView
 
+from rest_framework_simplejwt.tokens import RefreshToken
+from dj_rest_auth.views import LoginView
+from rest_framework.permissions import IsAuthenticated
+from .serializers import UserSerializer, UserUpdateSerializer
+from django.contrib.auth import update_session_auth_hash
+
 # class CustomRegisterView(RegisterView):
     # def get_response_data(self, user):
     #     data = super().get_response_data(user)
@@ -56,21 +62,7 @@ class CustomRegisterView(RegisterView):
         user = serializer.save(self.request)
         return user
     
-# class CustomLoginView(LoginView):
-#     def post(self, request, *args, **kwargs):
-#         username = request.data.get("username")
-#         password = request.data.get("password")
-#         user = authenticate(request, username=username, password=password)
-#         if user is not None:
-#             login(request, user)
-#             refresh = RefreshToken.for_user(user)
-#             return Response({'status': 'success', 'access_token': str(refresh.access_token)}, status=status.HTTP_200_OK)
-#         return Response({'status': 'error', 'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-
-from rest_framework_simplejwt.tokens import RefreshToken
-from dj_rest_auth.views import LoginView
-from rest_framework.permissions import IsAuthenticated
 
 class CustomLoginView(LoginView):
     def post(self, request, *args, **kwargs):
@@ -96,3 +88,49 @@ class LogoutView(APIView):
         except:
             pass
         return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
+
+# 회원정보 가져오기
+class UserInfoView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+# 회원 탈퇴
+class UserDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+# class PasswordChangeView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         serializer = PasswordChangeSerializer(data=request.data)
+#         user = request.user
+#         if serializer.is_valid():
+#             if not user.check_password(serializer.validated_data['old_password']):
+#                 return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+#             user.set_password(serializer.validated_data['new_password'])
+#             user.save()
+#             update_session_auth_hash(request, user)  # 세션 유지
+#             return Response(status=status.HTTP_204_NO_CONTENT)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        serializer = UserUpdateSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.update(user, serializer.validated_data)
+            update_session_auth_hash(request, user)  # 세션 유지
+            return Response(UserSerializer(user).data)
+        print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

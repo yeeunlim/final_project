@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../pages/auth_helpers.dart';
+import '../pages/mypage.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -43,19 +44,19 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
-            onTap: () {
-              // 마이페이지 버튼 클릭 이벤트 처리
-            },
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.0),
-              child: Row(
-                children: [
-                  Icon(Icons.person, color: Colors.white),
-                  SizedBox(width: 5),
-                  Text('마이페이지', style: TextStyle(color: Colors.white)),
-                ],
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MyPage()));
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10.0),
+                child: Row(
+                  children: [
+                    Icon(Icons.person, color: Colors.white),
+                    SizedBox(width: 5),
+                    Text('마이페이지', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
               ),
-            ),
           ),
         ),
         MouseRegion(
