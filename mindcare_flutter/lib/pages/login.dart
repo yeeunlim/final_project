@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'auth_helpers.dart';
 import 'register.dart';
-import 'diary.dart';
+import 'chat_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -82,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (success) {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const DiaryPage()),
+                                MaterialPageRoute(builder: (context) => const ChatScreen()),
                               );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
