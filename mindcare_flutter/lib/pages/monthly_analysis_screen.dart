@@ -17,7 +17,7 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
   Future<List<dynamic>> fetchMoodData() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/api/chatbot_diary/monthly_data/2024/6/'), // API 엔드포인트
+        Uri.parse('$baseUrl/api/chatbot_diary/monthly_analysis/2024/6/'), // API 엔드포인트
         headers: {'Content-Type': 'application/json'},
       );
 
