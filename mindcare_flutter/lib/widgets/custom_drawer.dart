@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants.dart'; // primaryColor를 가져오기 위해 추가
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({Key? key}) : super(key: key);
@@ -24,39 +25,58 @@ class CustomDrawer extends StatelessWidget {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.assessment, color: Colors.white),
-              title: Text('심리 검사', style: TextStyle(color: Colors.white)),
+              leading: CircleAvatar(
+                backgroundColor: primaryColor, // 원의 색상 설정
+                radius: 11, // 원의 반지름 설정
+              ),
+              title: Text(
+                '심리 검사',
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
               onTap: () {
                 Navigator.pop(context);
               },
             ),
-            ListTile(
-              title: Text('HTP', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-              },
+            Padding(
+              padding: const EdgeInsets.only(left: 40.0), // 들여쓰기 설정
+              child: Column(
+                children: [
+                  ListTile(
+                    title: Text('HTP', style: TextStyle(color: Colors.white)),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    title: Text('불안 민감도 검사', style: TextStyle(color: Colors.white)),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    title: Text('스트레스 자각 검사', style: TextStyle(color: Colors.white)),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    title: Text('노바코 분노 검사', style: TextStyle(color: Colors.white)),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
             ),
             ListTile(
-              title: Text('불안 민감도 검사', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('스트레스 자각 검사', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('노바코 분노 검사', style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.sentiment_satisfied, color: Colors.white),
-              title: Text('나의 감정 분석', style: TextStyle(color: Colors.white)),
+              leading: CircleAvatar(
+                backgroundColor: primaryColor, // 원의 색상 설정
+                radius: 11, // 원의 반지름 설정
+              ),
+              title: Text(
+                '나의 감정 분석',
+                style: TextStyle(color: Colors.white, fontSize: 20), // 폰트 크기 키우기
+              ),
               onTap: () {
                 Navigator.pop(context);
               },

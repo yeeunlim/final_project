@@ -5,6 +5,7 @@ import '../constants.dart';
 import '../widgets/common_button.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
+import '../widgets/confirm_dialog.dart';
 import 'analysis_screen.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -77,6 +78,27 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       print('Error occurred: $e');
     }
+  }
+
+  void _showConfirmDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // 화면의 다른 부분을 클릭해도 닫히지 않음
+      builder: (BuildContext context) {
+        return ConfirmDialog(
+          onConfirm: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+            saveDiary(); // 일기 저장
+          },
+          onCancel: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+          },
+          message: '저장하시겠습니까?', // 메시지 전달
+          confirmButtonText: '저장', // 확인 버튼 텍스트
+          cancelButtonText: '취소', // 취소 버튼 텍스트
+        );
+      },
+    );
   }
 
   @override
@@ -188,7 +210,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               alignment: Alignment.centerRight,
                               child: CommonButton(
                                 text: '저장',
-                                onPressed: saveDiary,
+                                onPressed: _showConfirmDialog, // 저장 버튼 클릭 시 다이얼로그 표시
                               ),
                             ),
                           ),

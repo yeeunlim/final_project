@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 const String baseUrl = 'http://127.0.0.1:8000';
 
 // Colors
-const Color primaryColor = Colors.deepPurple;
+const Color primaryColor = Color(0xFF55446C);
 const Color secondaryColor = Colors.white;
 const Color backgroundColor = Colors.black;
 
