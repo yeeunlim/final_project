@@ -6,7 +6,7 @@ import '../widgets/common_button.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/confirm_dialog.dart';
-import 'analysis_screen.dart';
+import 'daily_analysis_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);

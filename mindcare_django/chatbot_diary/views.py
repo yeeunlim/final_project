@@ -1,9 +1,11 @@
+from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from kogpt2.kogpt2 import chatbot
 from kobert.kobert import classify_emotion, classify_background, emotion_responses, emotion_category, background_category
 from .models import DiaryEntry
+from .serializers import DiaryEntrySerializer, MoodDataSerializer, MonthlyAnalysisSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny
 
@@ -20,8 +22,6 @@ class ChatbotResponseView(APIView):
             "chatbot_response": chatbot_response,
         }, status=status.HTTP_200_OK)
     
-User = get_user_model()
-
 class DiaryAnalysisView(APIView):
     permission_classes = [AllowAny]
 
@@ -61,20 +61,72 @@ class DiaryAnalysisView(APIView):
         # 더미 유저 사용
         user = User.objects.get(username='dummy')
 
-        DiaryEntry.objects.create(
+        diary_entry, created = DiaryEntry.objects.update_or_create(
             user=user,
-            diary_text=diary_text,
-            emotion_distribution=emotion_distribution,
-            background_distribution=background_distribution,
-            most_felt_emotion=most_felt_emotion,
-            most_thought_background=most_thought_background,
-            entry_date=entry_date
+            entry_date=entry_date,
+            defaults={
+                'diary_text': diary_text,
+                'emotion_distribution': emotion_distribution,
+                'background_distribution': background_distribution,
+                'most_felt_emotion': most_felt_emotion,
+                'most_thought_background': most_thought_background
+            }
         )
 
+        # 일기 데이터를 직렬화
+        serializer = DiaryEntrySerializer(diary_entry)
+
         return Response({
+            "id": serializer.data['id'],
             "emotion_distribution": emotion_distribution,
             "background_distribution": background_distribution,
             "most_felt_emotion": most_felt_emotion,
             "most_thought_background": most_thought_background,
             "response_message": response_message
         }, status=status.HTTP_200_OK)
+    
+    
+User = get_user_model()
+
+class DiaryEntryViewSet(viewsets.ModelViewSet):
+    queryset = DiaryEntry.objects.all()
+    serializer_class = DiaryEntrySerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated or user.username == 'dummy':
+            user = User.objects.get(username='dummy')
+        return DiaryEntry.objects.filter(user=user)
+    
+class MoodDataViewSet(viewsets.ViewSet):
+    permission_classes = [AllowAny]
+
+    def list(self, request):
+        user = request.user
+        if not user.is_authenticated or user.username == 'dummy':
+            user = User.objects.get(username='dummy')
+        
+        entries = DiaryEntry.objects.filter(user=user)
+        serializer = MoodDataSerializer(entries, many=True)
+        
+        # 데이터를 JSON 형식으로 변환
+        mood_data = {entry['entry_date'].strftime('%Y-%m-%d'): entry['most_felt_emotion'] for entry in serializer.data}
+        return Response(mood_data, status=status.HTTP_200_OK)
+
+class MonthlyAnalysisViewSet(viewsets.ViewSet):
+    permission_classes = [AllowAny]
+
+    def list(self, request, year, month):
+        user = request.user
+        if not user.is_authenticated or user.username == 'dummy':
+            user = User.objects.get(username='dummy')
+        
+        entries = DiaryEntry.objects.filter(
+            user=user,
+            entry_date__year=year,
+            entry_date__month=month
+        )
+        serializer = MonthlyAnalysisSerializer(entries, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
