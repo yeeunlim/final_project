@@ -234,12 +234,17 @@ class AuthHelpers {
   }
 
   static void showErrorDialog(BuildContext context, String message) {
+    // 문자열을 ':'로 분할하여 리스트로 변환
+    List<String> parts = message.split(':');
+    // 리스트의 마지막 요소를 가져옴
+    String lastPart = parts.last;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('개인정보 수정 오류!!'),
-          content: Text(message),
+          title: const Text('개인정보 수정 Error'),
+          content: Text(lastPart),
           actions: <Widget>[
             TextButton(
               onPressed: () {
