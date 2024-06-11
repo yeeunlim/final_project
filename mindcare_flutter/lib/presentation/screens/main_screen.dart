@@ -5,7 +5,7 @@ import '../widgets/common_button.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/loading_screen.dart';
 import 'package:mindcare_flutter/core/services/api_service.dart';
-import 'package:mindcare_flutter/core/constants/image_urls.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

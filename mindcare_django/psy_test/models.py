@@ -4,7 +4,7 @@ from django.conf import settings
 class PsyTestResult(models.Model):
     SURVEY_TYPES = (
         ('anxiety', '불안 민감도 질문지'),
-        ('depression', '우울증 질문지'),
+        ('anger', '노바코 분노 질문지'),
         ('stress', '스트레스 질문지'),
     )
 

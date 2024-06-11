@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:mindcare_flutter/core/constants/app_constants.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -8,6 +8,24 @@ import 'package:mindcare_flutter/presentation/screens/login_screen.dart';
 
 class AuthHelpers {
 
+  /// SharedPreferences 인스턴스를 통해 저장된 JWT 토큰을 반환하는 메서드
+  /// 만약 토큰이 없다면 null을 반환
+  Future<String?> getToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('jwt_token');
+      if (token == null) {
+        // 토큰이 없을 경우
+        throw Exception("No JWT token found");
+      }
+      return token;
+    } catch (e) {
+      // 오류 처리
+      print('Error getting token: $e');
+      return null;
+    }
+  }
+  
   static Future<bool> checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
@@ -216,12 +234,17 @@ class AuthHelpers {
   }
 
   static void showErrorDialog(BuildContext context, String message) {
+    // 문자열을 ':'로 분할하여 리스트로 변환
+    List<String> parts = message.split(':');
+    // 리스트의 마지막 요소를 가져옴
+    String lastPart = parts.last;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('개인정보 수정 오류!!'),
-          content: Text(message),
+          title: const Text('개인정보 수정 Error'),
+          content: Text(lastPart),
           actions: <Widget>[
             TextButton(
               onPressed: () {

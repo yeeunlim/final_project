@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mindcare_flutter/core/constants/image_urls.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
 
 class LoadingScreen extends StatelessWidget {
   final bool isLoading;

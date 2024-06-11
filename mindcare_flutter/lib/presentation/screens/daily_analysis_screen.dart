@@ -5,7 +5,7 @@ import '../widgets/emotion_pie_chart.dart';
 import '../widgets/confirm_dialog.dart';
 import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 import 'package:mindcare_flutter/core/services/api_service.dart';
-import 'package:mindcare_flutter/core/constants/image_urls.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
 
 class DailyAnalysisScreen extends StatefulWidget {
   const DailyAnalysisScreen({

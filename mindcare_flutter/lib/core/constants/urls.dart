@@ -1,3 +1,8 @@
+// API URLs
+const String baseUrl = 'http://127.0.0.1:8000';
+const String chatbotDiaryUrl = '$baseUrl/api/chatbot_diary';
+const String userAuthUrl = '$baseUrl/api/auth';
+
 // Image URLs
 class ImageUrls {
   static const String mainPageBackground = 'https://mindcare-pj.s3.ap-northeast-2.amazonaws.com/images/main_page.jpg';

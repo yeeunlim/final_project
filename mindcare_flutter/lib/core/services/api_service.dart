@@ -1,6 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:mindcare_flutter/core/constants/app_constants.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
 
 class ApiService {
   // 챗봇에 메시지를 보내는 메서드

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/image_urls.dart';
+import '../../core/constants/urls.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_app_bar.dart';
+import '../widgets/psy_test.dart';
 
 void main() {
   runApp(const MyApp());
@@ -60,7 +61,7 @@ class _psyServey3State extends State<psyServey3> {
   ];
 
   final List<String> choiceLabels = [
-    "거의 아무\n 화도 느끼지\n않는다",
+    "거의 화를\n느끼지\n않는다",
     "조금\n화가 난다",
     "어느 정도\n화가 난다",
     "꽤\n화가 난다",
@@ -68,6 +69,30 @@ class _psyServey3State extends State<psyServey3> {
   ];
 
   final Map<int, int> answers = {};
+  bool showResult = false;
+  String resultMessage = "";
+  int totalScore = 0;
+  
+  void _showResultPage() {
+    setState(() {
+      totalScore = answers.values.fold(0, (sum, item) => sum + item);
+      if (totalScore <= 45) {
+        resultMessage = "일반적으로 체험하는 분노와 괴로움의 양이 상당히 적다.\n소수의 사람만이 이에 해당된다.";
+      } else if (totalScore <= 55) {
+        resultMessage = "보통 사람들보다 상당히 평화스럽다.";
+      } else if (totalScore <= 75) {
+        resultMessage = "보통 사람들처럼 적당히 분노를 표출한다.";      
+      } else {
+        resultMessage = "보통 사람보다 흥분하기 쉬우며 화를 더 잘 내는 편이다.\n흔히 성난 방법으로 인생의 많은 괴로움에 반응한다.";
+      }
+
+      // 결과를 Django 서버에 저장
+      PsyTest.SubmitSurveyResult(totalScore, resultMessage, 'anger');
+
+      // 결과 페이지를 표시하도록 상태 업데이트
+      showResult = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,34 +111,39 @@ class _psyServey3State extends State<psyServey3> {
           ),
           Center( // Center를 사용하여 Container가 화면 중앙에 위치하도록 함
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.6,
+              width: MediaQuery.of(context).size.width * 0.7,
               height: MediaQuery.of(context).size.height * 0.7,
               padding: const EdgeInsets.all(30.0),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: PageView(
-                controller: _pageController,
-                children: [
-                  buildQuestionPage(0, 9),
-                  buildQuestionPage(9, 18),
-                  buildQuestionPage(18, 25),
-                  buildResultPage()
-                ],
-              )
-            )
+              child: showResult ? buildResultPage() : buildQuestionPageView(),
+            ),
           ),
         ],
       ),
 
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          if (showResult) {
+            // 결과 페이지가 표시된 상태에서는 아무 작업도 하지 않음
+            return;
+          }
+
           int currentPage = _pageController.page!.toInt();
-          int start = currentPage * 9;
-          int end = (currentPage + 1) * 9;
-          if (currentPage == 2) {
-            start = 18;
+          // int start = currentPage * 9;
+          // int end = (currentPage + 1) * 9;
+          int start = 0;
+          int end = 0;
+          if (currentPage == 0) {
+            start = 0;
+            end = 9;
+          } else if (currentPage == 1) {
+            start = 9;
+            end = 17;
+          } else if (currentPage == 2) {
+            start = 17;
             end = 25;
           }
 
@@ -126,11 +156,13 @@ class _psyServey3State extends State<psyServey3> {
           }
 
           if (allAnswered) {
-            if (currentPage < 3) {
+            if (currentPage < 2) {
               _pageController.nextPage(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeIn,
               );
+            } else {
+               _showResultPage();
             }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -145,6 +177,17 @@ class _psyServey3State extends State<psyServey3> {
     );
   }
 
+  Widget buildQuestionPageView() {
+    return PageView(
+      controller: _pageController,
+      children: [
+        buildQuestionPage(0, 9),
+        buildQuestionPage(9, 17),
+        buildQuestionPage(17, 25),
+      ],
+    );
+  }
+
   Widget buildQuestionPage(int start, int end) {
     return SingleChildScrollView(
       child: Padding(
@@ -154,11 +197,11 @@ class _psyServey3State extends State<psyServey3> {
                   width: 0.5),
           columnWidths: const <int, TableColumnWidth>{
             0: FlexColumnWidth(),
-            1: FixedColumnWidth(80),
-            2: FixedColumnWidth(80),
-            3: FixedColumnWidth(80),
-            4: FixedColumnWidth(80),
-            5: FixedColumnWidth(80),
+            1: FixedColumnWidth(70),
+            2: FixedColumnWidth(70),
+            3: FixedColumnWidth(70),
+            4: FixedColumnWidth(70),
+            5: FixedColumnWidth(70),
           },
           defaultVerticalAlignment: TableCellVerticalAlignment.middle, // 세로 정렬
           children: [
@@ -213,21 +256,9 @@ class _psyServey3State extends State<psyServey3> {
   }
 
   Widget buildResultPage() {
-    int totalScore = answers.values.fold(0, (sum, item) => sum + item);
-    String result;
-    if (totalScore <= 45) {
-      result = "일반적으로 체험하는 분노와 괴로움의 양이 상당히 적다.\n소수의 사람만이 이에 해당된다.";
-    } else if (totalScore <= 55) {
-      result = "보통 사람들보다 상당히 평화스럽다.";
-    } else if (totalScore <= 75) {
-      result = "보통 사람들처럼 적당히 분노를 표출한다.";      
-    } else {
-      result = "보통 사람보다 흥분하기 쉬우며 화를 더 잘 내는 편이다.\n흔히 성난 방법으로 인생의 많은 괴로움에 반응한다.";
-    }
-
     return Center(
       child: Text(
-        '총 점수: $totalScore\n$result',
+        '총 점수: $totalScore\n$resultMessage',
         style: const TextStyle(fontSize: 24),
         textAlign: TextAlign.center,
       ),

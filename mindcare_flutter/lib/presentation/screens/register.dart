@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 import 'dart:convert';
 import 'login_screen.dart';
 
@@ -189,9 +190,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           const Text(
                             '회원가입',
                             style: TextStyle(
-                              fontSize: 24,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              // color: Colors.black,
                             ),
                           ),
                           const SizedBox(height: 20),
@@ -256,11 +257,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           const SizedBox(height: 20),
                           ElevatedButton(
                             onPressed: _signUp,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              foregroundColor: secondaryColor,
+                            ),                            
                             child: const Text('회원가입'),
                           ),
-                          const SizedBox(height: 5),
-                          // _buildErrorText(_birthdateError),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 10),
+                          const Text('-------------- 또는 --------------'),
+                          const SizedBox(height: 10),                                  
                           ElevatedButton(
                             onPressed: () {
                               Navigator.push(
@@ -268,7 +273,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 MaterialPageRoute(builder: (context) => const LoginScreen()),
                               );
                             },
-                            child: const Text('로그인'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            foregroundColor: secondaryColor,
+                          ),                            
+                            child: const Text(' 로그인 '),
                           ),                     
                         ],
                       ),

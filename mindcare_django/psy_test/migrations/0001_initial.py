@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='PsyTestResult',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('survey_type', models.CharField(choices=[('anxiety', '불안 민감도 질문지'), ('depression', '우울증 질문지'), ('stress', '스트레스 질문지')], max_length=50)),
+                ('survey_type', models.CharField(choices=[('anxiety', '불안 민감도 질문지'), ('anger', '노바코 분노 질문지'), ('stress', '스트레스 질문지')], max_length=50)),
                 ('total_score', models.IntegerField()),
                 ('result', models.CharField(max_length=255)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
