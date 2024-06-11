@@ -3,9 +3,12 @@ import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test1.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test2.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test3.dart';
+import 'package:mindcare_flutter/presentation/screens/htp_main_page.dart'; // Import HTPMainPage
 
 class CustomDrawer extends StatelessWidget {
-  const CustomDrawer({super.key});
+  final String? token;
+
+  const CustomDrawer({super.key, this.token});
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +51,12 @@ class CustomDrawer extends StatelessWidget {
                     title: const Text('HTP', style: TextStyle(color: Colors.white)),
                     onTap: () {
                       Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HTPMainPage(token: token ?? ''),
+                        ),
+                      );
                     },
                   ),
                   ListTile(
