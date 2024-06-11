@@ -29,5 +29,5 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    path('api/', include('psy_test.urls')),  # 추가된 부분
+    path('api/psy_test/', include('psy_test.urls')),  # 추가된 부분
 ]

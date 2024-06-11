@@ -2,13 +2,29 @@ import 'package:mindcare_flutter/core/services/auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-
-
 class PsyTest {
   static final AuthHelpers _authHelpers = AuthHelpers();
 
+  static Future<List<dynamic>> fetchTestResults(String surveyType) async {
+    final token = await _authHelpers.getToken();
+    final response = await http.get(
+      Uri.parse('http://localhost:8000/api/psy_test/psy_test_get/$surveyType/'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+    print(response.statusCode);
+    // print(response.bodyBytes);
+
+    if (response.statusCode == 200) {
+      return json.decode(utf8.decode(response.bodyBytes)); // UTF-8로 디코딩하여 한글 깨짐 문제 해결
+    } else {
+      throw Exception('Failed to load test results');
+    }
+  }
+
   static Future<void> SubmitSurveyResult(int totalScore, String result, String surveyType) async {
-    final url = Uri.parse('http://localhost:8000/api/psy_test_results/');
+    final url = Uri.parse('http://localhost:8000/api/psy_test/psy_test_results/');
     // const surveyType = 'anxiety'; // 예제에서는 'anxiety' 타입 사용
 
     final token = await _authHelpers.getToken();

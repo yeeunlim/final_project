@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test_list.dart';
 import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test1.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test2.dart';
@@ -65,7 +66,8 @@ class CustomDrawer extends StatelessWidget {
                       Navigator.pop(context);
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const psyServey1()),  // Survey1 페이지로 이동합니다
+                        // MaterialPageRoute(builder: (context) => const psyServey1()),  // Survey1 페이지로 이동합니다
+                        MaterialPageRoute(builder: (context) => const AnxietyTestResults()),  // Survey1 페이지로 이동합니다
                       );
                     },
                   ),
