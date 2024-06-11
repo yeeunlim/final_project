@@ -5,6 +5,9 @@ from rest_framework import generics
 from .models import PsyTestResult
 from .serializers import PsyTestResultSerializer
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+# from rest_framework.decorators import api_view, permission_classes
 
 class PsyTestResultCreateView(generics.CreateAPIView):
     queryset = PsyTestResult.objects.all()
@@ -13,3 +16,20 @@ class PsyTestResultCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)  # 요청한 사용자를 저장
+
+class PsyTestResultGetView(generics.ListAPIView):
+    serializer_class = PsyTestResultSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        survey_type = self.kwargs['survey_type']
+        return PsyTestResult.objects.filter(user=user, survey_type=survey_type).order_by('-created_at')
+    
+# @api_view(['GET'])
+# @permission_classes([permissions.IsAuthenticated])
+# def PsyTestResultGetView(request, survey_type):
+#     user = request.user
+#     results = PsyTestResult.objects.filter(user=user, survey_type=survey_type)
+#     serializer = PsyTestResultSerializer(results, many=True)
+#     return Response(serializer.data, content_type='application/json; charset=utf-8')

@@ -3,6 +3,7 @@ import '../constants.dart'; // primaryColor를 가져오기 위해 추가
 import '../pages/psy_test1.dart';
 import '../pages/psy_test2.dart';
 import '../pages/psy_test3.dart';
+import '../pages/psy_test_list.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
@@ -56,7 +57,8 @@ class CustomDrawer extends StatelessWidget {
                       Navigator.pop(context);
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const psyServey1()),  // Survey1 페이지로 이동합니다
+                        // MaterialPageRoute(builder: (context) => const psyServey1()),  // Survey1 페이지로 이동합니다
+                        MaterialPageRoute(builder: (context) => const AnxietyTestResults()),  // Survey1 페이지로 이동합니다
                       );
                     },
                   ),
