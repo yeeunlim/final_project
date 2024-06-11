@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'login.dart';
+import 'package:mindcare_flutter/presentation/screens/login_screen.dart';
 
 class AuthHelpers {
-  static const String baseUrl = 'http://localhost:8000/api/auth/custom/';
 
   /// SharedPreferences 인스턴스를 통해 저장된 JWT 토큰을 반환하는 메서드
   /// 만약 토큰이 없다면 null을 반환
@@ -52,7 +52,7 @@ class AuthHelpers {
     final token = prefs.getString('jwt_token');
     final response = await http.post(
       // Uri.parse('http://localhost:8000/api/auth/custom/logout/'),
-      Uri.parse('${baseUrl}logout/'),
+      Uri.parse('$userAuthUrl/custom/logout/'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -76,7 +76,7 @@ class AuthHelpers {
     try {
       final response = await http.post(
         // Uri.parse('http://localhost:8000/api/auth/custom/login/'),
-        Uri.parse('${baseUrl}login/'),
+        Uri.parse('$userAuthUrl/custom/login/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(<String, String>{
           'username': username,
@@ -113,7 +113,7 @@ class AuthHelpers {
     }
 
     final response = await http.get(
-      Uri.parse('${baseUrl}info/'),
+      Uri.parse('$userAuthUrl/custom/info/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
@@ -136,7 +136,7 @@ class AuthHelpers {
     }
 
     final response = await http.delete(
-      Uri.parse('${baseUrl}delete/'),
+      Uri.parse('$userAuthUrl/custom/delete/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
@@ -157,7 +157,7 @@ class AuthHelpers {
     }
 
     final response = await http.post(
-      Uri.parse('${baseUrl}change-password/'),
+      Uri.parse('$userAuthUrl/custom/change-password/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
@@ -187,7 +187,7 @@ class AuthHelpers {
         print(nickname + birthdate);
 
         final response = await http.put(
-          Uri.parse('${baseUrl}update/'),
+          Uri.parse('$userAuthUrl/custom/update/'),
           headers: {
             'Content-Type': 'application/json; charset=UTF-8',
             'Authorization': 'Bearer $token',

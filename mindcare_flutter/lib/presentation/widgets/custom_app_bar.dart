@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../pages/auth_helpers.dart';
-import '../pages/mypage.dart';
+import 'package:mindcare_flutter/core/services/auth_service.dart';
+import 'package:mindcare_flutter/presentation/screens/mypage.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;

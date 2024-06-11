@@ -1,4 +1,4 @@
-import '../pages/auth_helpers.dart';
+import 'package:mindcare_flutter/core/services/auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 

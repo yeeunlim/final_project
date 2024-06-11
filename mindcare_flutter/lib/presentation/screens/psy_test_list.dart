@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../constants.dart';
-import '../widgets/custom_drawer.dart';
-import '../widgets/custom_app_bar.dart';
+
+// import '../constants.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
+import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 // import '../pages/auth_helpers.dart';
-import '../widgets/psy_test.dart';
-import 'psy_test1.dart';
+import 'package:mindcare_flutter/presentation/widgets/psy_test.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test1.dart';
 import 'package:intl/intl.dart';
-import '../widgets/confirm_dialog.dart';
+import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
 
 // class MyApp extends StatelessWidget {
 //   const MyApp({super.key});

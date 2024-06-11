@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/urls.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_app_bar.dart';
-import '../constants.dart';
 import '../widgets/psy_test.dart';
 
 void main() {

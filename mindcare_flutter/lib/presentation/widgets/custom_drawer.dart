@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../constants.dart'; // primaryColor를 가져오기 위해 추가
-import '../pages/psy_test1.dart';
-import '../pages/psy_test2.dart';
-import '../pages/psy_test3.dart';
-import '../pages/psy_test_list.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test_list.dart';
+import 'package:mindcare_flutter/core/themes/color_schemes.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test1.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test2.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test3.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});

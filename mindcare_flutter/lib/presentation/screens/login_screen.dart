@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'auth_helpers.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
+import 'package:mindcare_flutter/core/services/auth_service.dart';
+import 'package:mindcare_flutter/routes/app_routes.dart';
 import 'register.dart';
-import 'main_screen.dart';
-import '../constants.dart';
+import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/log_in.jpg'), // 배경 이미지 경로를 여기에 맞게 변경하세요.
+                image: NetworkImage(ImageUrls.loginPageBackground), // 네트워크 이미지 경로 사용
                 fit: BoxFit.cover,
               ),
             ),
@@ -39,7 +40,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   '나만의 감정 가이드',
                   style: TextStyle(
                     fontSize: 14, // 첫 번째 줄 글자 크기
-                    // fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                   textAlign: TextAlign.center,
@@ -111,9 +111,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (_formKey.currentState!.validate()) {
                               bool success = await AuthHelpers.login(_username, _password, context);
                               if (success) {
-                                Navigator.push(
+                                Navigator.pushNamed(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const MainScreen()),
+                                  AppRoutes.main, // 'AppRoutes.main'을 사용하여 네비게이션
                                 );
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(

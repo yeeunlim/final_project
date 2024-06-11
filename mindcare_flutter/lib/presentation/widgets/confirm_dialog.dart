@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants.dart';
+import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 
 class ConfirmDialog extends StatelessWidget {
   final VoidCallback onConfirm;
@@ -9,13 +9,13 @@ class ConfirmDialog extends StatelessWidget {
   final String cancelButtonText;
 
   const ConfirmDialog({
-    Key? key,
+    super.key,
     required this.onConfirm,
     required this.onCancel,
     required this.message,
     required this.confirmButtonText,
     required this.cancelButtonText,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class ConfirmDialog extends StatelessWidget {
           padding: const EdgeInsets.all(20.0),
           width: 300,
           height: 200,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: primaryColor,
           ),
           child: Column(
@@ -49,24 +49,24 @@ class ConfirmDialog extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
                       ElevatedButton(
-                        onPressed: onConfirm,
-                        child: Text(confirmButtonText), // 전달된 버튼 텍스트 사용
+                        onPressed: onConfirm, // 전달된 버튼 텍스트 사용
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           foregroundColor: Colors.white,
                           side: const BorderSide(
                               color: Colors.white), // 흰색 테두리 추가
                         ),
+                        child: Text(confirmButtonText),
                       ),
                       ElevatedButton(
-                        onPressed: onCancel,
-                        child: Text(cancelButtonText), // 전달된 버튼 텍스트 사용
+                        onPressed: onCancel, // 전달된 버튼 텍스트 사용
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           foregroundColor: Colors.white,
                           side: const BorderSide(
                               color: Colors.white), // 흰색 테두리 추가
                         ),
+                        child: Text(cancelButtonText),
                       ),
                     ],
                   ),
