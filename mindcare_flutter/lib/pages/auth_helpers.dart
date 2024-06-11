@@ -8,6 +8,24 @@ import 'login.dart';
 class AuthHelpers {
   static const String baseUrl = 'http://localhost:8000/api/auth/custom/';
 
+  /// SharedPreferences 인스턴스를 통해 저장된 JWT 토큰을 반환하는 메서드
+  /// 만약 토큰이 없다면 null을 반환
+  Future<String?> getToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('jwt_token');
+      if (token == null) {
+        // 토큰이 없을 경우
+        throw Exception("No JWT token found");
+      }
+      return token;
+    } catch (e) {
+      // 오류 처리
+      print('Error getting token: $e');
+      return null;
+    }
+  }
+  
   static Future<bool> checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');

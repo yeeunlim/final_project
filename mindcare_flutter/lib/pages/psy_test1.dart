@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_app_bar.dart';
 import '../constants.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
+import '../widgets/psy_test.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,6 +31,7 @@ class psyServey1 extends StatefulWidget {
 }
 
 class _psyServey1State extends State<psyServey1> {
+  
   final PageController _pageController = PageController();
   final List<String> questions = [
     "남들에게 불안하게 보이지 말아야 한다.",
@@ -67,33 +65,6 @@ class _psyServey1State extends State<psyServey1> {
   String resultMessage = "";
   int totalScore = 0;
 
-  void _submitSurveyResult(int totalScore, String result) async {
-    final url = Uri.parse('http://localhost:8000/api/psy_test_results/');
-    const surveyType = 'anxiety'; // 예제에서는 'anxiety' 타입 사용
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('jwt_token');
-    
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',  // JWT 토큰 추가
-      },
-      body: jsonEncode({'survey_type': surveyType, 'total_score': totalScore, 'result': result}),
-    );
-
-    if (response.statusCode == 201) {
-      // 데이터가 성공적으로 저장됨
-      print('Survey result saved successfully');
-    } else {
-      // 오류 발생
-      print('Failed to save survey result');
-      print('Response status: ${response.statusCode}');
-      // print('Response body: ${response.body}');
-    }
-  }
-
   void _showResultPage() {
     setState(() {
       totalScore = answers.values.fold(0, (sum, item) => sum + item);
@@ -106,7 +77,7 @@ class _psyServey1State extends State<psyServey1> {
       }
 
       // 결과를 Django 서버에 저장
-      _submitSurveyResult(totalScore, resultMessage);
+      PsyTest.SubmitSurveyResult(totalScore, resultMessage, 'anxiety');
 
       // 결과 페이지를 표시하도록 상태 업데이트
       showResult = true;
@@ -192,32 +163,6 @@ class _psyServey1State extends State<psyServey1> {
       ],
     );
   }
-
-  // void _showResultPage(BuildContext context) {
-  //   setState(() {
-  //     totalScore = answers.values.fold(0, (sum, item) => sum + item);
-  //     if (totalScore <= 20) {
-  //       resultMessage = "불안 자극에 약간 민감하게 반응";
-  //     } else if (totalScore <= 24) {
-  //       resultMessage = "불안 자극에 상당히 민감하게 반응";
-  //     } else {
-  //       resultMessage = "불안 자극에 매우 민감하게 반응";
-  //     }
-
-  //     // 결과를 Django 서버에 저장
-  //     _submitSurveyResult(totalScore, result);
-
-  //     // 결과 페이지를 표시하도록 상태 업데이트
-  //       showResult = true;
-
-  //   // Navigator.push(
-  //   //   context,
-  //   //   MaterialPageRoute(
-  //   //     builder: (context) => ResultPage(totalScore: totalScore, result: result),
-  //   //   ),
-  //   // );
-  //   });
-  // }
 
   Widget buildQuestionPage(int start, int end) {
     return Padding(

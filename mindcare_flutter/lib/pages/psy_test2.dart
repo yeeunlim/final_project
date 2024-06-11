@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_app_bar.dart';
 import '../constants.dart';
+import '../widgets/psy_test.dart';
 
 void main() {
   runApp(const MyApp());
@@ -52,7 +53,56 @@ class _psyServey2State extends State<psyServey2> {
   ];
 
   final Map<int, int> answers = {};
+  bool showResult = false;
+  String resultMessage = "";
+  int totalScore = 0;
 
+  int getScore() {
+    int totalScore = 0;
+    answers.forEach((index, score) {
+      if (index < 6) {
+        // 아니다 0점, 가끔 그렇다 1점, 자주 그렇다 2점, 항상 그렇다 3점
+        totalScore += score; // 1~6번 질문의 점수
+      } else {
+        // 아니다 3점, 가끔 그렇다 2점, 자주 그렇다 1점, 항상 그렇다 0점
+        int newScore = 0;
+        switch(score) {
+          case 0:
+            newScore = 3;
+          case 1:
+            newScore = 2;
+          case 2:
+            newScore = 1;
+          case 3:
+            newScore = 0;          
+        }
+        totalScore += newScore; 
+      }
+    });
+
+    return totalScore;   
+  }
+
+  void _showResultPage() {
+    setState(() {
+      totalScore = getScore();
+
+      if (totalScore <= 17) {
+        resultMessage = "정상";
+      } else if (totalScore <= 25) {
+        resultMessage = "경도의 스트레스";
+      } else {
+        resultMessage = "고도의 스트레스";
+      }
+
+      // 결과를 Django 서버에 저장
+      PsyTest.SubmitSurveyResult(totalScore, resultMessage, 'stress');
+
+      // 결과 페이지를 표시하도록 상태 업데이트
+      showResult = true;
+    });
+  }
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,19 +127,18 @@ class _psyServey2State extends State<psyServey2> {
                 color: Colors.white.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: PageView(
-                controller: _pageController,
-                children: [
-                  buildQuestionPage(0, 10),
-                  buildResultPage(),
-                ],
-              )
-            )
+              child: showResult ? buildResultPage() : buildQuestionPageView(),
+            ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          if (showResult) {
+            // 결과 페이지가 표시된 상태에서는 아무 작업도 하지 않음
+            return;
+          }
+
           int currentPage = _pageController.page!.toInt();
           int start = currentPage * 10;
           int end = (currentPage + 1) * 10;
@@ -103,12 +152,14 @@ class _psyServey2State extends State<psyServey2> {
           }
 
           if (allAnswered) {
-            if (currentPage < 1) {
+            if (currentPage < 0) {
               _pageController.nextPage(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeIn,
               );
-            }
+            } else {
+               _showResultPage();
+            }              
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -119,6 +170,15 @@ class _psyServey2State extends State<psyServey2> {
         },
         child: const Icon(Icons.arrow_forward),
       ),
+    );
+  }
+
+  Widget buildQuestionPageView() {
+    return PageView(
+      controller: _pageController,
+      children: [
+        buildQuestionPage(0, 10),
+      ],
     );
   }
 
@@ -133,11 +193,11 @@ class _psyServey2State extends State<psyServey2> {
                   width: 0.5),
               columnWidths: const <int, TableColumnWidth>{
                 0: FlexColumnWidth(),
-                1: FixedColumnWidth(60),
-                2: FixedColumnWidth(60),
-                3: FixedColumnWidth(60),
-                4: FixedColumnWidth(60),
-                5: FixedColumnWidth(60),
+                1: FixedColumnWidth(50),
+                2: FixedColumnWidth(50),
+                3: FixedColumnWidth(50),
+                4: FixedColumnWidth(50),
+                5: FixedColumnWidth(50),
               },
               defaultVerticalAlignment: TableCellVerticalAlignment.middle, // 세로 정렬
               children: [
@@ -194,40 +254,9 @@ class _psyServey2State extends State<psyServey2> {
   }
 
   Widget buildResultPage() {
-    int totalScore = 0;
-    answers.forEach((index, score) {
-      if (index < 6) {
-        // 아니다 0점, 가끔 그렇다 1점, 자주 그렇다 2점, 항상 그렇다 3점
-        totalScore += score; // 1~6번 질문의 점수
-      } else {
-        // 아니다 3점, 가끔 그렇다 2점, 자주 그렇다 1점, 항상 그렇다 0점
-        int newScore = 0;
-        switch(score) {
-          case 0:
-            newScore = 3;
-          case 1:
-            newScore = 2;
-          case 2:
-            newScore = 1;
-          case 3:
-            newScore = 0;          
-        }
-        totalScore += newScore; 
-      }
-    });
-
-    String result;
-    if (totalScore <= 17) {
-      result = "정상";
-    } else if (totalScore <= 25) {
-      result = "경도의 스트레스";
-    } else {
-      result = "고도의 스트레스";
-    }
-
     return Center(
       child: Text(
-        '총 점수: $totalScore\n$result',
+        '총 점수: $totalScore\n$resultMessage',
         style: const TextStyle(fontSize: 24),
         textAlign: TextAlign.center,
       ),
