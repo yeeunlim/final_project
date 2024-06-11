@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/image_urls.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_app_bar.dart';
-import '../constants.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 
 void main() {
   runApp(const MyApp());

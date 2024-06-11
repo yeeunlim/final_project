@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-// API URLs
-const String baseUrl = 'http://127.0.0.1:8000';
-
 // Colors
 const Color primaryColor = Color(0xFF55446C);
 const Color secondaryColor = Colors.white;
@@ -65,15 +62,3 @@ const Map<String, Color> emotionColors = {
   '실망': Color(0xFF4695D5),
   '외로움': Color(0xFF2B81CB),
 };
-
-
-
-
-// Image URLs
-class ImageUrls {
-  static const String mainPageBackground = 'https://mindcare-pj.s3.ap-northeast-2.amazonaws.com/images/main_page.jpg';
-  static const String loginPageBackground = 'https://mindcare-pj.s3.ap-northeast-2.amazonaws.com/images/log_in.jpg';
-  static const String normalRabbit = 'https://mindcare-pj.s3.ap-northeast-2.amazonaws.com/images/normal_rabbit.png';
-  static const String angryRabbit = 'https://mindcare-pj.s3.ap-northeast-2.amazonaws.com/images/anger_rabbit.png';
-  static const String sadRabbit = 'https://mindcare-pj.s3.ap-northeast-2.amazonaws.com/images/sad_rabbit.png';
-}

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/emotion_pie_chart.dart';
 import '../widgets/confirm_dialog.dart';
-import '../constants.dart';
+import 'package:mindcare_flutter/core/themes/color_schemes.dart';
+import 'package:mindcare_flutter/core/services/api_service.dart';
+import 'package:mindcare_flutter/core/constants/image_urls.dart';
 
 class DailyAnalysisScreen extends StatefulWidget {
   const DailyAnalysisScreen({
-    Key? key,
+    super.key,
     required this.entryDate,
     required this.entryData,
     required this.diaryText,
-  }) : super(key: key);
+  });
 
   final String entryDate;
   final Map<String, dynamic> entryData;
@@ -41,16 +41,8 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
 
   Future<void> _deleteDiaryEntry(BuildContext context) async {
     try {
-      final response = await http.delete(
-        Uri.parse('$baseUrl/api/chatbot_diary/diary_entries/${widget.entryData['id']}/'),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode == 204) {
-        Navigator.pop(context); // 일기 삭제 후 이전 화면으로 돌아갑니다.
-      } else {
-        print('Failed to delete diary entry: ${response.statusCode}');
-      }
+      await DailyAnalysisService.deleteDiaryEntry(widget.entryData['id']);
+      Navigator.pop(context); // 일기 삭제 후 이전 화면으로 돌아갑니다.
     } catch (e) {
       print('Error occurred: $e');
     }
@@ -58,24 +50,14 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
 
   Future<void> _updateDiaryEntry(BuildContext context) async {
     try {
-      final Map<String, dynamic> requestData = {
-        'diary_text': _editController.text,
-        'entry_date': widget.entryDate,
-      };
-
-      final response = await http.patch( // PUT 대신 PATCH를 사용합니다.
-        Uri.parse('$baseUrl/api/chatbot_diary/diary_entries/${widget.entryData['id']}/'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(requestData),
+      await DailyAnalysisService.updateDiaryEntry(
+        widget.entryData['id'],
+        _editController.text,
+        widget.entryDate,
       );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          _isEditing = false;
-        });
-      } else {
-        print('Failed to update diary entry: ${response.statusCode}');
-      }
+      setState(() {
+        _isEditing = false;
+      });
     } catch (e) {
       print('Error occurred: $e');
     }
@@ -104,11 +86,6 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 전달된 인자들을 출력합니다.
-    print('DailyAnalysisScreen received entryDate: ${widget.entryDate}');
-    print('DailyAnalysisScreen received entryData: ${widget.entryData}');
-    print('DailyAnalysisScreen received diaryText: ${widget.diaryText}');
-
     // Null 값에 대한 기본 처리
     final emotionDistribution = widget.entryData['emotion_distribution'] ?? {};
     final mostFeltEmotion = widget.entryData['most_felt_emotion'] ?? 'Unknown';

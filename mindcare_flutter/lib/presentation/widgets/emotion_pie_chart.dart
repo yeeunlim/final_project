@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../constants.dart';
+import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 
 class EmotionPieChart extends StatelessWidget {
   final Map<String, dynamic> emotionDistribution;
 
-  const EmotionPieChart({Key? key, required this.emotionDistribution})
-      : super(key: key);
+  const EmotionPieChart({super.key, required this.emotionDistribution});
 
   List<PieChartSectionData> getPieChartSections() {
     return emotionDistribution.entries.map((entry) {
@@ -62,7 +61,7 @@ class EmotionPieChart extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
+            SizedBox(
               width: 150,
               height: 150,
               child: PieChart(

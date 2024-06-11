@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import '../constants.dart';
+import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 
 class MoodTracker extends StatelessWidget {
   final Map<DateTime, String> moodData;
   final void Function(DateTime, bool) onDateSelected;
 
-  const MoodTracker({Key? key, required this.moodData, required this.onDateSelected}) : super(key: key);
+  const MoodTracker({super.key, required this.moodData, required this.onDateSelected});
 
   Color getMoodColor(String emotionCategory) {
     return emotionColors[emotionCategory] ?? Colors.grey;

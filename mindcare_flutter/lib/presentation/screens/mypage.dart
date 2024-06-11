@@ -1,26 +1,10 @@
 import 'package:flutter/material.dart';
-import '../widgets/custom_app_bar.dart'; // CustomAppBar를 정의한 파일을 import 해야 합니다.
-import '../widgets/custom_drawer.dart'; // CustomDrawer를 정의한 파일을 import 해야 합니다.
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'login.dart';
-import 'auth_helpers.dart';
+import 'package:mindcare_flutter/core/constants/image_urls.dart';
+import 'package:mindcare_flutter/core/services/auth_service.dart';
+import 'package:mindcare_flutter/routes/app_routes.dart';
 import '../widgets/confirm_dialog.dart';
-
-// void main() {
-//   runApp(const MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return const MaterialApp(
-//       home: MyPage(),
-//     );
-//   }
-// }
+import '../widgets/custom_app_bar.dart';
+import '../widgets/custom_drawer.dart';
 
 class MyPage extends StatefulWidget {
   const MyPage({super.key});
@@ -45,7 +29,7 @@ class _MyPageState extends State<MyPage> {
     // 초기 사용자 정보를 로드합니다.
     _fetchUserInfo();
   }
-  
+
   Future<void> _fetchUserInfo() async {
     try {
       final userInfo = await AuthHelpers.fetchUserInfo();
@@ -64,7 +48,7 @@ class _MyPageState extends State<MyPage> {
   Future<void> _deleteUser() async {
     try {
       await AuthHelpers.deleteUser();
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const LoginScreen()));
+      Navigator.of(context).pushReplacementNamed(AppRoutes.login); // 'AppRoutes.login'을 사용하여 네비게이션
     } catch (e) {
       // 오류 처리
       print('Failed to delete user: $e');
@@ -135,19 +119,19 @@ class _MyPageState extends State<MyPage> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/log_in.jpg'), // 배경 이미지 설정
+                image: NetworkImage(ImageUrls.loginPageBackground),
                 fit: BoxFit.cover,
               ),
             ),
           ),
           Center(
             child: Container(
-            width: 300,
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(10),
-            ),
+              width: 300,
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(10),
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -204,3 +188,4 @@ class _MyPageState extends State<MyPage> {
     );
   }
 }
+

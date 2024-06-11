@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../constants.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/common_button.dart';
 import '../widgets/confirm_dialog.dart';
+import '../widgets/loading_screen.dart';
+import 'package:mindcare_flutter/core/services/api_service.dart';
+import 'package:mindcare_flutter/core/constants/image_urls.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
   _MainScreenState createState() => _MainScreenState();
@@ -16,8 +16,9 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final TextEditingController _inputController = TextEditingController();
-  FocusNode _inputFocusNode = FocusNode();
+  final FocusNode _inputFocusNode = FocusNode();
   String _chatbotResponse = "오늘은 무슨 일이 있었나요?";
+  bool _isLoading = false; // 로딩 상태 관리
 
   @override
   void dispose() {
@@ -28,19 +29,10 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> sendMessage(String message) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/chatbot_diary/chatbot/?s=$message'),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode == 200) {
-        var responseData = jsonDecode(utf8.decode(response.bodyBytes));
-        setState(() {
-          _chatbotResponse = responseData['chatbot_response'];
-        });
-      } else {
-        print('Failed to get response: ${response.statusCode}');
-      }
+      final responseData = await ApiService.sendMessage(message);
+      setState(() {
+        _chatbotResponse = responseData['chatbot_response'];
+      });
     } catch (e) {
       print('Error occurred: $e');
     }
@@ -49,34 +41,28 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> saveDiary() async {
     final diaryText = _inputController.text;
     final entryDate = DateTime.now().toIso8601String().split('T')[0];
+    setState(() {
+      _isLoading = true; // 로딩 시작
+    });
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/chatbot_diary/diary_analysis/'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'diary_text': diaryText,
-          'entry_date': entryDate,
-        }),
+      final responseData = await ApiService.saveDiary(diaryText, entryDate);
+      // 인자 값을 출력합니다.
+      print('Navigating to DailyAnalysisScreen with entryData: $responseData, entryDate: $entryDate, diaryText: $diaryText');
+      Navigator.pushNamed(
+        context,
+        '/daily_analysis',
+        arguments: {
+          'entryData': responseData,
+          'entryDate': entryDate,
+          'diaryText': diaryText,
+        },
       );
-
-      if (response.statusCode == 200) {
-        var responseData = jsonDecode(utf8.decode(response.bodyBytes));
-        // 인자 값을 출력합니다.
-        print('Navigating to DailyAnalysisScreen with entryData: $responseData, entryDate: $entryDate, diaryText: $diaryText');
-        Navigator.pushNamed(
-          context,
-          '/daily_analysis',
-          arguments: {
-            'entryData': responseData,
-            'entryDate': entryDate,
-            'diaryText': diaryText,
-          },
-        );
-      } else {
-        print('Failed to save diary: ${response.statusCode}');
-      }
     } catch (e) {
       print('Error occurred: $e');
+    } finally {
+      setState(() {
+        _isLoading = false; // 로딩 종료
+      });
     }
   }
 
@@ -109,7 +95,7 @@ class _MainScreenState extends State<MainScreen> {
       body: Stack(
         children: [
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: NetworkImage(ImageUrls.mainPageBackground),
                 fit: BoxFit.cover,
@@ -120,7 +106,7 @@ class _MainScreenState extends State<MainScreen> {
             child: Container(
               width: MediaQuery.of(context).size.width * 0.5,
               height: MediaQuery.of(context).size.height * 0.7,
-              padding: EdgeInsets.all(30.0),
+              padding: const EdgeInsets.all(30.0),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(12),
@@ -136,29 +122,29 @@ class _MainScreenState extends State<MainScreen> {
                         width: 70,
                         height: 70,
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Flexible(
                         child: Container(
-                          padding: EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(16.0),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.5),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          constraints: BoxConstraints(
+                          constraints: const BoxConstraints(
                             minWidth: 100,
                             maxWidth: 500,
                           ),
                           child: Text(
                             _chatbotResponse,
-                            style: TextStyle(fontSize: 14),
+                            style: const TextStyle(fontSize: 14),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Expanded(
-                    child: Container(
+                    child: SizedBox(
                       height: MediaQuery.of(context).size.height * 0.5,
                       child: Column(
                         children: <Widget>[
@@ -170,13 +156,13 @@ class _MainScreenState extends State<MainScreen> {
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                padding: EdgeInsets.all(20.0),
+                                padding: const EdgeInsets.all(20.0),
                                 child: TextField(
                                   keyboardType: TextInputType.multiline,
                                   maxLines: null,
                                   controller: _inputController,
                                   focusNode: _inputFocusNode,
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     hintText: '미아에게 마음을 터놓으세요.',
                                     border: InputBorder.none,
                                   ),
@@ -195,7 +181,7 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           FractionallySizedBox(
                             widthFactor: 0.9,
                             child: Align(
@@ -214,6 +200,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
           ),
+          LoadingScreen(isLoading: _isLoading), // 로딩 화면 표시
         ],
       ),
     );
