@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     "analytics",
     "htp_test",
     "storages",
-
+    "psy_test",
     "mindcare_django", # 최희정 추가
 ]
 
