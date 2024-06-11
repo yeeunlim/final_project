@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'routes/app_routes.dart';
-import 'core/services/auth_service.dart';
 import 'presentation/widgets/auth_checker.dart';
 
 void main() {

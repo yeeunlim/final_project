@@ -200,7 +200,10 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
           ),
-          LoadingScreen(isLoading: _isLoading), // 로딩 화면 표시
+          LoadingScreen(
+            isLoading: _isLoading,
+            upperText: '미아가 일기를 분석하고 있습니다.',
+          ),
         ],
       ),
     );
