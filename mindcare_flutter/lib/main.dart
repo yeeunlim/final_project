@@ -18,7 +18,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: '/main',
+      // initialRoute: '/main',
+      home: const AuthChecker(), // 초기 위젯을 AuthChecker로 설정
       routes: {
         '/main': (context) => const MainScreen(),
         '/monthly_analysis': (context) => const MonthlyAnalysisScreen(),
