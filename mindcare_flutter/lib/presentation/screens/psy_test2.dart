@@ -1,27 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/urls.dart';
-import '../widgets/custom_drawer.dart';
-import '../widgets/custom_app_bar.dart';
-import '../widgets/psy_test.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '설문조사',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const psyServey2(),
-    );
-  }
-}
+import 'package:mindcare_flutter/core/constants/urls.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
+import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
+import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test2_home.dart';
+import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 
 class psyServey2 extends StatefulWidget {
   const psyServey2({super.key});
@@ -96,13 +80,22 @@ class _psyServey2State extends State<psyServey2> {
       }
 
       // 결과를 Django 서버에 저장
-      PsyTest.SubmitSurveyResult(totalScore, resultMessage, 'stress');
+      PsyCommon.SubmitSurveyResult(totalScore, resultMessage, 'stress');
 
       // 결과 페이지를 표시하도록 상태 업데이트
       showResult = true;
     });
   }
- 
+
+  void _showAlertDialog() {
+    AlertDialogHelper.showAlert(
+      context,
+      '심리검사',
+      '모든 문항에 답변을 선택해주세요.',
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -161,11 +154,12 @@ class _psyServey2State extends State<psyServey2> {
                _showResultPage();
             }              
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('모든 문항에 답변을 선택해주세요.'),
-              ),
-            );
+            _showAlertDialog();
+            // ScaffoldMessenger.of(context).showSnackBar(
+            //   const SnackBar(
+            //     content: Text('모든 문항에 답변을 선택해주세요.'),
+            //   ),
+            // );
           }
         },
         child: const Icon(Icons.arrow_forward),
@@ -255,10 +249,29 @@ class _psyServey2State extends State<psyServey2> {
 
   Widget buildResultPage() {
     return Center(
-      child: Text(
-        '총 점수: $totalScore\n$resultMessage',
-        style: const TextStyle(fontSize: 24),
-        textAlign: TextAlign.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '총 점수: $totalScore\n$resultMessage',
+            style: const TextStyle(fontSize: 24),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const StressTestResults()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              foregroundColor: secondaryColor,
+            ),              
+            child: const Text('돌아가기'),
+          ),
+        ],
       ),
     );
   }

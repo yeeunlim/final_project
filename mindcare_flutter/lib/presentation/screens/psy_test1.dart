@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/urls.dart';
-import '../widgets/custom_drawer.dart';
-import '../widgets/custom_app_bar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../widgets/psy_test.dart';
+
+import 'package:mindcare_flutter/core/constants/urls.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
+import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
+import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test1_home.dart';
+import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 
 void main() {
   runApp(const MyApp());
@@ -71,8 +75,10 @@ class _psyServey1State extends State<psyServey1> {
   void _showResultPage() {
     setState(() {
       totalScore = answers.values.fold(0, (sum, item) => sum + item);
-      if (totalScore <= 20) {
-        resultMessage = "불안 자극에 약간 민감하게 반응";
+      if (totalScore <= 15) {
+        resultMessage = "불안 자극에 민감하지 않음";
+      } else if (totalScore <= 20) {
+        resultMessage = "불안 자극에 약간 민감하게 반응";        
       } else if (totalScore <= 24) {
         resultMessage = "불안 자극에 상당히 민감하게 반응";
       } else {
@@ -80,11 +86,19 @@ class _psyServey1State extends State<psyServey1> {
       }
 
       // 결과를 Django 서버에 저장
-      PsyTest.SubmitSurveyResult(totalScore, resultMessage, 'anxiety');
+      PsyCommon.SubmitSurveyResult(totalScore, resultMessage, 'anxiety');
 
       // 결과 페이지를 표시하도록 상태 업데이트
       showResult = true;
     });
+  }
+
+  void _showAlertDialog() {
+    AlertDialogHelper.showAlert(
+      context,
+      '심리검사',
+      '모든 문항에 답변을 선택해주세요.',
+    );
   }
 
   @override
@@ -145,11 +159,7 @@ class _psyServey1State extends State<psyServey1> {
                _showResultPage();
             }
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('모든 문항에 답변을 선택해주세요.'),
-              ),
-            );
+            _showAlertDialog();
           }
         },
         child: const Icon(Icons.arrow_forward),
@@ -239,10 +249,29 @@ class _psyServey1State extends State<psyServey1> {
 
   Widget buildResultPage() {
     return Center(
-      child: Text(
-        '총 점수: $totalScore\n$resultMessage',
-        style: const TextStyle(fontSize: 24),
-        textAlign: TextAlign.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '총 점수: $totalScore\n$resultMessage',
+            style: const TextStyle(fontSize: 24),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const AnxietyTestResults()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              foregroundColor: secondaryColor,
+            ),              
+            child: const Text('돌아가기'),
+          ),
+        ],
       ),
     );
   }

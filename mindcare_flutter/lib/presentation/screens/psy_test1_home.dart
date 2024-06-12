@@ -2,40 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-// import '../constants.dart';
+
 import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
+import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
+
+
 import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'package:mindcare_flutter/core/themes/color_schemes.dart';
-// import '../pages/auth_helpers.dart';
-import 'package:mindcare_flutter/presentation/widgets/psy_test.dart';
-import 'package:mindcare_flutter/presentation/screens/psy_test1.dart';
-import 'package:intl/intl.dart';
-import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
 
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: '불안 민감도 검사',
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//       ),
-//       home: const AnxietyTestResults(),
-//     );
-//   }
-// }
 
 class AnxietyTestResults extends StatefulWidget {
   const AnxietyTestResults({super.key});
 
   @override
-  AnxietyTestResultsState createState() => AnxietyTestResultsState();
+  _AnxietyTestResultsState createState() => _AnxietyTestResultsState();
 }
 
-class AnxietyTestResultsState extends State<AnxietyTestResults> {
+class _AnxietyTestResultsState extends State<AnxietyTestResults> {
   List<dynamic> testResults = [];
   bool isLoading = true;
 
@@ -46,47 +30,11 @@ class AnxietyTestResultsState extends State<AnxietyTestResults> {
   }
 
   Future<void> _fetchTestResults() async {
-    try {
-      final results = await PsyTest.fetchTestResults('anxiety');
-      setState(() {
-        testResults = results;
-        isLoading = false;
-      });
-    } catch (e) {
-      print('Failed to load test results: $e');
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  String _formatDate(String dateTimeString) {
-    DateTime dateTime = DateTime.parse(dateTimeString);
-    return DateFormat('yyyy-MM-dd').format(dateTime);
-  }
-
-  void _showConfirmDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false, // 화면의 다른 부분을 클릭해도 닫히지 않음
-      builder: (BuildContext context) {
-        return ConfirmDialog(
-          onConfirm: () {
-            Navigator.of(context).pop(); // 다이얼로그 닫기
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const psyServey1()), // 페이지로 이동
-            );
-          },
-          onCancel: () {
-            Navigator.of(context).pop(); // 다이얼로그 닫기
-          },
-          message: '지금 심리검사를 시작하시겠습니까?', // 메시지 전달
-          confirmButtonText: '검사시작', // 확인 버튼 텍스트
-          cancelButtonText: '취소', // 취소 버튼 텍스트
-        );
-      },
-    );
+    final results = await PsyCommon.fetchTestResults('anxiety');
+    setState(() {
+      testResults = results;
+      isLoading = false;
+    });
   }
 
   @override
@@ -117,7 +65,7 @@ class AnxietyTestResultsState extends State<AnxietyTestResults> {
                 children: [
                   // 왼쪽 검사 목록
                   Expanded(
-                    flex: 2,
+                    flex: 3,
                     child: Container(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -126,6 +74,11 @@ class AnxietyTestResultsState extends State<AnxietyTestResults> {
                           if (testResults.isEmpty)
                             const Text(
                               '검사 기록이 없습니다.',
+                              style: TextStyle(fontSize: 18),
+                            )
+                          else 
+                            const Text(
+                              ' ▶ 불안 민감도 검사 리스트',
                               style: TextStyle(fontSize: 18),
                             ),
                           const SizedBox(height: 10),
@@ -137,8 +90,13 @@ class AnxietyTestResultsState extends State<AnxietyTestResults> {
                                 itemBuilder: (context, index) {
                                   final result = testResults[index];
                                   return ListTile(
-                                    title: Text('검사 ${index + 1}'),
-                                    subtitle: Text('검사일: ${_formatDate(result['created_at'])}, 점수: ${result['total_score']}'),
+                                    title: Text('검사 ${index + 1} [${PsyCommon.formatDate(result['created_at'])}]'),
+                                    subtitle: 
+                                    Text('점수: ${result['total_score']}'),
+                                    // style: TextStyle(
+                                    //   fontSize: 24,
+                                    //   fontWeight: FontWeight.bold,
+                                    // ),                                    
                                     onTap: () {
                                       // 검사 결과 상세 페이지로 이동
                                     },
@@ -152,7 +110,7 @@ class AnxietyTestResultsState extends State<AnxietyTestResults> {
                   ),
                   // 오른쪽 검사 소개 및 새롭게 검사하기 버튼
                   Expanded(
-                    flex: 3,
+                    flex: 5,
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -197,22 +155,19 @@ class AnxietyTestResultsState extends State<AnxietyTestResults> {
                             '증가시키는 요인으로 알려져 있으며, 시간에 걸쳐 안정적인 '
                             '성격 특성에 가까운 것으로 보고 되었습니다.'
                             '\n불안의 결과에 대해 얼마나 두려워하는지를 묻는 '
-                            '총 16문항으로 구성, 각 문항에 대해 5점 척도로 평정하는 '
-                            'Likert 척도로 전체 점수는 전 문항 점수를 합한 총점 0-56점입니다.',
+                            '총 16문항으로 구성, 각 문항에 대해 0~4 점 척도로 평정하는 검사입니다.'
+                            '\n\n15점 이하 : 불안 자극에 민감하지 않음'
+                            '\n16~ 20점 : 불안 자극에 약간 민감하게 반응'
+                            '\n21~ 24점 : 불안 자극에 상당히 민감하게 반응'
+                            '\n25점 이상 : 불안 자극에 매우 민감하게 반응',
                             style: TextStyle(fontSize: 16),
                           ),
                           const SizedBox(height: 40),
                           Center(
                             child: ElevatedButton(
-                              onPressed: _showConfirmDialog,
-                              // onPressed: () {
-                              //   Navigator.pop(context);
-                              //   Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(builder: (context) => const psyServey1()),  // Survey1 페이지로 이동합니다
-                              //     // MaterialPageRoute(builder: (context) => const AnxietyTestResults()),  // Survey1 페이지로 이동합니다
-                              //   );
-                              // },
+                              onPressed: (){
+                                PsyCommon.showConfirmDialog(context, 'anxiety');
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primaryColor,
                                 foregroundColor: secondaryColor,
@@ -227,55 +182,6 @@ class AnxietyTestResultsState extends State<AnxietyTestResults> {
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const CustomAppBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      title: const Text('불안 민감도 검사 결과'),
-    );
-  }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-}
-
-class CustomDrawer extends StatelessWidget {
-  const CustomDrawer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: const <Widget>[
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.blue,
-            ),
-            child: Text(
-              'Drawer Header',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-              ),
-            ),
-          ),
-          ListTile(
-            leading: Icon(Icons.home),
-            title: Text('Home'),
-          ),
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text('Settings'),
           ),
         ],
       ),
