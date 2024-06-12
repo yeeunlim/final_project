@@ -2,6 +2,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:mindcare_flutter/core/constants/urls.dart';
 
+import 'package:mindcare_flutter/core/services/auth_service.dart';
+
 class ApiService {
   // 챗봇에 메시지를 보내는 메서드
   static Future<Map<String, dynamic>> sendMessage(String message) async {
@@ -106,6 +108,74 @@ class MonthlyAnalysisService {
       }
     } catch (e) {
       throw Exception('Error occurred: $e');
+    }
+  }
+}
+
+
+
+/// HTP TEST
+class HTPApiService {
+  static Future<Map<String, dynamic>?> uploadDrawingBase64(String base64Image, String type) async {
+    String? token = await AuthHelpers.getToken(); // 토큰 가져오기
+    if (token == null) {
+      print('Token is missing!');
+      return null;
+    }
+
+    final url = Uri.parse('$htpTestUrl/upload_drawing/');
+    print("Uploading drawing with token: $token");
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'image': base64Image,
+        'type': type,
+      }),
+    );
+
+    print("Response status: ${response.statusCode}");
+    print("Response body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print('Failed to upload drawing: ${response.body}');
+      return null;
+    }
+  }
+
+  static Future<List<dynamic>?> finalizeDiagnosis(List<String> drawingIds) async {
+    String? token = await AuthHelpers.getToken(); // 토큰 가져오기
+    if (token == null) {
+      print('Token is missing!');
+      return null;
+    }
+
+    final url = Uri.parse('$htpTestUrl/finalize_diagnosis/');
+    print("Finalizing diagnosis with token: $token");
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'drawingIds': drawingIds,
+      }),
+    );
+
+    print("Response status: ${response.statusCode}");
+    print("Response body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print('Failed to finalize diagnosis: ${response.body}');
+      return null;
     }
   }
 }
