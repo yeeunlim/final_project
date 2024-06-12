@@ -17,7 +17,7 @@ class PsyCommon {
     final url = Uri.parse('http://localhost:8000/api/psy_test/psy_test_results/');
     // const surveyType = 'anxiety'; // 예제에서는 'anxiety' 타입 사용
 
-    final token = await _authHelpers.getToken();
+    final token = await AuthHelpers.getToken();
     if (token != null) {
       print('JWT Token: $token');
     } else {
@@ -45,7 +45,7 @@ class PsyCommon {
 
   static Future<List<dynamic>> fetchTestResults(String surveyType) async {
     try {
-      final token = await _authHelpers.getToken();
+      final token = await AuthHelpers.getToken();
       final url = Uri.parse('http://localhost:8000/api/psy_test/psy_test_get/$surveyType/');
       final response = await http.get(
         url,
