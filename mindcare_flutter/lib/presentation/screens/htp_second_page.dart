@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../widgets/custom_app_bar.dart';
 // import '../widgets/custom_drawer.dart';
 // import 'main.dart'; // main.dart 파일을 임포트합니다.
-// import 'htp_drawing_page.dart'; // htp_drawing_page.dart 파일을 임포트합니다.
-import 'htp_main_page.dart';
+import 'htp_drawing_page.dart'; // htp_drawing_page.dart 파일을 임포트합니다.
+
 
 class HTPSecondPage extends StatelessWidget {
   final String token;
@@ -159,8 +159,8 @@ class HTPSecondPage extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          // MaterialPageRoute(builder: (context) => HTPDrawingPage(token: token)),
-                          MaterialPageRoute(builder: (context) => HTPMainPage(token: token)),
+                          MaterialPageRoute(builder: (context) => HTPDrawingPage(token: token)),
+                          // MaterialPageRoute(builder: (context) => HTPMainPage(token: token)),
                         );
                       },
                       child: Text('시작하기'),

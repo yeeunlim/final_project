@@ -5,6 +5,7 @@ import 'package:mindcare_flutter/routes/app_routes.dart';
 import 'package:mindcare_flutter/presentation/screens/register.dart';
 import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
 import 'package:mindcare_flutter/core/themes/color_schemes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,6 +25,26 @@ class _LoginScreenState extends State<LoginScreen> {
       '로그인',
       '로그인 실패: 아이디/비밀번호를 확인해 주세요.',
     );
+  }
+
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      bool success = await AuthHelpers.login(_username, _password, context);
+      if (success) {
+        final prefs = await SharedPreferences.getInstance();
+        String? token = prefs.getString('jwt_token');
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.main,
+          arguments: token,
+        );
+      } else {
+        _showAlertDialog();
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(content: Text('로그인 실패: 아이디/비밀번호를 확인해 주세요.')),
+        // );
+      }
+    }
   }
 
   @override
@@ -116,22 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              bool success = await AuthHelpers.login(_username, _password, context);
-                              if (success) {
-                                Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.main, // 'AppRoutes.main'을 사용하여 네비게이션
-                                );
-                              } else {
-                                _showAlertDialog();
-                                // ScaffoldMessenger.of(context).showSnackBar(
-                                //   const SnackBar(content: Text('로그인 실패: 아이디/비밀번호를 확인해 주세요.')),
-                                // );
-                              }
-                            }
-                          },
+                          onPressed: _login,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryColor,
                             foregroundColor: secondaryColor,
