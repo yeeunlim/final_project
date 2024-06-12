@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:mindcare_flutter/core/constants/urls.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:mindcare_flutter/presentation/screens/login_screen.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
 
 class AuthHelpers {
 
   /// SharedPreferences 인스턴스를 통해 저장된 JWT 토큰을 반환하는 메서드
   /// 만약 토큰이 없다면 null을 반환
-  Future<String?> getToken() async {
+  static Future<String?> getToken() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('jwt_token');
@@ -18,6 +18,7 @@ class AuthHelpers {
         // 토큰이 없을 경우
         throw Exception("No JWT token found");
       }
+      print("토큰 가져옴: $token");
       return token;
     } catch (e) {
       // 오류 처리
@@ -51,7 +52,6 @@ class AuthHelpers {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
     final response = await http.post(
-      // Uri.parse('http://localhost:8000/api/auth/custom/logout/'),
       Uri.parse('$userAuthUrl/custom/logout/'),
       headers: {
         'Content-Type': 'application/json',
@@ -75,7 +75,6 @@ class AuthHelpers {
   static Future<bool> login(String username, String password, BuildContext context) async {
     try {
       final response = await http.post(
-        // Uri.parse('http://localhost:8000/api/auth/custom/login/'),
         Uri.parse('$userAuthUrl/custom/login/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(<String, String>{
@@ -84,15 +83,14 @@ class AuthHelpers {
         }),
       );
 
-      // print('code::');
-      // print(response.statusCode);
-
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
-        // print('data:============');
-        // print(data);
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('jwt_token', data['access_token']); // 로그인 성공 시 액세스 토큰 저장
+
+        // 저장된 토큰 확인
+        print("토큰 저장됨: ${prefs.getString('jwt_token')}");
+
         return true;
       } else {
         print('로그인 실패: ${response.body}');
@@ -178,13 +176,10 @@ class AuthHelpers {
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String? token = prefs.getString('jwt_token');
-        // print('token: ####');
-        // print(token);
 
         if (token == null) {
           throw Exception('No JWT token found');
         }
-        print(nickname + birthdate);
 
         final response = await http.put(
           Uri.parse('$userAuthUrl/custom/update/'),
@@ -201,8 +196,6 @@ class AuthHelpers {
             if (newPassword != null) 'new_password': newPassword,
           }),
         );
-        print(response);
-        print(response.statusCode);
 
         final Map<String, dynamic> responseData = jsonDecode(response.body);
 
@@ -212,8 +205,6 @@ class AuthHelpers {
         } else {
           // 오류 처리 로직
           print(response.body);
-          // final Map<String, dynamic> responseData = jsonDecode(response.body);
-            // 오류 처리 로직
           if (responseData.containsKey('current_password')) {
             throw Exception(responseData['current_password'][0]);
           } else if (responseData.containsKey('email')) {
@@ -258,3 +249,6 @@ class AuthHelpers {
     );
   }
 }
+
+
+
