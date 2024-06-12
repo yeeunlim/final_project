@@ -63,55 +63,18 @@ class _AngerTestResultsState extends State<AngerTestResults> {
               ),
               child: Row(
                 children: [
-                  // 왼쪽 검사 목록
+                 // 오른쪽 검사 소개 및 새롭게 검사하기 버튼
                   Expanded(
-                    flex: 2,
-                    child: Container(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (testResults.isEmpty)
-                            const Text(
-                              '검사 기록이 없습니다.',
-                              style: TextStyle(fontSize: 18),
-                            )
-                          else 
-                            const Text(
-                              ' ▶ 노바코 분노 검사 리스트',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          const SizedBox(height: 10),
-                          Expanded(
-                            child: isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : ListView.builder(
-                                itemCount: testResults.length,
-                                itemBuilder: (context, index) {
-                                  final result = testResults[index];
-                                  return ListTile(
-                                    title: Text('검사 ${index + 1} [${PsyCommon.formatDate(result['created_at'])}]'),
-                                    subtitle: 
-                                    Text('점수: ${result['total_score']}'),
-                                    // style: TextStyle(
-                                    //   fontSize: 24,
-                                    //   fontWeight: FontWeight.bold,
-                                    // ),                                    
-                                    onTap: () {
-                                      // 검사 결과 상세 페이지로 이동
-                                    },
-                                  );
-                                },
-                              ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // 오른쪽 검사 소개 및 새롭게 검사하기 버튼
-                  Expanded(
-                    flex: 3,
-                    child: Padding(
+                    flex: 5,
+                    child:  Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.5), // 배경색 설정
+                          borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+                          border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+                        ),
+                      child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,6 +137,61 @@ class _AngerTestResultsState extends State<AngerTestResults> {
                           ),
                         ],
                       ),
+                    ),
+                  ),
+                                    // 왼쪽 검사 목록
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child:  Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.5), // 배경색 설정
+                        borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+                        border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+                      ),
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (testResults.isEmpty)
+                            const Text(
+                              '검사 기록이 없습니다.',
+                              style: TextStyle(fontSize: 18),
+                            )
+                          else 
+                            const Text(
+                              ' ▶ 노바코 분노 검사 리스트',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                          const SizedBox(height: 10),
+                          Expanded(
+                            child: isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : ListView.builder(
+                                itemCount: testResults.length,
+                                itemBuilder: (context, index) {
+                                  final result = testResults[index];
+                                  return ListTile(
+                                    title: Text('검사 ${index + 1} [${PsyCommon.formatDate(result['created_at'])}]'),
+                                    subtitle: 
+                                    Text('점수: ${result['total_score']}'),
+                                    // style: TextStyle(
+                                    //   fontSize: 24,
+                                    //   fontWeight: FontWeight.bold,
+                                    // ),                                    
+                                    onTap: () {
+                                      // 검사 결과 상세 페이지로 이동
+                                    },
+                                  );
+                                },
+                              ),
+                          ),
+                        ],
+                      ),
+                    ),
                     ),
                   ),
                 ],

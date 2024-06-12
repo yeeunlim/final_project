@@ -63,55 +63,17 @@ class _AnxietyTestResultsState extends State<AnxietyTestResults> {
               ),
               child: Row(
                 children: [
-                  // 왼쪽 검사 목록
-                  Expanded(
-                    flex: 3,
-                    child: Container(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (testResults.isEmpty)
-                            const Text(
-                              '검사 기록이 없습니다.',
-                              style: TextStyle(fontSize: 18),
-                            )
-                          else 
-                            const Text(
-                              ' ▶ 불안 민감도 검사 리스트',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          const SizedBox(height: 10),
-                          Expanded(
-                            child: isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : ListView.builder(
-                                itemCount: testResults.length,
-                                itemBuilder: (context, index) {
-                                  final result = testResults[index];
-                                  return ListTile(
-                                    title: Text('검사 ${index + 1} [${PsyCommon.formatDate(result['created_at'])}]'),
-                                    subtitle: 
-                                    Text('점수: ${result['total_score']}'),
-                                    // style: TextStyle(
-                                    //   fontSize: 24,
-                                    //   fontWeight: FontWeight.bold,
-                                    // ),                                    
-                                    onTap: () {
-                                      // 검사 결과 상세 페이지로 이동
-                                    },
-                                  );
-                                },
-                              ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // 오른쪽 검사 소개 및 새롭게 검사하기 버튼
                   Expanded(
                     flex: 5,
-                    child: Padding(
+                    child:  Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.5), // 배경색 설정
+                          borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+                          border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+                        ),
+                      child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,10 +118,10 @@ class _AnxietyTestResultsState extends State<AnxietyTestResults> {
                             '성격 특성에 가까운 것으로 보고 되었습니다.'
                             '\n불안의 결과에 대해 얼마나 두려워하는지를 묻는 '
                             '총 16문항으로 구성, 각 문항에 대해 0~4 점 척도로 평정하는 검사입니다.'
-                            '\n\n15점 이하 : 불안 자극에 민감하지 않음'
-                            '\n16~ 20점 : 불안 자극에 약간 민감하게 반응'
-                            '\n21~ 24점 : 불안 자극에 상당히 민감하게 반응'
-                            '\n25점 이상 : 불안 자극에 매우 민감하게 반응',
+                            '\n\n15점 이하 : 불안 자극에 민감하지 않습니다.'
+                            '\n16~ 20점 : 불안 자극에 약간 민감하게 반응합니다.'
+                            '\n21~ 24점 : 불안 자극에 상당히 민감하게 반응합니다.'
+                            '\n25점 이상 : 불안 자극에 매우 민감하게 반응합니다.',
                             style: TextStyle(fontSize: 16),
                           ),
                           const SizedBox(height: 40),
@@ -177,6 +139,62 @@ class _AnxietyTestResultsState extends State<AnxietyTestResults> {
                           ),
                         ],
                       ),
+                    ),
+                      ),
+                    ),
+                  ),
+                                  // 왼쪽 검사 목록
+                  Expanded(
+                    flex: 3,
+                    child:  Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.5), // 배경색 설정
+                        borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+                        border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+                      ),
+
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (testResults.isEmpty)
+                            const Text(
+                              '검사 기록이 없습니다.',
+                              style: TextStyle(fontSize: 18),
+                            )
+                          else 
+                            const Text(
+                              ' ▶ 불안 민감도 검사 리스트',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                          const SizedBox(height: 10),
+                          Expanded(
+                            child: isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : ListView.builder(
+                                itemCount: testResults.length,
+                                itemBuilder: (context, index) {
+                                  final result = testResults[index];
+                                  return ListTile(
+                                    title: Text('검사 ${index + 1} [${PsyCommon.formatDate(result['created_at'])}]'),
+                                    subtitle: 
+                                    Text('점수: ${result['total_score']}'),
+                                    // style: TextStyle(
+                                    //   fontSize: 24,
+                                    //   fontWeight: FontWeight.bold,
+                                    // ),                                    
+                                    onTap: () {
+                                      // 검사 결과 상세 페이지로 이동
+                                    },
+                                  );
+                                },
+                              ),
+                          ),
+                        ],
+                      ),
+                    ),
                     ),
                   ),
                 ],

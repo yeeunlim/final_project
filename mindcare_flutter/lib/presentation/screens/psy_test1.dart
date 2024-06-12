@@ -8,6 +8,7 @@ import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
 import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
 import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
+import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test1_home.dart';
 import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 
@@ -101,6 +102,30 @@ class _psyServey1State extends State<psyServey1> {
     );
   }
 
+  void _showConfirmDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // 화면의 다른 부분을 클릭해도 닫히지 않음
+      builder: (BuildContext context) {
+        return ConfirmDialog(
+          onConfirm: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const AnxietyTestResults()),
+            );
+          },
+          onCancel: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+          },
+          message: '심리검사를 취소 하시겠습니까?', // 메시지 전달
+          confirmButtonText: '예', // 확인 버튼 텍스트
+          cancelButtonText: '아니오', // 취소 버튼 텍스트
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,8 +143,8 @@ class _psyServey1State extends State<psyServey1> {
           ),
           Center( // Center를 사용하여 Container가 화면 중앙에 위치하도록 함
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.6,
-              height: MediaQuery.of(context).size.height * 0.7,
+              width: MediaQuery.of(context).size.width * 0.7,
+              height: MediaQuery.of(context).size.height * 0.75,
               padding: const EdgeInsets.all(30.0),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.5),
@@ -130,49 +155,73 @@ class _psyServey1State extends State<psyServey1> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (showResult) {
-            // 결과 페이지가 표시된 상태에서는 아무 작업도 하지 않음
-            return;
-          }
-
-          int currentPage = _pageController.page!.toInt();
-          int start = currentPage * 8;
-          int end = (currentPage + 1) * 8;
-
-          bool allAnswered = true;
-          for (int i = start; i < end; i++) {
-            if (answers[i] == null) {
-              allAnswered = false;
-              break;
-            }
-          }
-
-          if (allAnswered) {
-            if (currentPage < 1) {
-              _pageController.nextPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeIn,
-              );
-            } else {
-               _showResultPage();
-            }
-          } else {
-            _showAlertDialog();
-          }
-        },
-        child: const Icon(Icons.arrow_forward),
-      ),
     );
   }
 
   Widget buildQuestionPageView() {
-    return PageView(
-      controller: _pageController,
+    return Column(
       children: [
-        buildQuestionPage(0, 8),
-        buildQuestionPage(8, 16),
+        Expanded(
+          child: PageView(
+            controller: _pageController,
+            children: [
+              buildQuestionPage(0, 8),
+              buildQuestionPage(8, 16),
+            ],
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            FloatingActionButton(
+              onPressed: () {
+                if (_pageController.page == 0) {
+                  _showConfirmDialog();
+                } else {
+                  _pageController.previousPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeIn,
+                  );
+                }
+              },
+              child: const Icon(Icons.arrow_back),
+            ),
+            FloatingActionButton(
+              onPressed: () {
+                if (showResult) {
+                  // 결과 페이지가 표시된 상태에서는 아무 작업도 하지 않음
+                  return;
+                }
+
+                int currentPage = _pageController.page!.toInt();
+                int start = currentPage * 8;
+                int end = (currentPage + 1) * 8;
+
+                bool allAnswered = true;
+                for (int i = start; i < end; i++) {
+                  if (answers[i] == null) {
+                    allAnswered = false;
+                    break;
+                  }
+                }
+
+                if (allAnswered) {
+                  if (currentPage < 1) {
+                    _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeIn,
+                    );
+                  } else {
+                    _showResultPage();
+                  }
+                } else {
+                  _showAlertDialog();
+                }
+              },
+              child: const Icon(Icons.arrow_forward),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -182,9 +231,19 @@ class _psyServey1State extends State<psyServey1> {
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(
         child: Column(
-          children: [
-            Table(
-              border: TableBorder.all(color: Colors.grey.shade300, style: BorderStyle.solid, width: 0.5),
+          children: [          
+            Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.8), // 배경색 설정
+              borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+              border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+            ),
+            child: Table(
+              border: TableBorder(
+                horizontalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+                verticalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+                // top, bottom, left, right border can be customized here if needed
+              ),
               columnWidths: const <int, TableColumnWidth>{
                 0: FlexColumnWidth(),
                 1: FixedColumnWidth(50),
@@ -201,7 +260,7 @@ class _psyServey1State extends State<psyServey1> {
                     const Padding(
                       padding: EdgeInsets.all(8.0),
                       child: Text(
-                        '질문사항',
+                        '[불안 민감도 검사] 질문사항',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
@@ -241,6 +300,7 @@ class _psyServey1State extends State<psyServey1> {
                   ),
               ],
             ),
+          )
           ],
         ),
       ),
