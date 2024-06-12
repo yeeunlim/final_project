@@ -3,11 +3,49 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'dart:ui' as ui;
 import 'dart:convert';
+import 'package:provider/provider.dart';
 import '../widgets/custom_app_bar.dart';
 import 'package:mindcare_flutter/core/services/api_service.dart';
 import 'package:mindcare_flutter/core/services/auth_service.dart';
 import 'htp_result_page.dart';
 import 'main_screen.dart';
+
+
+class DrawingData {
+  List<DrawingPoints> points;
+  String? drawingId;
+
+  DrawingData({required this.points, this.drawingId});
+}
+
+class DrawingProvider with ChangeNotifier {
+  Map<int, DrawingData> _drawings = {};
+  int _currentStep = 0;
+
+  Map<int, DrawingData> get drawings => _drawings;
+  int get currentStep => _currentStep;
+
+  void saveDrawing(int step, DrawingData data) {
+    _drawings[step] = data;
+    notifyListeners();
+  }
+
+  void setCurrentStep(int step) {
+    _currentStep = step;
+    notifyListeners();
+  }
+
+  DrawingData getDrawing(int step) {
+    return _drawings[step] ?? DrawingData(points: []);
+  }
+
+  void updateDrawingId(int step, String drawingId) {
+    if (_drawings.containsKey(step)) {
+      _drawings[step]?.drawingId = drawingId;
+      notifyListeners();
+    }
+  }
+}
 
 class HTPDrawingPage extends StatefulWidget {
   final String token;
@@ -17,6 +55,8 @@ class HTPDrawingPage extends StatefulWidget {
   @override
   _HTPDrawingPageState createState() => _HTPDrawingPageState();
 }
+
+
 
 class _HTPDrawingPageState extends State<HTPDrawingPage> {
   final GlobalKey _globalKey = GlobalKey();
@@ -66,10 +106,14 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
       var response = await HTPApiService.uploadDrawingBase64(base64Image, _stepsText[_step]);
       if (response != null) {
         setState(() {
-          _drawingIds.add(response['id'].toString()); // Ensure the ID is added as a string
+          _drawingIds.add(response['id'].toString());
           _result = '그림이 저장되었습니다.';
         });
-        print("Current drawing IDs: $_drawingIds"); // Print drawing IDs to the console
+        print("Current drawing IDs: $_drawingIds");
+
+        // Save current drawing data
+        final drawingProvider = Provider.of<DrawingProvider>(context, listen: false);
+        drawingProvider.saveDrawing(_step, DrawingData(points: _points));
       }
     } catch (e) {
       print("Error in _nextStep: $e");
@@ -78,8 +122,10 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
     if (_step < 2) {
       setState(() {
         _step++;
-        _points.clear();
+        _points = [];
       });
+      final drawingProvider = Provider.of<DrawingProvider>(context, listen: false);
+      drawingProvider.setCurrentStep(_step);
     } else {
       _finalizeDiagnosis();
     }
@@ -99,7 +145,7 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
           builder: (context) => ResultPage(
             drawingIds: _drawingIds,
             results: results,
-            token: widget.token, // 여기서 token을 추가합니다.
+            token: widget.token,
           ),
         ),
       );
@@ -153,99 +199,138 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CustomAppBar(),
-      drawer: HTPCustomDrawer(token: widget.token), // 여기서 token을 추가합니다.
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/main_page.jpg'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Center(
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.8,
-            height: MediaQuery.of(context).size.height * 0.8,
-            padding: EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(16),
+    final drawingProvider = Provider.of<DrawingProvider>(context);
+
+    return WillPopScope(
+      onWillPop: () async {
+        if (drawingProvider.currentStep > 0) {
+          setState(() {
+            _step = drawingProvider.currentStep - 1;
+            _points = drawingProvider.getDrawing(_step).points;
+          });
+          drawingProvider.setCurrentStep(_step);
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        appBar: CustomAppBar(),
+        drawer: HTPCustomDrawer(token: widget.token),
+        body: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/main_page.jpg'),
+              fit: BoxFit.cover,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade800,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(8.0),
-                        bottomRight: Radius.circular(8.0),
+          ),
+          child: Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.height * 0.8,
+              padding: EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade800,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(8.0),
+                          bottomRight: Radius.circular(8.0),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'HTP 검사 - ${_stepsText[_step]}',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                      child: Text(
+                        'HTP 검사 - ${_stepsText[_step]}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(height: 16),
-                Expanded(
-                  child: RepaintBoundary(
-                    key: _globalKey,
-                    child: Stack(
+                  SizedBox(height: 16),
+                  Expanded(
+                    child: Row(
                       children: [
-                        Container(
-                          color: Colors.white,
-                          child: GestureDetector(
-                            onPanUpdate: (details) {
-                              setState(() {
-                                RenderBox renderBox = context.findRenderObject() as RenderBox;
-                                Offset localPosition = renderBox.globalToLocal(details.localPosition);
-                                if (localPosition.dx > 0 && localPosition.dx < renderBox.size.width &&
-                                    localPosition.dy > 0 && localPosition.dy < renderBox.size.height) {
-                                  _points.add(DrawingPoints(
-                                    points: localPosition,
-                                    paint: Paint()
-                                      ..color = _isErasing ? Colors.white : _color
-                                      ..strokeCap = StrokeCap.round
-                                      ..isAntiAlias = true
-                                      ..strokeWidth = _isErasing ? _eraserSize : _brushSize,
-                                  ));
-                                }
-                              });
-                            },
-                            onPanEnd: (details) {
-                              _points.add(DrawingPoints(points: Offset.zero, paint: Paint()..color = Colors.transparent));
-                            },
-                            child: CustomPaint(
-                              size: Size.infinite,
-                              painter: DrawingPainter(pointsList: _points),
+                        Expanded(
+                          flex: 4,
+                          child: RepaintBoundary(
+                            key: _globalKey,
+                            child: Stack(
+                              children: [
+                                Container(
+                                  color: Colors.white,
+                                  child: GestureDetector(
+                                    onPanUpdate: (details) {
+                                      setState(() {
+                                        RenderBox renderBox = context.findRenderObject() as RenderBox;
+                                        Offset localPosition = renderBox.globalToLocal(details.localPosition);
+                                        if (localPosition.dx >= 0 &&
+                                            localPosition.dx <= renderBox.size.width &&
+                                            localPosition.dy >= 0 &&
+                                            localPosition.dy <= renderBox.size.height) {
+                                          _points.add(DrawingPoints(
+                                            points: localPosition,
+                                            paint: Paint()
+                                              ..color = _isErasing ? Colors.white : _color
+                                              ..strokeCap = StrokeCap.round
+                                              ..isAntiAlias = true
+                                              ..strokeWidth = _isErasing ? _eraserSize : _brushSize,
+                                          ));
+                                        }
+                                      });
+                                    },
+                                    onPanEnd: (details) {
+                                      _points.add(DrawingPoints(
+                                          points: Offset.zero,
+                                          paint: Paint()..color = Colors.transparent));
+                                    },
+                                    child: CustomPaint(
+                                      size: Size.infinite,
+                                      painter: DrawingPainter(pointsList: _points),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        Positioned(
-                          top: 0,
-                          right: 0,
+                        Expanded(
+                          flex: 1,
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
                                   Text("Brush Size: "),
-                                  Slider(
-                                    value: _brushSize,
-                                    min: 1.0,
-                                    max: 20.0,
-                                    onChanged: (value) {
-                                      _changeBrushSize(value);
+                                  Expanded(
+                                    child: Slider(
+                                      value: _brushSize,
+                                      min: 1.0,
+                                      max: 20.0,
+                                      onChanged: (value) {
+                                        _changeBrushSize(value);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text("Pen: "),
+                                  IconButton(
+                                    icon: Icon(Icons.create),
+                                    onPressed: () {
+                                      setState(() {
+                                        _isErasing = false;
+                                      });
                                     },
                                   ),
                                 ],
@@ -282,57 +367,26 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
                               Row(
                                 children: [
                                   Text("Eraser Size: "),
-                                  Slider(
-                                    value: _eraserSize,
-                                    min: 1.0,
-                                    max: 20.0,
-                                    onChanged: (value) {
-                                      _changeEraserSize(value);
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: Icon(Icons.brush),
-                                    onPressed: _enableEraser,
+                                  Expanded(
+                                    child: Slider(
+                                      value: _eraserSize,
+                                      min: 1.0,
+                                      max: 20.0,
+                                      onChanged: (value) {
+                                        _changeEraserSize(value);
+                                      },
+                                    ),
                                   ),
                                 ],
                               ),
                               Row(
                                 children: [
-                                  Text("Pen: "),
+                                  Text("Eraser: "),
                                   IconButton(
-                                    icon: Icon(Icons.create),
-                                    onPressed: () {
-                                      setState(() {
-                                        _isErasing = false;
-                                      });
-                                    },
+                                    icon: Icon(Icons.brush),
+                                    onPressed: _enableEraser,
                                   ),
                                 ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 16,
-                          right: 16,
-                          child: Column(
-                            children: [
-                              ElevatedButton(
-                                onPressed: _confirmCancel,
-                                child: Text('취소'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  foregroundColor: Colors.white,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              ElevatedButton(
-                                onPressed: _nextStep,
-                                child: Text(_step < 2 ? '다음' : '진단'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  foregroundColor: Colors.white,
-                                ),
                               ),
                             ],
                           ),
@@ -340,8 +394,32 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
                       ],
                     ),
                   ),
-                ),
-              ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _confirmCancel,
+                        child: Text('취소'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: _nextStep,
+                        child: Text(_step < 2 ? '다음' : '진단'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  Text(_result, style: TextStyle(color: Colors.red)),
+                ],
+              ),
             ),
           ),
         ),
@@ -426,4 +504,3 @@ class HTPCustomDrawer extends StatelessWidget {
     );
   }
 }
-
