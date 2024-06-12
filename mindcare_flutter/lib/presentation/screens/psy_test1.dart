@@ -50,7 +50,7 @@ class _psyServey1State extends State<psyServey1> {
     "심장이 빨리 뛰면 겁이 난다.",
     "배에서 소리가 나면 깜짝 놀란다.",
     "속이 매스꺼워지면 겁이 난다.",
-    "심장이 빨리 뛰는 것이 느껴지면 심장마비가 오지 않을 까 걱정된다.",
+    "심장이 빨리 뛰는 것이 느껴지면 심장마비가 오지 않을까 걱정된다.",
     "숨이 가빠지면, 겁이 난다.",
     "뱃속이 불편해지면, 심각한 병에 걸린 것은 아닌가 걱정된다.",
     "어떤 일을 할 때 집중이 안되면, 겁이 난다.",
@@ -309,32 +309,105 @@ class _psyServey1State extends State<psyServey1> {
     );
   }
 
+//   Widget buildResultPage() {
+//     return Center(
+//       child: Column(
+//         mainAxisSize: MainAxisSize.min,
+//         children: [
+//           Text(
+//             '총 점수: $totalScore\n$resultMessage',
+//             style: const TextStyle(fontSize: 24),
+//             textAlign: TextAlign.center,
+//           ),
+//           const SizedBox(height: 20),
+//           ElevatedButton(
+//             onPressed: () {
+//               Navigator.pushReplacement(
+//                 context,
+//                 MaterialPageRoute(builder: (context) => const AnxietyTestResults()),
+//               );
+//             },
+//             style: ElevatedButton.styleFrom(
+//               backgroundColor: primaryColor,
+//               foregroundColor: secondaryColor,
+//             ),              
+//             child: const Text('돌아가기'),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
   Widget buildResultPage() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '총 점수: $totalScore\n$resultMessage',
-            style: const TextStyle(fontSize: 24),
-            textAlign: TextAlign.center,
+    String sensitivityLevel = '';
+
+    if (totalScore >= 0 && totalScore <= 15) {
+      sensitivityLevel = '불안 자극에 민감하지 않습니다';
+    } else if (totalScore >= 16 && totalScore <= 20) {
+      sensitivityLevel = '불안 자극에 약간 민감한 편입니다';
+    } else if (totalScore >= 21 && totalScore <= 24) {
+      sensitivityLevel = '불안 자극에 상당히 민감한 편입니다';
+    } else if (totalScore >= 25) {
+      sensitivityLevel = '불안 자극에 매우 민감한 편입니다';
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 60),
+        Container(
+          width: double.infinity, // 전체 너비 차지
+          decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const AnxietyTestResults()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: secondaryColor,
-            ),              
-            child: const Text('돌아가기'),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 30), // 조금 띄우기
+              Text(
+                '총 점수: $totalScore\n$sensitivityLevel',
+                style: const TextStyle(fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                '정상 집단 평균: 7.5~8.3\n'
+                '공황장애 평균: 13.1~24.1\n'
+                '불안집단 평균: 26.9~29.5\n'
+                '우울 신체화 집단 평균: 12.4~21.11\n\n'
+                '※ 신체화 증상이란?\n심리적 어려움이 신체적 고통으로 나타나는 것을 말하며,\n'
+                '신체 검진 결과는 정상일지라도 어지럼증, 소화불량, 통증, 무감각 등\n아픔을 느끼는 현상입니다.\n',
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: Center(
+            child: Image.network(
+              totalScore <= 20 ? ImageUrls.normalRabbit : ImageUrls.sadRabbit,
+              width: 150,
+              height: 150,
+            ),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const AnxietyTestResults()),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primaryColor,
+            foregroundColor: secondaryColor,
+          ),              
+          child: const Text('돌아가기'),
+        ),
+      ],
     );
   }
 }

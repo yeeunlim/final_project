@@ -168,6 +168,7 @@ class _psyServey3State extends State<psyServey3> {
 
   Widget buildQuestionPageView() {
     return Column(
+      
       children: [
         Expanded(
           child: PageView(
@@ -180,7 +181,8 @@ class _psyServey3State extends State<psyServey3> {
           ),
         ),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             FloatingActionButton(
               heroTag: 'backButton', // Hero 태그를 고유하게 설정

@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
 import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
+import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
 
 
 import 'package:mindcare_flutter/core/constants/urls.dart';
@@ -36,6 +37,121 @@ class _AnxietyTestResultsState extends State<AnxietyTestResults> {
       isLoading = false;
     });
   }
+
+  Future<void> _deletePsyTest(String id) async {
+    await PsyCommon.deleteTestResult(id);
+    setState(() {
+      // 모달 창 닫고, 
+      Navigator.of(context).pop();
+       _fetchTestResults();
+    });
+  }
+
+  void _showConfirmDialog(String id) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // 화면의 다른 부분을 클릭해도 닫히지 않음
+      builder: (BuildContext context) {
+        return ConfirmDialog(
+          onConfirm: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+            _deletePsyTest(id);
+          },
+          onCancel: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+          },
+          message: '이 심리검사 기록을 정말로 삭제하시겠습니까?', // 메시지 전달
+          confirmButtonText: '예', // 확인 버튼 텍스트
+          cancelButtonText: '아니오', // 취소 버튼 텍스트
+        );
+      },
+    );
+  }
+
+  void _showResultDialog(dynamic result) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        String sensitivityLevel = '';
+        
+        int totalScore = result['total_score'];
+
+        if (totalScore >= 0 && totalScore <= 15) {
+          sensitivityLevel = '불안 자극에 민감하지 않습니다';
+        } else if (totalScore >= 16 && totalScore <= 20) {
+          sensitivityLevel = '불안 자극에 약간 민감한 편입니다';
+        } else if (totalScore >= 21 && totalScore <= 24) {
+          sensitivityLevel = '불안 자극에 상당히 민감한 편입니다';
+        } else if (totalScore >= 25) {
+          sensitivityLevel = '불안 자극에 매우 민감한 편입니다';
+        }
+
+        return AlertDialog(
+          title: const Text(
+            '검사 결과',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${result['total_score']}점 : $sensitivityLevel',
+                style: const TextStyle(fontSize: 16, color: Colors.white),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                '정상 집단 평균: 7.5~8.3\n'
+                '공황장애 평균: 13.1~24.1\n'
+                '불안집단 평균: 26.9~29.5\n'
+                '우울 신체화 집단 평균: 12.4~21.11\n\n'
+                '※ 신체화 증상이란?\n심리적 어려움이' 
+                '신체적 고통으로 나타나는 것을 말하며,\n'
+                '신체 검진 결과는 정상일지라도 어지럼증,\n' 
+                '소화불량, 통증, 무감각 등 아픔을 느끼는 현상',
+                style: TextStyle(fontSize: 12, color: Colors.white),
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: Image.network(
+                  totalScore <= 20 ? ImageUrls.normalRabbit : ImageUrls.sadRabbit,
+                  width: 150,
+                  height: 150,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: secondaryColor,
+              ),
+              child: const Text('확인'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _showConfirmDialog(result['id'].toString());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: secondaryColor,
+              ),
+              child: const Text('삭제'),
+            ),
+          ],
+          // backgroundColor: Colors.pink.withOpacity(0.5)
+          backgroundColor: primaryColor,// 모달 창 배경색 설정
+        );
+      },
+      barrierColor: Colors.black.withOpacity(0.5), // 모달 배경색 설정
+      barrierDismissible: true, // 배경 터치로 닫히도록 설정
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -136,6 +252,7 @@ class _AnxietyTestResultsState extends State<AnxietyTestResults> {
                               ),                              
                               child: const Text('검사하기'),
                             ),
+                          
                           ),
                         ],
                       ),
@@ -186,7 +303,7 @@ class _AnxietyTestResultsState extends State<AnxietyTestResults> {
                                     //   fontWeight: FontWeight.bold,
                                     // ),                                    
                                     onTap: () {
-                                      // 검사 결과 상세 페이지로 이동
+                                      _showResultDialog(result); // 검사 결과 페이지로 이동
                                     },
                                   );
                                 },
@@ -206,3 +323,4 @@ class _AnxietyTestResultsState extends State<AnxietyTestResults> {
     );
   }
 }
+

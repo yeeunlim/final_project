@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
 import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
+import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
 
 
 import 'package:mindcare_flutter/core/constants/urls.dart';
@@ -34,6 +35,36 @@ class _StressTestResultsState extends State<StressTestResults> {
       testResults = results;
       isLoading = false;
     });
+  }
+
+  Future<void> _deletePsyTest(String id) async {
+    await PsyCommon.deleteTestResult(id);
+    setState(() {
+      // 모달 창 닫고, 
+      Navigator.of(context).pop();
+       _fetchTestResults();
+    });
+  }
+
+  void _showConfirmDialog(String id) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // 화면의 다른 부분을 클릭해도 닫히지 않음
+      builder: (BuildContext context) {
+        return ConfirmDialog(
+          onConfirm: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+            _deletePsyTest(id);
+          },
+          onCancel: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+          },
+          message: '이 심리검사 기록을 정말로 삭제하시겠습니까?', // 메시지 전달
+          confirmButtonText: '예', // 확인 버튼 텍스트
+          cancelButtonText: '아니오', // 취소 버튼 텍스트
+        );
+      },
+    );
   }
 
   @override

@@ -18,11 +18,6 @@ class PsyCommon {
     // const surveyType = 'anxiety'; // 예제에서는 'anxiety' 타입 사용
 
     final token = await AuthHelpers.getToken();
-    if (token != null) {
-      print('JWT Token: $token');
-    } else {
-      print('No JWT Token found.');
-    }
 
     final response = await http.post(
       url,
@@ -63,6 +58,30 @@ class PsyCommon {
     } catch (e) {
       print('Failed to load test results: $e');
       return [];
+    }
+  }
+
+  static Future<void> deleteTestResult(String docId) async {
+    print(docId);
+    try {
+      final token = await AuthHelpers.getToken();
+      final url = Uri.parse('http://localhost:8000/api/psy_test/psy_test_delete/$docId/');
+      final response = await http.delete(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 204) {
+        // 삭제가 성공했을 때의 동작
+        print('Test result deleted successfully');
+      } else {
+        throw Exception('Failed to delete test result');
+      }
+    } catch (e) {
+      print('Failed to delete test result: $e');
     }
   }
 

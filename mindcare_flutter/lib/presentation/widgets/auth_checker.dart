@@ -21,7 +21,7 @@ class _AuthCheckerState extends State<AuthChecker> {
 
   Future<void> _checkLoginStatus() async {
     bool loggedIn = await AuthHelpers.checkLoginStatus();
-    print(loggedIn);
+    // print(loggedIn);
     setState(() {
       isAuthenticated = loggedIn;
     });

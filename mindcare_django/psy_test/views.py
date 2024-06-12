@@ -26,10 +26,7 @@ class PsyTestResultGetView(generics.ListAPIView):
         survey_type = self.kwargs['survey_type']
         return PsyTestResult.objects.filter(user=user, survey_type=survey_type).order_by('-created_at')
     
-# @api_view(['GET'])
-# @permission_classes([permissions.IsAuthenticated])
-# def PsyTestResultGetView(request, survey_type):
-#     user = request.user
-#     results = PsyTestResult.objects.filter(user=user, survey_type=survey_type)
-#     serializer = PsyTestResultSerializer(results, many=True)
-#     return Response(serializer.data, content_type='application/json; charset=utf-8')
+class PsyTestResultDeleteView(generics.DestroyAPIView):
+    queryset = PsyTestResult.objects.all()
+    serializer_class = PsyTestResultSerializer
+    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 가능
