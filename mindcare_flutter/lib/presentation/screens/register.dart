@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 import 'package:mindcare_flutter/presentation/screens/login_screen.dart';
 import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
 
 void main() {
   runApp(const MyApp());
@@ -172,7 +173,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/log_in.jpg'),
+            image: NetworkImage(ImageUrls.loginPageBackground),
             fit: BoxFit.cover,
           ),
         ),
