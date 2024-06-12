@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mindcare_flutter/presentation/screens/psy_test_home.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test1_home.dart';
 import 'package:mindcare_flutter/core/themes/color_schemes.dart';
-import 'package:mindcare_flutter/presentation/screens/psy_test1.dart';
-import 'package:mindcare_flutter/presentation/screens/psy_test2.dart';
-import 'package:mindcare_flutter/presentation/screens/psy_test3.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test2_home.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test3_home.dart';
 import 'package:mindcare_flutter/presentation/screens/htp_main_page.dart'; // Import HTPMainPage
 
 class CustomDrawer extends StatelessWidget {
@@ -67,7 +66,7 @@ class CustomDrawer extends StatelessWidget {
                       Navigator.push(
                         context,
                         // MaterialPageRoute(builder: (context) => const psyServey1()),  // Survey1 페이지로 이동합니다
-                        MaterialPageRoute(builder: (context) => const AnxietyTestResults()),  // Survey1 페이지로 이동합니다
+                        MaterialPageRoute(builder: (context) => const AnxietyTestResults()),  // 불안 민감도 검사 홈 페이지로 이동합니다
                       );
                     },
                   ),
@@ -77,7 +76,7 @@ class CustomDrawer extends StatelessWidget {
                       Navigator.pop(context);
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const psyServey2()),  // Survey1 페이지로 이동합니다
+                        MaterialPageRoute(builder: (context) => const StressTestResults()),  // 
                       );                      
                     },
                   ),
@@ -87,7 +86,7 @@ class CustomDrawer extends StatelessWidget {
                       Navigator.pop(context);
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const psyServey3()),  // Survey1 페이지로 이동합니다
+                        MaterialPageRoute(builder: (context) => const AngerTestResults()),  // 노바코 분노 검사 페이지로 이동합니다
                       );                      
                     },
                   ),
