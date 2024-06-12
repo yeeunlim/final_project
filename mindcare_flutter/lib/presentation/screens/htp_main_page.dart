@@ -9,7 +9,7 @@ import 'htp_second_page.dart'; // 새로운 페이지 파일을 임포트합니�
 class HTPMainPage extends StatelessWidget {
   final String token;
 
-  HTPMainPage({required this.token});
+  const HTPMainPage({Key? key, required this.token}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
