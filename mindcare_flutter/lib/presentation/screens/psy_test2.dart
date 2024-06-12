@@ -168,6 +168,7 @@ class _psyServey2State extends State<psyServey2> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             FloatingActionButton(
+              heroTag: 'backButton', // Hero 태그를 고유하게 설정
               onPressed: () {
                 if (_pageController.page == 0) {
                   _showConfirmDialog();
@@ -181,39 +182,40 @@ class _psyServey2State extends State<psyServey2> {
               child: const Icon(Icons.arrow_back),
             ),
             FloatingActionButton(
-            onPressed: () {
-              if (showResult) {
-                // 결과 페이지가 표시된 상태에서는 아무 작업도 하지 않음
-                return;
-              }
-
-              int currentPage = _pageController.page!.toInt();
-              int start = currentPage * 10;
-              int end = (currentPage + 1) * 10;
-
-              bool allAnswered = true;
-              for (int i = start; i < end; i++) {
-                if (answers[i] == null) {
-                  allAnswered = false;
-                  break;
+              heroTag: 'nextButton', // Hero 태그를 고유하게 설정
+              onPressed: () {
+                if (showResult) {
+                  // 결과 페이지가 표시된 상태에서는 아무 작업도 하지 않음
+                  return;
                 }
-              }
 
-              if (allAnswered) {
-                if (currentPage < 0) {
-                  _pageController.nextPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeIn,
-                  );
+                int currentPage = _pageController.page!.toInt();
+                int start = currentPage * 10;
+                int end = (currentPage + 1) * 10;
+
+                bool allAnswered = true;
+                for (int i = start; i < end; i++) {
+                  if (answers[i] == null) {
+                    allAnswered = false;
+                    break;
+                  }
+                }
+
+                if (allAnswered) {
+                  if (currentPage < 0) {
+                    _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeIn,
+                    );
+                  } else {
+                    _showResultPage();
+                  }              
                 } else {
-                  _showResultPage();
-                }              
-              } else {
-                _showAlertDialog();
-              }
-            },
-            child: const Icon(Icons.arrow_forward),
-            ),             
+                  _showAlertDialog();
+                }
+              },
+              child: const Icon(Icons.arrow_forward),
+              ),             
           ],
         ),
       ],

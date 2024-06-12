@@ -183,6 +183,7 @@ class _psyServey3State extends State<psyServey3> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             FloatingActionButton(
+              heroTag: 'backButton', // Hero 태그를 고유하게 설정
               onPressed: () {
                 if (_pageController.page == 0) {
                   _showConfirmDialog();
@@ -196,6 +197,7 @@ class _psyServey3State extends State<psyServey3> {
               child: const Icon(Icons.arrow_back),
             ),
             FloatingActionButton(
+              heroTag: 'nextButton', // Hero 태그를 고유하게 설정
               onPressed: () {
                 if (showResult) {
                   // 결과 페이지가 표시된 상태에서는 아무 작업도 하지 않음
