@@ -3,10 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class PsyTest {
-  static final AuthHelpers _authHelpers = AuthHelpers();
-
   static Future<List<dynamic>> fetchTestResults(String surveyType) async {
-    final token = await _authHelpers.getToken();
+    final token = await AuthHelpers.getToken();
     final response = await http.get(
       Uri.parse('http://localhost:8000/api/psy_test/psy_test_get/$surveyType/'),
       headers: {
@@ -27,7 +25,7 @@ class PsyTest {
     final url = Uri.parse('http://localhost:8000/api/psy_test/psy_test_results/');
     // const surveyType = 'anxiety'; // 예제에서는 'anxiety' 타입 사용
 
-    final token = await _authHelpers.getToken();
+    final token = await AuthHelpers.getToken();
     if (token != null) {
       print('JWT Token: $token');
     } else {
