@@ -366,7 +366,7 @@ class FinalizeDiagnosis(APIView):
             rect = patches.Rectangle((x1, y1), width, height, linewidth=2, edgecolor='red', facecolor='none')
             ax.add_patch(rect)
 
-            plt.text(x1, y1, f'{class_name} {confidence:.2f}', bbox=dict(facecolor='yellow', alpha=0.5), fontproperties=fm.FontProperties(fname='/System/Library/Fonts/Supplemental/AppleGothic.ttf'))
+            plt.text(x1, y1, f'{class_name} {confidence:.2f}', bbox=dict(facecolor='yellow', alpha=0.5), fontproperties=fm.FontProperties(fname='yolov5/applegothic.ttf'))
 
         plt.axis('off')
         save_path = f"/tmp/{uuid.uuid4()}_detection_results_with_labels.png"
