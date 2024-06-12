@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'package:mindcare_flutter/core/services/auth_service.dart';
 import 'package:mindcare_flutter/routes/app_routes.dart';
-import '../widgets/confirm_dialog.dart';
-import '../widgets/custom_app_bar.dart';
-import '../widgets/custom_drawer.dart';
+import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
 import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 
 class MyPage extends StatefulWidget {

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/urls.dart';
-import '../widgets/custom_drawer.dart';
-import '../widgets/custom_app_bar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../widgets/psy_test.dart';
+
+import 'package:mindcare_flutter/core/constants/urls.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
+import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
 
 void main() {
   runApp(const MyApp());

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'package:mindcare_flutter/core/services/auth_service.dart';
 import 'package:mindcare_flutter/routes/app_routes.dart';
-import 'register.dart';
+import 'package:mindcare_flutter/presentation/screens/register.dart';
 import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 
 class LoginScreen extends StatefulWidget {
