@@ -62,55 +62,17 @@ class _StressTestResultsState extends State<StressTestResults> {
               ),
               child: Row(
                 children: [
-                  // 왼쪽 검사 목록
                   Expanded(
-                    flex: 2,
-                    child: Container(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (testResults.isEmpty)
-                            const Text(
-                              '검사 기록이 없습니다.',
-                              style: TextStyle(fontSize: 18),
-                            )
-                          else 
-                            const Text(
-                              ' ▶ 스트레스 자각 검사 리스트',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          const SizedBox(height: 10),
-                          Expanded(
-                            child: isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : ListView.builder(
-                                itemCount: testResults.length,
-                                itemBuilder: (context, index) {
-                                  final result = testResults[index];
-                                  return ListTile(
-                                    title: Text('검사 ${index + 1} [${PsyCommon.formatDate(result['created_at'])}]'),
-                                    subtitle: 
-                                    Text('점수: ${result['total_score']}'),
-                                    // style: TextStyle(
-                                    //   fontSize: 24,
-                                    //   fontWeight: FontWeight.bold,
-                                    // ),                                    
-                                    onTap: () {
-                                      // 검사 결과 상세 페이지로 이동
-                                    },
-                                  );
-                                },
-                              ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // 오른쪽 검사 소개 및 새롭게 검사하기 버튼
-                  Expanded(
-                    flex: 3,
-                    child: Padding(
+                    flex: 5,
+                    child:  Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.5), // 배경색 설정
+                          borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+                          border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+                        ),
+                      child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,9 +115,9 @@ class _StressTestResultsState extends State<StressTestResults> {
                             ' 신뢰도와 타당도 역시 검증되었습니다. '
                             '\n본 검사는 최근 1개월 동안 당신이 느끼고 생각한 것에 대한 것입니다.'
                             '\n각 문항에 해당하는 내용을 얼마나 자주 느꼈는지 표기해 주십시오.'
-                            '\n\n17점 이하 : 정상'
-                            '\n18~ 25점 : 경도의 스트레스'
-                            '\n26점 이상 : 고도의 스트레스',
+                            '\n\n17점 이하 : 정상군 입니다.'
+                            '\n18~ 25점 : 경도의 스트레스군 입니다.'
+                            '\n26점 이상 : 고도의 스트레스군 입니다.',
                             style: TextStyle(fontSize: 16),
                           ),
                           const SizedBox(height: 40),
@@ -175,7 +137,64 @@ class _StressTestResultsState extends State<StressTestResults> {
                       ),
                     ),
                   ),
+                    ),
+                  ),
+                   // 왼쪽 검사 목록
+                  Expanded(
+                    flex: 3,
+                    child:  Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.5), // 배경색 설정
+                        borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+                        border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+                      ),
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (testResults.isEmpty)
+                            const Text(
+                              '검사 기록이 없습니다.',
+                              style: TextStyle(fontSize: 18),
+                            )
+                          else 
+                            const Text(
+                              ' ▶ 스트레스 자각 검사 리스트',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                          const SizedBox(height: 10),
+                          Expanded(
+                            child: isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : ListView.builder(
+                                itemCount: testResults.length,
+                                itemBuilder: (context, index) {
+                                  final result = testResults[index];
+                                  return ListTile(
+                                    title: Text('검사 ${index + 1} [${PsyCommon.formatDate(result['created_at'])}]'),
+                                    subtitle: 
+                                    Text('점수: ${result['total_score']}'),
+                                    // style: TextStyle(
+                                    //   fontSize: 24,
+                                    //   fontWeight: FontWeight.bold,
+                                    // ),                                    
+                                    onTap: () {
+                                      // 검사 결과 상세 페이지로 이동
+                                    },
+                                  );
+                                },
+                              ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ),
+                  ),
+                  // 오른쪽 검사 소개 및 새롭게 검사하기 버튼
                 ],
+                
               ),
             ),
           ),

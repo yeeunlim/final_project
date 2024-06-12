@@ -3,6 +3,7 @@ import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'package:mindcare_flutter/core/services/auth_service.dart';
 import 'package:mindcare_flutter/routes/app_routes.dart';
 import 'package:mindcare_flutter/presentation/screens/register.dart';
+import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
 import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,6 +19,14 @@ class _LoginScreenState extends State<LoginScreen> {
   String _username = '';
   String _password = '';
 
+  void _showAlertDialog() {
+    AlertDialogHelper.showAlert(
+      context,
+      '로그인',
+      '로그인 실패: 아이디/비밀번호를 확인해 주세요.',
+    );
+  }
+
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       bool success = await AuthHelpers.login(_username, _password, context);
@@ -30,9 +39,10 @@ class _LoginScreenState extends State<LoginScreen> {
           arguments: token,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('로그인 실패: 아이디/비밀번호를 확인해 주세요.')),
-        );
+        _showAlertDialog();
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(content: Text('로그인 실패: 아이디/비밀번호를 확인해 주세요.')),
+        // );
       }
     }
   }

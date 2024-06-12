@@ -4,6 +4,7 @@ import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
 import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
 import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
+import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test3_home.dart';
 import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 
@@ -107,6 +108,31 @@ class _psyServey3State extends State<psyServey3> {
     );
   }
 
+  void _showConfirmDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // 화면의 다른 부분을 클릭해도 닫히지 않음
+      builder: (BuildContext context) {
+        return ConfirmDialog(
+          onConfirm: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const AngerTestResults()),
+            );
+          },
+          onCancel: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+          },
+          message: '심리검사를 취소 하시겠습니까?', // 메시지 전달
+          confirmButtonText: '예', // 확인 버튼 텍스트
+          cancelButtonText: '아니오', // 취소 버튼 텍스트
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -136,81 +162,108 @@ class _psyServey3State extends State<psyServey3> {
           ),
         ],
       ),
-
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (showResult) {
-            // 결과 페이지가 표시된 상태에서는 아무 작업도 하지 않음
-            return;
-          }
-
-          int currentPage = _pageController.page!.toInt();
-          // int start = currentPage * 9;
-          // int end = (currentPage + 1) * 9;
-          int start = 0;
-          int end = 0;
-          if (currentPage == 0) {
-            start = 0;
-            end = 9;
-          } else if (currentPage == 1) {
-            start = 9;
-            end = 17;
-          } else if (currentPage == 2) {
-            start = 17;
-            end = 25;
-          }
-
-          bool allAnswered = true;
-          for (int i = start; i < end; i++) {
-            if (answers[i] == null) {
-              allAnswered = false;
-              break;
-            }
-          }
-
-          if (allAnswered) {
-            if (currentPage < 2) {
-              _pageController.nextPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeIn,
-              );
-            } else {
-               _showResultPage();
-            }
-          } else {
-            _showAlertDialog();
-            // ScaffoldMessenger.of(context).showSnackBar(
-            //   const SnackBar(
-            //     content: Text('모든 문항에 답변을 선택해주세요.'),
-            //   ),
-            // );
-          }
-        },
-        child: const Icon(Icons.arrow_forward),
-      ),
     );
   }
 
 
   Widget buildQuestionPageView() {
-    return PageView(
-      controller: _pageController,
+    return Column(
       children: [
-        buildQuestionPage(0, 9),
-        buildQuestionPage(9, 17),
-        buildQuestionPage(17, 25),
+        Expanded(
+          child: PageView(
+            controller: _pageController,
+            children: [
+              buildQuestionPage(0, 9),
+              buildQuestionPage(9, 17),
+              buildQuestionPage(17, 25),
+            ],
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            FloatingActionButton(
+              onPressed: () {
+                if (_pageController.page == 0) {
+                  _showConfirmDialog();
+                } else {
+                  _pageController.previousPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeIn,
+                  );
+                }
+              },
+              child: const Icon(Icons.arrow_back),
+            ),
+            FloatingActionButton(
+              onPressed: () {
+                if (showResult) {
+                  // 결과 페이지가 표시된 상태에서는 아무 작업도 하지 않음
+                  return;
+                }
+
+                int currentPage = _pageController.page!.toInt();
+                int start = 0;
+                int end = 0;
+                if (currentPage == 0) {
+                  start = 0;
+                  end = 9;
+                } else if (currentPage == 1) {
+                  start = 9;
+                  end = 17;
+                } else if (currentPage == 2) {
+                  start = 17;
+                  end = 25;
+                }
+
+                bool allAnswered = true;
+                for (int i = start; i < end; i++) {
+                  if (answers[i] == null) {
+                    allAnswered = false;
+                    break;
+                  }
+                }
+
+                if (allAnswered) {
+                  if (currentPage < 2) {
+                    _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeIn,
+                    );
+                  } else {
+                    _showResultPage();
+                  }
+                } else {
+                  _showAlertDialog();
+                }
+              },
+              child: const Icon(Icons.arrow_forward),
+            ),
+          ],
+        ),
       ],
     );
   }
 
   Widget buildQuestionPage(int start, int end) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Table(
-          border: TableBorder.all(color : Colors.grey.shade300, style: BorderStyle.solid,
-                  width: 0.5),
-          columnWidths: const <int, TableColumnWidth>{
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: SingleChildScrollView(
+        child: Column(
+           children: [          
+            Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.8), // 배경색 설정
+              borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+              border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+            ),
+            child: Table(
+              border: TableBorder(
+                horizontalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+                verticalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+                // top, bottom, left, right border can be customized here if needed
+              ),
+              columnWidths: const <int, TableColumnWidth>{
             0: FlexColumnWidth(),
             1: FixedColumnWidth(70),
             2: FixedColumnWidth(70),
@@ -226,7 +279,7 @@ class _psyServey3State extends State<psyServey3> {
                 const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Text(
-                    '질문사항',
+                    '[노바코 분노 검사] 질문사항',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -257,14 +310,17 @@ class _psyServey3State extends State<psyServey3> {
                         onChanged: (int? value) {
                           setState(() {
                             answers[i] = index;
-                          });
-                        },
-                      ),
-                    );
-                  }),
-                ],
-              ),
-          ],
+                              });
+                            },
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+              ],
+            ),
+          )
+        ],
         ),
       ),
     );
