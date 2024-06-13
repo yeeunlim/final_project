@@ -11,7 +11,7 @@ import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
 import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
 import 'package:mindcare_flutter/presentation/widgets/psy_test_result.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test1_home.dart';
-import 'package:mindcare_flutter/core/themes/color_schemes.dart';
+import 'package:mindcare_flutter/core/constants/colors.dart';
 
 
 class psyServey1 extends StatefulWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mindcare_flutter/core/services/auth_service.dart';
-import 'package:mindcare_flutter/presentation/screens/main_screen.dart';
+import 'package:mindcare_flutter/presentation/screens/chatbot_diary_entry_screen.dart';
 import 'package:mindcare_flutter/presentation/screens/login_screen.dart';
 
 class AuthChecker extends StatefulWidget {
@@ -30,7 +30,7 @@ class _AuthCheckerState extends State<AuthChecker> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: isAuthenticated ? const MainScreen() : const LoginScreen(),
+      body: isAuthenticated ? const ChatbotDiaryEntryScreen() : const LoginScreen(),
     );
   }
 }

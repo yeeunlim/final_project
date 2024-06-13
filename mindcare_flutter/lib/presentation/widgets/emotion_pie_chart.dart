@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:mindcare_flutter/core/themes/color_schemes.dart';
+import 'package:mindcare_flutter/core/constants/colors.dart';
 
 class EmotionPieChart extends StatelessWidget {
   final Map<String, dynamic> emotionDistribution;
@@ -9,7 +9,7 @@ class EmotionPieChart extends StatelessWidget {
 
   List<PieChartSectionData> getPieChartSections() {
     return emotionDistribution.entries.map((entry) {
-      final color = emotionColors[entry.key] ?? Colors.grey; // 컬러 팔레트에서 색상 가져오기, 없으면 회색
+      final color = emotionColors[entry.key];
       return PieChartSectionData(
         color: color,
         value: entry.value.toDouble(),

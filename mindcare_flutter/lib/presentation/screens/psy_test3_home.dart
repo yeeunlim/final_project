@@ -9,7 +9,7 @@ import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
 import 'package:mindcare_flutter/presentation/widgets/psy_test_result.dart';
 
 import 'package:mindcare_flutter/core/constants/urls.dart';
-import 'package:mindcare_flutter/core/themes/color_schemes.dart';
+import 'package:mindcare_flutter/core/constants/colors.dart';
 
 class AngerTestResults extends StatefulWidget {
   const AngerTestResults({super.key});

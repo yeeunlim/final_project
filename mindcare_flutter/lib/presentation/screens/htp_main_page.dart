@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
-import '../widgets/auth_checker.dart';
 // import 'main.dart'; // main.dart 파일을 임포트합니다.
 import 'htp_second_page.dart'; // 새로운 페이지 파일을 임포트합니다.
 

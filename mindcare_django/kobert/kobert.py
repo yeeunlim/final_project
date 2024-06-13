@@ -59,24 +59,6 @@ def load_wellness_answer(filename):
 emotion_category = load_wellness_answer("wellness_dialog_category_감정.txt")
 background_category = load_wellness_answer("wellness_dialog_category_배경.txt")
 
-# 감정 코멘트 불러오기
-def load_emotion_responses(filename):
-    path = root_path / filename
-    with open(path, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
-    
-    emotion_responses = {}
-    for line in lines:
-        parts = line.split('\t')
-        if len(parts) == 2:
-            emotion = parts[0].strip()
-            response = parts[1].strip()
-            emotion_responses[emotion] = response
-    
-    return emotion_responses
-
-emotion_responses = load_emotion_responses("emotion_responses.txt")
-
 def classify_emotion(sentence):
     data = kobert_input(tokenizer, sentence, device, 512)
     
@@ -89,13 +71,14 @@ def classify_emotion(sentence):
     # 소프트맥스 적용
     softmax_logits = torch.softmax(logits, dim=-1)
     
-    # 각 클래스의 확률 값 출력
+    # 각 클래스의 확률 값 계산
     emotion_probs = {emotion_category[str(i)]: softmax_logits[0][i].item() for i in range(len(emotion_category))}
     
     # 가장 큰 확률을 가진 감정 찾기
     max_emotion = max(emotion_probs, key=emotion_probs.get)
     
-    return emotion_probs, max_emotion
+    # 확률 값을 출력하지 않고 가장 큰 감정만 반환
+    return max_emotion
 
 def classify_background(sentence):
     data = kobert_input(tokenizer, sentence, device, 512)
@@ -109,10 +92,11 @@ def classify_background(sentence):
     # 소프트맥스 적용
     softmax_logits = torch.softmax(logits, dim=-1)
     
-    # 각 클래스의 확률 값 출력
+    # 각 클래스의 확률 값 계산
     background_probs = {background_category[str(i)]: softmax_logits[0][i].item() for i in range(len(background_category))}
     
     # 가장 큰 확률을 가진 배경 찾기
     max_background = max(background_probs, key=background_probs.get)
     
-    return background_probs, max_background
+    # 확률 값을 출력하지 않고 가장 큰 배경만 반환
+    return max_background
