@@ -1,6 +1,6 @@
 asgiref==3.8.1
-boto3==1.34.122
-botocore==1.34.122
+boto3==1.34.125
+botocore==1.34.125
 certifi==2024.6.2
 charset-normalizer==3.3.2
 contourpy==1.2.1

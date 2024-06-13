@@ -26,17 +26,28 @@ Map<String, WidgetBuilder> getAppRoutes() {
 
 // 동적 라우팅을 처리하는 함수를 정의합니다.
 Route<dynamic>? generateRoute(RouteSettings settings) {
-  if (settings.name == AppRoutes.dailyAnalysis) {
-    final args = settings.arguments as Map<String, dynamic>;
-    return MaterialPageRoute(
-      builder: (context) {
-        return DailyAnalysisScreen(
-          entryDate: args['entryDate'],
-          entryData: args['entryData'],
-          diaryText: args['diaryText'],
-        );
-      },
-    );
+  switch (settings.name) {
+    case AppRoutes.dailyAnalysis:
+      final args = settings.arguments as Map<String, dynamic>;
+      return MaterialPageRoute(
+        builder: (context) {
+          return DailyAnalysisScreen(
+            entryDate: args['entryDate'],
+            entryData: args['entryData'],
+            diaryText: args['diaryText'],
+          );
+        },
+      );
+    case AppRoutes.chatbotDiary:
+      final args = settings.arguments as Map<String, dynamic>?;
+      return MaterialPageRoute(
+        builder: (context) {
+          return ChatbotDiaryEntryScreen(
+            selectedDate: args?['selectedDate'],
+          );
+        },
+      );
+    default:
+      return null;
   }
-  return null;
 }

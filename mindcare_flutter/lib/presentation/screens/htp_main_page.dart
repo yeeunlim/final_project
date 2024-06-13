@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/auth_checker.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
 // import 'main.dart'; // main.dart 파일을 임포트합니다.

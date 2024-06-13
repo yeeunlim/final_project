@@ -8,7 +8,9 @@ import '../widgets/confirm_dialog.dart';
 import '../widgets/loading_screen.dart';
 
 class ChatbotDiaryEntryScreen extends StatefulWidget {
-  const ChatbotDiaryEntryScreen({super.key});
+  final String? selectedDate;
+
+  const ChatbotDiaryEntryScreen({super.key, this.selectedDate});
 
   @override
   _ChatbotDiaryEntryScreenState createState() => _ChatbotDiaryEntryScreenState();
@@ -22,15 +24,10 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
   late String selectedDate; // 선택된 날짜를 저장
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map?;
-    if (args != null && args.containsKey('selectedDate')) {
-      selectedDate = args['selectedDate'];
-      print('Selected date received: $selectedDate');
-    } else {
-      selectedDate = DateTime.now().toIso8601String().split('T')[0];
-    }
+  void initState() {
+    super.initState();
+    selectedDate = widget.selectedDate ?? DateTime.now().toIso8601String().split('T')[0];
+    print('Selected date: $selectedDate');
   }
 
   @override
@@ -38,6 +35,21 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
     _inputController.dispose();
     _inputFocusNode.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args != null && args is String) {
+      // String 타입의 arguments를 바로 사용
+      selectedDate = args;
+      print('Selected date received: $selectedDate');
+    } else {
+      // args가 null이거나 String 타입이 아닐 경우 현재 날짜 사용
+      selectedDate = DateTime.now().toIso8601String().split('T')[0];
+    }
   }
 
   Future<void> sendMessage(String message) async {

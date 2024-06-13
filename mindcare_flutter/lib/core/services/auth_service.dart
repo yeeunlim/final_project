@@ -7,42 +7,40 @@ import 'package:mindcare_flutter/presentation/screens/login_screen.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
 
 class AuthHelpers {
-  /// SharedPreferences 인스턴스를 통해 저장된 JWT 토큰을 반환하는 메서드
-  /// 만약 토큰이 없다면 null을 반환
   static Future<String?> getToken() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('jwt_token');
       if (token == null) {
-        // 토큰이 없을 경우
         throw Exception("No JWT token found");
       }
       print("토큰 가져옴: $token");
       return token;
     } catch (e) {
-      // 오류 처리
       print('Error getting token: $e');
       return null;
     }
   }
 
   static Future<bool> checkLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('jwt_token');
-    print('jwt_token: $token');
+    try {
+      final token = await getToken();
+      if (token != null) {
+        Map<String, dynamic> decodedToken;
+        try {
+          decodedToken = JwtDecoder.decode(token);
+          print('Decoded Token: $decodedToken');
+        } catch (e) {
+          print('Failed to decode token: $e');
+          return false;
+        }
 
-    if (token != null) {
-      try {
-        final decodedToken = JwtDecoder.decode(token);
-        print('Decoded Token: $decodedToken');
-        print(JwtDecoder.isExpired(token));
         if (!JwtDecoder.isExpired(token)) {
           return true;
         }
-      } catch (e) {
-        print('Failed to decode token: $e');
-        return false;
       }
+    } catch (e) {
+      print('Failed to check login status: $e');
     }
     return false;
   }
@@ -50,6 +48,10 @@ class AuthHelpers {
   static Future<void> logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
+    if (token == null) {
+      return;
+    }
+
     final response = await http.post(
       Uri.parse('$userAuthUrl/custom/logout/'),
       headers: {
@@ -62,7 +64,7 @@ class AuthHelpers {
       await prefs.remove('jwt_token');
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
-        (Route<dynamic> route) => false,
+            (Route<dynamic> route) => false,
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -86,11 +88,9 @@ class AuthHelpers {
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('jwt_token', data['access_token']); // 로그인 성공 시 액세스 토큰 저장
+        await prefs.setString('jwt_token', data['access_token']);
 
-        // 저장된 토큰 확인
         print("토큰 저장됨: ${prefs.getString('jwt_token')}");
-
         return true;
       } else {
         print('로그인 실패: ${response.body}');
@@ -103,9 +103,7 @@ class AuthHelpers {
   }
 
   static Future<Map<String, dynamic>> fetchUserInfo() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('jwt_token');
-
+    final token = await getToken();
     if (token == null) {
       throw Exception('No JWT token found');
     }
@@ -126,9 +124,7 @@ class AuthHelpers {
   }
 
   static Future<void> deleteUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('jwt_token');
-
+    final token = await getToken();
     if (token == null) {
       throw Exception('No JWT token found');
     }
@@ -148,9 +144,7 @@ class AuthHelpers {
 
   static Future<void> changePassword(
       String oldPassword, String newPassword) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('jwt_token');
-
+    final token = await getToken();
     if (token == null) {
       throw Exception('No JWT token found');
     }
@@ -172,71 +166,54 @@ class AuthHelpers {
     }
   }
 
-  static Future<void> updateUserInfo(BuildContext context, String email, String name, 
-    String nickname, String birthdate, String? currentPassword, String? newPassword) async {
-      try {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        String? token = prefs.getString('jwt_token');
+  static Future<void> updateUserInfo(BuildContext context, String email, String name,
+      String nickname, String birthdate, String? currentPassword, String? newPassword) async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        throw Exception('No JWT token found');
+      }
 
-        if (token == null) {
-          throw Exception('No JWT token found');
-        }
-
-        final response = await http.put(
-          Uri.parse('$userAuthUrl/custom/update/'),
-          headers: {
-            'Content-Type': 'application/json; charset=UTF-8',
-            'Authorization': 'Bearer $token',
-          },
-          body: jsonEncode(<String, String>{
-            'email': email,
-            'name': name,
-            'nickname': nickname,
-            'birthdate': birthdate,
-            if (currentPassword != null) 'current_password': currentPassword,
-            if (newPassword != null) 'new_password': newPassword,
-          }),
-        );
+      final response = await http.put(
+        Uri.parse('$userAuthUrl/custom/update/'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(<String, String>{
+          'email': email,
+          'name': name,
+          'nickname': nickname,
+          'birthdate': birthdate,
+          if (currentPassword != null) 'current_password': currentPassword,
+          if (newPassword != null) 'new_password': newPassword,
+        }),
+      );
 
       final Map<String, dynamic> responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        // 성공 처리 로직
         print('Success: ${response.body}');
       } else {
-        // 오류 처리 로직
-        print(response.body);
-        if (responseData.containsKey('current_password')) {
-          throw Exception(responseData['current_password'][0]);
-        } else if (responseData.containsKey('email')) {
-          throw Exception(responseData['email'][0]);
-        } else if (responseData.containsKey('nickname')) {
-          throw Exception(responseData['nickname'][0]);
-        } else if (responseData.containsKey('non_field_errors')) {
-          throw Exception(responseData['non_field_errors'][0]);
-        } else {
-          // 오류 처리 로직
-          print(response.body);
-          if (responseData.containsKey('current_password')) {
-            throw Exception(responseData['current_password'][0]);
-          } else if (responseData.containsKey('email')) {
-            throw Exception(responseData['email'][0]);
-          } else if (responseData.containsKey('nickname')) {
-            throw Exception(responseData['nickname'][0]);
-          } else if (responseData.containsKey('non_field_errors')) {
-            throw Exception(responseData['non_field_errors'][0]);
-          } else {
-            throw Exception('An unknown error occurred');
-          }
-        }
+        _handleError(responseData);
       }
     } catch (e) {
-      // 네트워크 오류 또는 기타 예외 처리
       print('Exception: $e');
       throw Exception(e);
     }
   }
+
+  static void _handleError(Map<String, dynamic> responseData) {
+    if (responseData.containsKey('current_password')) {
+      throw Exception(responseData['current_password'][0]);
+    } else if (responseData.containsKey('email')) {
+      throw Exception(responseData['email'][0]);
+    } else if (responseData.containsKey('nickname')) {
+      throw Exception(responseData['nickname'][0]);
+    } else if (responseData.containsKey('non_field_errors')) {
+      throw Exception(responseData['non_field_errors'][0]);
+    } else {
+      throw Exception('An unknown error occurred');
+    }
+  }
 }
-
-
-
