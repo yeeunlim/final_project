@@ -9,27 +9,10 @@ import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
 import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
 import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
 import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
+import 'package:mindcare_flutter/presentation/widgets/psy_test_result.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test1_home.dart';
 import 'package:mindcare_flutter/core/constants/colors.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '설문조사',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const psyServey1(),
-    );
-  }
-}
 
 class psyServey1 extends StatefulWidget {
   const psyServey1({super.key});
@@ -77,17 +60,19 @@ class _psyServey1State extends State<psyServey1> {
     setState(() {
       totalScore = answers.values.fold(0, (sum, item) => sum + item);
       if (totalScore <= 15) {
-        resultMessage = "불안 자극에 민감하지 않음";
+        resultMessage = "불안 자극에 민감하지 않습니다.";
       } else if (totalScore <= 20) {
-        resultMessage = "불안 자극에 약간 민감하게 반응";        
+        resultMessage = "불안 자극에 약간 민감하게 반응합니다.";        
       } else if (totalScore <= 24) {
-        resultMessage = "불안 자극에 상당히 민감하게 반응";
+        resultMessage = "불안 자극에 상당히 민감하게 반응합니다.";
       } else {
-        resultMessage = "불안 자극에 매우 민감하게 반응";
+        resultMessage = "불안 자극에 매우 민감하게 반응합니다.";
       }
 
       // 결과를 Django 서버에 저장
       PsyCommon.SubmitSurveyResult(totalScore, resultMessage, 'anxiety');
+
+      showResultDialog(context, 'anxiety', totalScore.toDouble(), resultMessage, '',);
 
       // 결과 페이지를 표시하도록 상태 업데이트
       showResult = true;
@@ -150,7 +135,8 @@ class _psyServey1State extends State<psyServey1> {
                 color: Colors.white.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: showResult ? buildResultPage() : buildQuestionPageView(),
+              // child: showResult ? buildResultPage() : buildQuestionPageView(),
+              child: buildQuestionPageView(),
             ),
           ),
         ],
@@ -248,6 +234,7 @@ class _psyServey1State extends State<psyServey1> {
               ),
               columnWidths: const <int, TableColumnWidth>{
                 0: FlexColumnWidth(),
+                // 0: FixedColumnWidth(350),
                 1: FixedColumnWidth(50),
                 2: FixedColumnWidth(50),
                 3: FixedColumnWidth(50),
@@ -306,108 +293,6 @@ class _psyServey1State extends State<psyServey1> {
           ],
         ),
       ),
-    );
-  }
-
-//   Widget buildResultPage() {
-//     return Center(
-//       child: Column(
-//         mainAxisSize: MainAxisSize.min,
-//         children: [
-//           Text(
-//             '총 점수: $totalScore\n$resultMessage',
-//             style: const TextStyle(fontSize: 24),
-//             textAlign: TextAlign.center,
-//           ),
-//           const SizedBox(height: 20),
-//           ElevatedButton(
-//             onPressed: () {
-//               Navigator.pushReplacement(
-//                 context,
-//                 MaterialPageRoute(builder: (context) => const AnxietyTestResults()),
-//               );
-//             },
-//             style: ElevatedButton.styleFrom(
-//               backgroundColor: primaryColor,
-//               foregroundColor: secondaryColor,
-//             ),              
-//             child: const Text('돌아가기'),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-  Widget buildResultPage() {
-    String sensitivityLevel = '';
-
-    if (totalScore >= 0 && totalScore <= 15) {
-      sensitivityLevel = '불안 자극에 민감하지 않습니다';
-    } else if (totalScore >= 16 && totalScore <= 20) {
-      sensitivityLevel = '불안 자극에 약간 민감한 편입니다';
-    } else if (totalScore >= 21 && totalScore <= 24) {
-      sensitivityLevel = '불안 자극에 상당히 민감한 편입니다';
-    } else if (totalScore >= 25) {
-      sensitivityLevel = '불안 자극에 매우 민감한 편입니다';
-    }
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(height: 60),
-        Container(
-          width: double.infinity, // 전체 너비 차지
-          decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 30), // 조금 띄우기
-              Text(
-                '총 점수: $totalScore\n$sensitivityLevel',
-                style: const TextStyle(fontSize: 20),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                '정상 집단 평균: 7.5~8.3\n'
-                '공황장애 평균: 13.1~24.1\n'
-                '불안집단 평균: 26.9~29.5\n'
-                '우울 신체화 집단 평균: 12.4~21.11\n\n'
-                '※ 신체화 증상이란?\n심리적 어려움이 신체적 고통으로 나타나는 것을 말하며,\n'
-                '신체 검진 결과는 정상일지라도 어지럼증, 소화불량, 통증, 무감각 등\n아픔을 느끼는 현상입니다.\n',
-                style: TextStyle(fontSize: 16),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        Expanded(
-          child: Center(
-            child: Image.network(
-              totalScore <= 20 ? ImageUrls.normalRabbit : ImageUrls.sadRabbit,
-              width: 150,
-              height: 150,
-            ),
-          ),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const AnxietyTestResults()),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            foregroundColor: secondaryColor,
-          ),              
-          child: const Text('돌아가기'),
-        ),
-      ],
     );
   }
 }

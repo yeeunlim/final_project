@@ -6,6 +6,7 @@ import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
 import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
 import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
 import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
+import 'package:mindcare_flutter/presentation/widgets/psy_test_result.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test2_home.dart';
 
 class psyServey2 extends StatefulWidget {
@@ -73,15 +74,18 @@ class _psyServey2State extends State<psyServey2> {
       totalScore = getScore();
 
       if (totalScore <= 17) {
-        resultMessage = "정상";
+        resultMessage = "스트레스가 거의 없는 정상군 입니다.";
       } else if (totalScore <= 25) {
-        resultMessage = "경도의 스트레스";
+        resultMessage = "경도의 스트레스군 입니다.";
       } else {
-        resultMessage = "고도의 스트레스";
+        resultMessage = "고도의 스트레스군 입니다.";
       }
 
       // 결과를 Django 서버에 저장
       PsyCommon.SubmitSurveyResult(totalScore, resultMessage, 'stress');
+
+      showResultDialog(context, 'stress', totalScore.toDouble(), resultMessage, '',);
+
 
       // 결과 페이지를 표시하도록 상태 업데이트
       showResult = true;
@@ -144,7 +148,7 @@ class _psyServey2State extends State<psyServey2> {
                 color: Colors.white.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: showResult ? buildResultPage() : buildQuestionPageView(),
+              child: buildQuestionPageView(),
             ),
           ),
         ],
@@ -299,35 +303,6 @@ class _psyServey2State extends State<psyServey2> {
           )
         ],
         ),
-      ),
-    );
-  }
-
-  Widget buildResultPage() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '총 점수: $totalScore\n$resultMessage',
-            style: const TextStyle(fontSize: 24),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const StressTestResults()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: secondaryColor,
-            ),              
-            child: const Text('돌아가기'),
-          ),
-        ],
       ),
     );
   }
