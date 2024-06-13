@@ -63,7 +63,7 @@ class CustomDrawer extends StatelessWidget {
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Token is missing!')),
+                          const SnackBar(content: Text('Token is missing!')),
                         );
                       }
                     },

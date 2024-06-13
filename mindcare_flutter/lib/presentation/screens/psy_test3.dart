@@ -3,29 +3,11 @@ import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
 import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
+import 'package:mindcare_flutter/presentation/widgets/psy_test_result.dart';
 import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
 import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test3_home.dart';
 import 'package:mindcare_flutter/core/themes/color_schemes.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '심리검사',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const psyServey3(),
-    );
-  }
-}
 
 class psyServey3 extends StatefulWidget {
   const psyServey3({super.key});
@@ -81,20 +63,21 @@ class _psyServey3State extends State<psyServey3> {
     setState(() {
       totalScore = answers.values.fold(0, (sum, item) => sum + item);
       if (totalScore <= 45) {
-        resultMessage = "당신이 일반적으로 느끼는 분노의 정도는 상당히 적은 편에 속합니다.\n당신은 침착한 사람군에 속하는 사람입니다.'";
+        resultMessage = "당신이 일반적으로 느끼는 분노의 정도는\n상당히 적은 편에 속합니다.\n당신은 침착한 사람군에 속하는 사람입니다.";
       } else if (totalScore <= 55) {
         resultMessage = "당신은 평균적인 사람보다 평화로운 사람입니다.";
       } else if (totalScore <= 75) {
-        resultMessage = "곤혹스런 상황에서 당신은 보통의 여느 사람들처럼 적당한 분노를 표출합니다.";      
+        resultMessage = "곤혹스런 상황에서 당신은 보통의 여느 사람들처럼\n적당한 분노를 표출합니다.";      
       } else if (totalScore <= 85) {
         resultMessage = "곤혹스런 상황에서 당신은 분로를 표출하는 경향이 짙습니다.\n보통 사람보다 화를 더 내는 편입니다.";      
       } else {
-        resultMessage = "당신은 분노 챔피언.\n종종 격렬한 분노를 표출 한 후 그 감정이 쉽게 사라지지 않는 자신을 보게 될 것입니다.";
+        resultMessage = "당신은 분노 챔피언.\n종종 격렬한 분노를 표출 한 후\n그 감정이 쉽게 사라지지 않는 자신을 보게 될 것입니다.";
       }
 
       // 결과를 Django 서버에 저장
       PsyCommon.SubmitSurveyResult(totalScore, resultMessage, 'anger');
 
+      showResultDialog(context, 'anger', totalScore.toDouble(), resultMessage, '',);
       // 결과 페이지를 표시하도록 상태 업데이트
       showResult = true;
     });
@@ -157,7 +140,7 @@ class _psyServey3State extends State<psyServey3> {
                 color: Colors.white.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: showResult ? buildResultPage() : buildQuestionPageView(),
+              child: buildQuestionPageView(),
             ),
           ),
         ],
@@ -182,7 +165,7 @@ class _psyServey3State extends State<psyServey3> {
         ),
         Row(
           
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             FloatingActionButton(
               heroTag: 'backButton', // Hero 태그를 고유하게 설정
@@ -326,36 +309,6 @@ class _psyServey3State extends State<psyServey3> {
           )
         ],
         ),
-      ),
-    );
-  }
-
-
-  Widget buildResultPage() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '총 점수: $totalScore\n$resultMessage',
-            style: const TextStyle(fontSize: 24),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const AngerTestResults()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: secondaryColor,
-            ),              
-            child: const Text('돌아가기'),
-          ),
-        ],
       ),
     );
   }
