@@ -1,0 +1,369 @@
+[
+    {
+        "class": "집전체",
+        "conditions": [
+            {
+                "check": "lambda info: info['centered_position'] == 'left'",
+                "result": "집이 왼쪽에 있다는 것은 내향적이며 열등감을 가지고 있다는 것을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'right'",
+                "result": "집이 오른쪽에 있다는 것은 외향성을 띄며 활동성을 가지고 있다는 것을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'bottom'",
+                "result": "집이 아래쪽에 있다는 것은 불안정감을 느끼고 있으며 우울적 경향을 갖고 있다는 것을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'left-top'",
+                "result": "집이 왼쪽에 있다는 것은 내향적이며 열등감을 가지고 있다는 것을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'right-top'",
+                "result": "집이 오른쪽에 있다는 것은 외향성을 띄며 활동성을 가지고 있다는 것을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'left-bottom'",
+                "result": "집이 왼쪽 하단에 있다는 것은 내향적이며 열등감을 가지고 있고 불안정감을 느끼고 있으며 우울적 경향을 갖고 있다는 것을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'right-bottom'",
+                "result": "집이 오른쪽에 하단에 있다는 것은 외향성을 띄며 활동성을 가지고 있고 불안정감을 느끼고 있으며 우울적 경향을 갖고 있다는 것을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "지붕",
+        "conditions": [
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] > mean_w + 2 * std_w and info['height'] > mean_h + 2 * std_h",
+                "result": "지붕이 평균보다 훨씬 클 경우엔 내적 인지 활동이 활발하며 공상적이고 현실조망 능력이 부족할 수 있으며 퇴행적일 확률이 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] < mean_w - 2 * std_w and info['height'] < mean_h - 2 * std_h",
+                "result": "지붕이 평균보다 훨씬 작을 경우엔 내적 인지 활동이 부족하며 회피를 못하고 정서적으로 빈약할 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "문",
+        "conditions": [
+            {
+                "check": "lambda info, count: count == 0",
+                "result": "문이 없는 경우엔 관계에 대해 회피하며 고립되어 있고 위축감을 느끼고 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] > mean_w + 2 * std_w and info['height'] > mean_h + 2 * std_h",
+                "result": "문이 평균보다 훨씬 클 경우엔 사회적으로 안정되어 있고 보상을 크게 받길 원하며 환경 의존성이 있을 가능성이 있어요"
+            },
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] < mean_w - 2 * std_w and info['height'] < mean_h - 2 * std_h",
+                "result": "문이 평균보다 훨씬 작을 경우엔 수줍음이 많고 성격적으로 까다로우며 사회성이 결핍되어 있고 현실 도피를 할 가능성이 크다는 것을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "창문",
+        "conditions": [
+            {
+                "check": "lambda info, count: count == 0",
+                "result": "창문이 없는 경우엔 폐쇄적으로 사고하며 환경에 대한 관심이 부족하거나 적의가 있을 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info, count: count >= 3",
+                "result": "창문이 많을 경우엔 불안에 대한 보상심리가 있으며 개방과 환경적 접촉에 대한 갈망이 있을 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "연기",
+        "conditions": [
+            {
+                "check": "lambda info, class_counts: class_counts.get('굴뚝', 0) > 0 and class_counts.get('연기', 0) > 0",
+                "result": "굴뚝에서 연기가 나오면 마음속으로 긴장을 느끼며 가정내의 갈등이 있거나 정서혼란이 있을 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "연못",
+        "conditions": [
+            {
+                "check": "lambda info, count: count != 0",
+                "result": "연못이 존재할 때엔 가정에 대한 우울한 정서 감정이 있을 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "산",
+        "conditions": [
+            {
+                "check": "lambda info, count: count != 0",
+                "result": "산이 존재할 때엔 도피와 안정을 추구하며 방어적임을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "나무",
+        "conditions": [
+            {
+                "check": "lambda info, count: count != 0",
+                "result": "나무가 존재할 때엔 도피와 안정을 추구하며 방어적임을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "나무전체",
+        "conditions": [
+            {
+                "check": "lambda info: info['centered_position'] == 'left-top'",
+                "result": "나무가 왼쪽에 있다는 것은 내향적이며 열등감을 가지고 있거나 자의식이 강하고 부끄러움이 많음을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'left'",
+                "result": "나무가 왼쪽에 있다는 것은 내향적이며 열등감을 가지고 있거나 자의식이 강하고 부끄러움이 많음을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'left-bottom'",
+                "result": "나무가 왼쪽 하단에 있다는 것은 내향적 성향이며 열등감이 있고 자의식이 강하지만 부끄러움이 많아 불안정함과 동시에 우울한 감정과 패배감을 느끼고 있을 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'right-top'",
+                "result": "나무가 오른쪽에 있다는 것은 미래지향적이며 남성적이고 부정적인 사고방식으로 타인에 대한 적개심이 있으며 지적 호기심이나 만족을 추구하는 경향을 가지고 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'right'",
+                "result": "나무가 오른쪽에 있다는 것은 미래지향적이며 남성적이고 부정적인 사고방식으로 타인에 대한 적개심이 있으며 지적 호기심이나 만족을 추구하는 경향을 가지고 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'right-bottom'",
+                "result": "나무가 오른쪽 하단에 있다는 것은 미래지향적, 남성적, 부정적 사고 방식으로 타인에 대한 적개심이 있어 불안정하며 우울하고 패배감을 느끼고 있을 수 있고 지적 호기심과 만족을 추구하는 경향을 가지고 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] > mean_w + 2 * std_w and info['height'] > mean_h + 2 * std_h",
+                "result": "나무가 평균보다 훨씬 클 경우엔 충동적이며 공격적인 성향을 가지고 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] < mean_w - 2 * std_w and info['height'] < mean_h - 2 * std_h",
+                "result": "나무가 평균보다 훨씬 작을 경우엔 대인 관계에 무력감, 열등감, 불안, 우울적 경향이 있을 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info, count: count >= 2",
+                "result": "나무가 많을 경우에는 외로움을 느끼거나 이중 자아를 가지고 있을 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "그네",
+        "conditions": [
+            {
+                "check": "lambda info, class_counts: class_counts.get('기둥', 0) > 0 and class_counts.get('그네', 0) > 0",
+                "result": "기둥에 그네가 있는 경우에는 우울, 외로움을 느끼고 있을 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "수관",
+        "conditions": [
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] > mean_w + 2 * std_w and info['height'] > mean_h + 2 * std_h",
+                "result": "수관이 평균보다 훨씬 클 경우에는 현실에 대한 조망이 부족하고 환경에 대하여 적극적으로 행동하며 공격적인 행동을 나타낼 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] < mean_w - 2 * std_w and info['height'] < mean_h - 2 * std_h",
+                "result": "수관이 평균보다 훨씬 작을 경우에는 정서적 빈곤을 느끼고 있을 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "가지",
+        "conditions": [
+            {
+                "check": "lambda info, count: count >= 4",
+                "result": "가지가 많은 경우에는 하고 싶은 일이 많고, 대인 관계가 활발하며 의욕이 과함을 의미합니다"
+            },
+            {
+                "check": "lambda info, count: count < 4",
+                "result": "가지가 적은 경우에는 세상과 상호작용에 억제적이며 위축과 우울감을 느끼고 있을 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "나뭇잎",
+        "conditions": [
+            {
+                "check": "lambda info, count: count >= 8",
+                "result": "나뭇잎이 많을 경우에는 정열 희망적 자신감, 힘의 욕구 강화를 느끼고 있을 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "꽃",
+        "conditions": [
+            {
+                "check": "lambda info, count: count != 0",
+                "result": "꽃이 존재할 경우엔 외로움, 공격성을 표현하고 있을 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "열매",
+        "conditions": [
+            {
+                "check": "lambda info, count: count >= 8",
+                "result": "열매가 많을 경우엔 의존의 욕구를 느끼고 있을 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'left-bottom'",
+                "result": "열매가 바닥에 떨어져있을 경우엔 바라는 것의 좌절, 애정 결핍을 느끼고 있을 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'right-bottom'",
+                "result": "열매가 바닥에 떨어져있을 경우엔 바라는 것의 좌절, 애정 결핍을 느끼고 있을 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "새",
+        "conditions": [
+            {
+                "check": "lambda info, count: count != 0",
+                "result": "새가 존재할 경우엔 외로움을 표현하고 심리적으로 퇴행적인 상태에 있을 수 있다는 것을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "사람전체",
+        "conditions": [
+            {
+                "check": "lambda info: info['centered_position'] == 'left-top' or info['centered_position'] == 'left'",
+                "result": "사람이 왼쪽에 있다는 것은 내향적이며 소극적이고 강박, 우울을 느끼고 있을 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'right-top' or info['centered_position'] == 'right'",
+                "result": "사람이 오른쪽에 있다는 것은 외향적이며 이기적이고 공격적 성향을 가지고 있으며 불안감, 분노를 느끼고 있을 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'bottom'",
+                "result": "사람이 아래쪽에 있다는 것은 강한 심리적 억압으로 우울, 두려움, 불안, 열등감 등을 느끼고 있을 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'left-bottom'",
+                "result": "사람이 왼쪽 하단에 있다는 것은 내향적, 소극적이며 강한 심리적 억압으로 강박, 우울, 두려움, 불안, 열등감 등을 느끼고 있을 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info: info['centered_position'] == 'right-bottom'",
+                "result": "사람이 오른쪽 하단에 있다는 것은 외향적, 이기적이고 공격적 성향을 가지고 있으며 강한 심리적 억압으로 우울, 두려움, 불안, 열등감 등을 느끼고 있을 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] > mean_w + 2 * std_w and info['height'] > mean_h + 2 * std_h",
+                "result": "사람이 평균보다 훨씬 클 경우에는 충동적이며 공격적인 성향을 가지고 있을 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] < mean_w - 2 * std_w and info['height'] < mean_h - 2 * std_h",
+                "result": "사람이 평균보다 훨씬 작을 경우에는 대인 관계에 무력감과 열등감을 느끼며 불안, 우울적 경향을 가지고 있을 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info, count: count >= 2",
+                "result": "사람이 많을 경우에는 우울, 외로움을 느끼고 있을 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "머리",
+        "conditions": [
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] > mean_w + 2 * std_w and info['height'] > mean_h + 2 * std_h",
+                "result": "머리가 평균보다 훨씬 클 경우에는 자신에 대한 과대 평가나 심리적 퇴행을 나타낼 수 있음을 의미합니다. 이는 자아 중심적인 경향이나 미성숙한 행동을 반영해요"
+            },
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] < mean_w - 2 * std_w and info['height'] < mean_h - 2 * std_h",
+                "result": "머리가 평균보다 훨씬 작을 경우에는 사회 부적응으로 무기력, 우울, 불안, 강박, 열등감 등을 느끼고 있을 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "눈",
+        "conditions": [
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] > mean_w + 2 * std_w and info['height'] > mean_h + 2 * std_h",
+                "result": "눈이 평균보다 훨씬 클 경우에는 호기심이 많고 경계심이 강하며 과민성을 가지고 외향적인 성향을 나타낼 수 있음을 의미합니다. 이는 활동적이고 사회적인 상호작용을 선호하는 경향을 반영해요"
+            },
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] < mean_w - 2 * std_w and info['height'] < mean_h - 2 * std_h",
+                "result": "눈이 평균보다 훨씬 작을 경우에는 내성적이고 자아도취적인 경향을 가지며 관계를 회피할 수 있음을 의미합니다. 이는 사회적 상호작용에 대한 두려움이나 관심 부족을 반영해요"
+            }
+        ]
+    },
+    {
+        "class": "코",
+        "conditions": [
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] > mean_w + 2 * std_w and info['height'] > mean_h + 2 * std_h",
+                "result": "코가 평균보다 훨씬 클 경우에는 공격적이고 강박적인 성향으로 분노가 쉽게 폭발하며 예민한 반응을 보일 수 있음을 의미합니다"
+            },
+            {
+                "check": "lambda info, count: count == 0",
+                "result": "코가 없을 경우에는 분노를 억제하고 있는 상태를 의미해요"
+            }
+        ]
+    },
+    {
+        "class": "입",
+        "conditions": [
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] > mean_w + 2 * std_w and info['height'] > mean_h + 2 * std_h",
+                "result": "입이 평균보다 훨씬 클 경우에는 구강기적 퇴행 상태, 언어적 폭력 사용 또는 욕심이 많은 성향을 의미합니다"
+            },
+            {
+                "check": "lambda info, count: count == 0",
+                "result": "입이 없을 경우에는 천식, 우울, 소통에 대한 불안을 느끼고 있을 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "입",
+        "conditions": [
+            {
+                "check": "lambda info, class_counts: class_counts.get('눈', 0) == 0 and class_counts.get('코', 0) == 0 and class_counts.get('입', 0) == 0",
+                "result": "눈,코,입이 모두 없을 경우에는 회피적이고 불안, 우울, 갈등을 겪고 있으며 공상적이고 퇴행적인 상태를 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "목",
+        "conditions": [
+           
+            {
+                "check": "lambda info, count: count == 0",
+                "result": "목이 없을 경우에는 행동 조절이나 기능적인 부족, 사고의 장애, 본능적 행동을 할 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "손",
+        "conditions": [
+            {
+                "check": "lambda info, class_counts: class_counts.get('팔', 0) == 0 and class_counts.get('손', 0) == 0",
+                "result": "팔과 손이 모두 없을 경우에는 죄의식이나 우울, 무력감을 느끼고 대인 관계를 기피하며 과도한 업무에 시달릴 수 있음을 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "다리",
+        "conditions": [
+            {
+                "check": "lambda info, class_counts: class_counts.get('발', 0) == 0",
+                "result": "발이 없을 경우에는 우울하고 의기소침하며 불안한 상태를 의미합니다"
+            }
+        ]
+    },
+    {
+        "class": "주머니",
+        "conditions": [
+            {
+                "check": "lambda info, mean_w, std_w, mean_h, std_h: info['width'] > mean_w + 2 * std_w and info['height'] > mean_h + 2 * std_h",
+                "result": "주머니의 크기가 평균보다 훨씬 클 경우 의존적인 성향과 낮은 자존감 및 정서적 문제를 가지고 있음을 의미합니다"
+            }
+        ]
+    }
+]

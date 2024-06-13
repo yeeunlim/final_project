@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'package:mindcare_flutter/core/services/auth_service.dart';
 import 'package:mindcare_flutter/routes/app_routes.dart';
+import '../widgets/alert_dialog.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
@@ -60,6 +61,22 @@ class _MyPageState extends State<MyPage> {
     }
   }
 
+  void _showAlertDialog(String msg, bool errorFlag) {
+    String errorMsg = '';
+    if(errorFlag){
+      // 문자열을 ':'로 분할하여 리스트로 변환
+      List<String> parts = msg.split(':');
+      // 리스트의 마지막 요소를 가져옴
+      errorMsg = parts.last;
+    }
+
+    AlertDialogHelper.showAlert(
+      context,
+      '마이페이지',
+      errorFlag ? '회원정보 수정 실패 : $errorMsg' : msg,
+    );
+  }
+
   Future<void> _updateUserInfo() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
@@ -76,19 +93,12 @@ class _MyPageState extends State<MyPage> {
           currentPassword,
           newPassword,
         );
+        _showAlertDialog('회원정보가 성공적으로 업데이트되었습니다.', false);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('정보가 성공적으로 업데이트되었습니다.')),
-        );
       } catch (e) {
         // 오류 처리
         print('Failed to update user info: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('정보 업데이트에 실패했습니다.')),
-        );
-
-        // 오류 메시지를 다이얼로그로 표시
-        AuthHelpers.showErrorDialog(context, e.toString());
+        _showAlertDialog('$e', true);
       }
     }
   }

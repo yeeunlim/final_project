@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/urls.dart';
-import '../widgets/custom_drawer.dart';
-import '../widgets/custom_app_bar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../widgets/psy_test.dart';
+
+import 'package:mindcare_flutter/core/constants/urls.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
+import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
+import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
+import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test1_home.dart';
+import 'package:mindcare_flutter/core/constants/colors.dart';
 
 void main() {
   runApp(const MyApp());
@@ -45,7 +50,7 @@ class _psyServey1State extends State<psyServey1> {
     "심장이 빨리 뛰면 겁이 난다.",
     "배에서 소리가 나면 깜짝 놀란다.",
     "속이 매스꺼워지면 겁이 난다.",
-    "심장이 빨리 뛰는 것이 느껴지면 심장마비가 오지 않을 까 걱정된다.",
+    "심장이 빨리 뛰는 것이 느껴지면 심장마비가 오지 않을까 걱정된다.",
     "숨이 가빠지면, 겁이 난다.",
     "뱃속이 불편해지면, 심각한 병에 걸린 것은 아닌가 걱정된다.",
     "어떤 일을 할 때 집중이 안되면, 겁이 난다.",
@@ -71,8 +76,10 @@ class _psyServey1State extends State<psyServey1> {
   void _showResultPage() {
     setState(() {
       totalScore = answers.values.fold(0, (sum, item) => sum + item);
-      if (totalScore <= 20) {
-        resultMessage = "불안 자극에 약간 민감하게 반응";
+      if (totalScore <= 15) {
+        resultMessage = "불안 자극에 민감하지 않음";
+      } else if (totalScore <= 20) {
+        resultMessage = "불안 자극에 약간 민감하게 반응";        
       } else if (totalScore <= 24) {
         resultMessage = "불안 자극에 상당히 민감하게 반응";
       } else {
@@ -80,11 +87,43 @@ class _psyServey1State extends State<psyServey1> {
       }
 
       // 결과를 Django 서버에 저장
-      PsyTest.SubmitSurveyResult(totalScore, resultMessage, 'anxiety');
+      PsyCommon.SubmitSurveyResult(totalScore, resultMessage, 'anxiety');
 
       // 결과 페이지를 표시하도록 상태 업데이트
       showResult = true;
     });
+  }
+
+  void _showAlertDialog() {
+    AlertDialogHelper.showAlert(
+      context,
+      '심리검사',
+      '모든 문항에 답변을 선택해주세요.',
+    );
+  }
+
+  void _showConfirmDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // 화면의 다른 부분을 클릭해도 닫히지 않음
+      builder: (BuildContext context) {
+        return ConfirmDialog(
+          onConfirm: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const AnxietyTestResults()),
+            );
+          },
+          onCancel: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+          },
+          message: '심리검사를 취소 하시겠습니까?', // 메시지 전달
+          confirmButtonText: '예', // 확인 버튼 텍스트
+          cancelButtonText: '아니오', // 취소 버튼 텍스트
+        );
+      },
+    );
   }
 
   @override
@@ -104,8 +143,8 @@ class _psyServey1State extends State<psyServey1> {
           ),
           Center( // Center를 사용하여 Container가 화면 중앙에 위치하도록 함
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.6,
-              height: MediaQuery.of(context).size.height * 0.7,
+              width: MediaQuery.of(context).size.width * 0.7,
+              height: MediaQuery.of(context).size.height * 0.75,
               padding: const EdgeInsets.all(30.0),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.5),
@@ -116,53 +155,75 @@ class _psyServey1State extends State<psyServey1> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (showResult) {
-            // 결과 페이지가 표시된 상태에서는 아무 작업도 하지 않음
-            return;
-          }
-
-          int currentPage = _pageController.page!.toInt();
-          int start = currentPage * 8;
-          int end = (currentPage + 1) * 8;
-
-          bool allAnswered = true;
-          for (int i = start; i < end; i++) {
-            if (answers[i] == null) {
-              allAnswered = false;
-              break;
-            }
-          }
-
-          if (allAnswered) {
-            if (currentPage < 1) {
-              _pageController.nextPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeIn,
-              );
-            } else {
-               _showResultPage();
-            }
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('모든 문항에 답변을 선택해주세요.'),
-              ),
-            );
-          }
-        },
-        child: const Icon(Icons.arrow_forward),
-      ),
     );
   }
 
   Widget buildQuestionPageView() {
-    return PageView(
-      controller: _pageController,
+    return Column(
       children: [
-        buildQuestionPage(0, 8),
-        buildQuestionPage(8, 16),
+        Expanded(
+          child: PageView(
+            controller: _pageController,
+            children: [
+              buildQuestionPage(0, 8),
+              buildQuestionPage(8, 16),
+            ],
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            FloatingActionButton(
+              heroTag: 'backButton', // Hero 태그를 고유하게 설정
+              onPressed: () {
+                if (_pageController.page == 0) {
+                  _showConfirmDialog();
+                } else {
+                  _pageController.previousPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeIn,
+                  );
+                }
+              },
+              child: const Icon(Icons.arrow_back),
+            ),
+            FloatingActionButton(
+              heroTag: 'nextButton', // Hero 태그를 고유하게 설정
+              onPressed: () {
+                if (showResult) {
+                  // 결과 페이지가 표시된 상태에서는 아무 작업도 하지 않음
+                  return;
+                }
+
+                int currentPage = _pageController.page!.toInt();
+                int start = currentPage * 8;
+                int end = (currentPage + 1) * 8;
+
+                bool allAnswered = true;
+                for (int i = start; i < end; i++) {
+                  if (answers[i] == null) {
+                    allAnswered = false;
+                    break;
+                  }
+                }
+
+                if (allAnswered) {
+                  if (currentPage < 1) {
+                    _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeIn,
+                    );
+                  } else {
+                    _showResultPage();
+                  }
+                } else {
+                  _showAlertDialog();
+                }
+              },
+              child: const Icon(Icons.arrow_forward),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -172,9 +233,19 @@ class _psyServey1State extends State<psyServey1> {
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(
         child: Column(
-          children: [
-            Table(
-              border: TableBorder.all(color: Colors.grey.shade300, style: BorderStyle.solid, width: 0.5),
+          children: [          
+            Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.8), // 배경색 설정
+              borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+              border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+            ),
+            child: Table(
+              border: TableBorder(
+                horizontalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+                verticalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+                // top, bottom, left, right border can be customized here if needed
+              ),
               columnWidths: const <int, TableColumnWidth>{
                 0: FlexColumnWidth(),
                 1: FixedColumnWidth(50),
@@ -191,7 +262,7 @@ class _psyServey1State extends State<psyServey1> {
                     const Padding(
                       padding: EdgeInsets.all(8.0),
                       child: Text(
-                        '질문사항',
+                        '[불안 민감도 검사] 질문사항',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
@@ -231,19 +302,112 @@ class _psyServey1State extends State<psyServey1> {
                   ),
               ],
             ),
+          )
           ],
         ),
       ),
     );
   }
 
+//   Widget buildResultPage() {
+//     return Center(
+//       child: Column(
+//         mainAxisSize: MainAxisSize.min,
+//         children: [
+//           Text(
+//             '총 점수: $totalScore\n$resultMessage',
+//             style: const TextStyle(fontSize: 24),
+//             textAlign: TextAlign.center,
+//           ),
+//           const SizedBox(height: 20),
+//           ElevatedButton(
+//             onPressed: () {
+//               Navigator.pushReplacement(
+//                 context,
+//                 MaterialPageRoute(builder: (context) => const AnxietyTestResults()),
+//               );
+//             },
+//             style: ElevatedButton.styleFrom(
+//               backgroundColor: primaryColor,
+//               foregroundColor: secondaryColor,
+//             ),              
+//             child: const Text('돌아가기'),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
   Widget buildResultPage() {
-    return Center(
-      child: Text(
-        '총 점수: $totalScore\n$resultMessage',
-        style: const TextStyle(fontSize: 24),
-        textAlign: TextAlign.center,
-      ),
+    String sensitivityLevel = '';
+
+    if (totalScore >= 0 && totalScore <= 15) {
+      sensitivityLevel = '불안 자극에 민감하지 않습니다';
+    } else if (totalScore >= 16 && totalScore <= 20) {
+      sensitivityLevel = '불안 자극에 약간 민감한 편입니다';
+    } else if (totalScore >= 21 && totalScore <= 24) {
+      sensitivityLevel = '불안 자극에 상당히 민감한 편입니다';
+    } else if (totalScore >= 25) {
+      sensitivityLevel = '불안 자극에 매우 민감한 편입니다';
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 60),
+        Container(
+          width: double.infinity, // 전체 너비 차지
+          decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 30), // 조금 띄우기
+              Text(
+                '총 점수: $totalScore\n$sensitivityLevel',
+                style: const TextStyle(fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                '정상 집단 평균: 7.5~8.3\n'
+                '공황장애 평균: 13.1~24.1\n'
+                '불안집단 평균: 26.9~29.5\n'
+                '우울 신체화 집단 평균: 12.4~21.11\n\n'
+                '※ 신체화 증상이란?\n심리적 어려움이 신체적 고통으로 나타나는 것을 말하며,\n'
+                '신체 검진 결과는 정상일지라도 어지럼증, 소화불량, 통증, 무감각 등\n아픔을 느끼는 현상입니다.\n',
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: Center(
+            child: Image.network(
+              totalScore <= 20 ? ImageUrls.normalRabbit : ImageUrls.sadRabbit,
+              width: 150,
+              height: 150,
+            ),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const AnxietyTestResults()),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primaryColor,
+            foregroundColor: secondaryColor,
+          ),              
+          child: const Text('돌아가기'),
+        ),
+      ],
     );
   }
 }

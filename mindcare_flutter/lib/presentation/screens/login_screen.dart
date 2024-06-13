@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'package:mindcare_flutter/core/services/auth_service.dart';
+import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
 import 'package:mindcare_flutter/routes/app_routes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'register.dart';
 import 'package:mindcare_flutter/core/constants/colors.dart';
 
@@ -16,6 +18,34 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   String _username = '';
   String _password = '';
+
+  void _showAlertDialog() {
+    AlertDialogHelper.showAlert(
+      context,
+      '로그인',
+      '로그인 실패: 아이디/비밀번호를 확인해 주세요.',
+    );
+  }
+
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      bool success = await AuthHelpers.login(_username, _password, context);
+      if (success) {
+        final prefs = await SharedPreferences.getInstance();
+        String? token = prefs.getString('jwt_token');
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.chatbotDiary,
+          arguments: token,
+        );
+      } else {
+        _showAlertDialog();
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(content: Text('로그인 실패: 아이디/비밀번호를 확인해 주세요.')),
+        // );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,21 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              bool success = await AuthHelpers.login(_username, _password, context);
-                              if (success) {
-                                Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.chatbotDiary, // 'AppRoutes.main'을 사용하여 네비게이션
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('로그인 실패: 아이디/비밀번호를 확인해 주세요.')),
-                                );
-                              }
-                            }
-                          },
+                          onPressed: _login,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryColor,
                             foregroundColor: secondaryColor,

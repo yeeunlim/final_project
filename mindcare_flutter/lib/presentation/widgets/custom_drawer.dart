@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:mindcare_flutter/core/constants/colors.dart';
-import 'package:mindcare_flutter/presentation/screens/psy_test1.dart';
-import 'package:mindcare_flutter/presentation/screens/psy_test2.dart';
-import 'package:mindcare_flutter/presentation/screens/psy_test3.dart';
+import 'package:mindcare_flutter/presentation/screens/htp_main_page.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test1_home.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test2_home.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test3_home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomDrawer extends StatelessWidget {
-  const CustomDrawer({super.key});
+  final String? token;
+
+  const CustomDrawer({super.key, this.token});
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
       child: Container(
-        color: Colors.black, // 메뉴바 배경색을 검정색으로 설정
+        color: Colors.black,
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
@@ -29,8 +33,8 @@ class CustomDrawer extends StatelessWidget {
             ),
             ListTile(
               leading: const CircleAvatar(
-                backgroundColor: primaryColor, // 원의 색상 설정
-                radius: 11, // 원의 반지름 설정
+                backgroundColor: primaryColor,
+                radius: 11,
               ),
               title: const Text(
                 '심리 검사',
@@ -41,13 +45,27 @@ class CustomDrawer extends StatelessWidget {
               },
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 40.0), // 들여쓰기 설정
+              padding: const EdgeInsets.only(left: 40.0),
               child: Column(
                 children: [
                   ListTile(
                     title: const Text('HTP', style: TextStyle(color: Colors.white)),
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(context);
+                      final prefs = await SharedPreferences.getInstance();
+                      final token = prefs.getString('jwt_token');
+                      if (token != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HTPMainPage(token: token),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Token is missing!')),
+                        );
+                      }
                     },
                   ),
                   ListTile(
@@ -56,7 +74,8 @@ class CustomDrawer extends StatelessWidget {
                       Navigator.pop(context);
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const psyServey1()),  // Survey1 페이지로 이동합니다
+                        // MaterialPageRoute(builder: (context) => const psyServey1()),  // Survey1 페이지로 이동합니다
+                        MaterialPageRoute(builder: (context) => const AnxietyTestResults()),  // 불안 민감도 검사 홈 페이지로 이동합니다
                       );
                     },
                   ),
@@ -66,7 +85,7 @@ class CustomDrawer extends StatelessWidget {
                       Navigator.pop(context);
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const psyServey2()),  // Survey1 페이지로 이동합니다
+                        MaterialPageRoute(builder: (context) => const StressTestResults()),  // 
                       );                      
                     },
                   ),
@@ -76,7 +95,7 @@ class CustomDrawer extends StatelessWidget {
                       Navigator.pop(context);
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const psyServey3()),  // Survey1 페이지로 이동합니다
+                        MaterialPageRoute(builder: (context) => const AngerTestResults()),  // 노바코 분노 검사 페이지로 이동합니다
                       );                      
                     },
                   ),
@@ -85,12 +104,12 @@ class CustomDrawer extends StatelessWidget {
             ),
             ListTile(
               leading: const CircleAvatar(
-                backgroundColor: primaryColor, // 원의 색상 설정
-                radius: 11, // 원의 반지름 설정
+                backgroundColor: primaryColor,
+                radius: 11,
               ),
               title: const Text(
                 '나의 감정 분석',
-                style: TextStyle(color: Colors.white, fontSize: 20), // 폰트 크기 키우기
+                style: TextStyle(color: Colors.white, fontSize: 20),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -102,3 +121,4 @@ class CustomDrawer extends StatelessWidget {
     );
   }
 }
+

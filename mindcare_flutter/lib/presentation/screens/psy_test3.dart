@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/urls.dart';
-import '../widgets/custom_drawer.dart';
-import '../widgets/custom_app_bar.dart';
-import '../widgets/psy_test.dart';
+import 'package:mindcare_flutter/core/constants/colors.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
+import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
+import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
+import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
+import 'package:mindcare_flutter/presentation/screens/psy_test3_home.dart';
 
 void main() {
   runApp(const MyApp());
@@ -77,22 +81,57 @@ class _psyServey3State extends State<psyServey3> {
     setState(() {
       totalScore = answers.values.fold(0, (sum, item) => sum + item);
       if (totalScore <= 45) {
-        resultMessage = "일반적으로 체험하는 분노와 괴로움의 양이 상당히 적다.\n소수의 사람만이 이에 해당된다.";
+        resultMessage = "당신이 일반적으로 느끼는 분노의 정도는 상당히 적은 편에 속합니다.\n당신은 침착한 사람군에 속하는 사람입니다.'";
       } else if (totalScore <= 55) {
-        resultMessage = "보통 사람들보다 상당히 평화스럽다.";
+        resultMessage = "당신은 평균적인 사람보다 평화로운 사람입니다.";
       } else if (totalScore <= 75) {
-        resultMessage = "보통 사람들처럼 적당히 분노를 표출한다.";      
+        resultMessage = "곤혹스런 상황에서 당신은 보통의 여느 사람들처럼 적당한 분노를 표출합니다.";      
+      } else if (totalScore <= 85) {
+        resultMessage = "곤혹스런 상황에서 당신은 분로를 표출하는 경향이 짙습니다.\n보통 사람보다 화를 더 내는 편입니다.";      
       } else {
-        resultMessage = "보통 사람보다 흥분하기 쉬우며 화를 더 잘 내는 편이다.\n흔히 성난 방법으로 인생의 많은 괴로움에 반응한다.";
+        resultMessage = "당신은 분노 챔피언.\n종종 격렬한 분노를 표출 한 후 그 감정이 쉽게 사라지지 않는 자신을 보게 될 것입니다.";
       }
 
       // 결과를 Django 서버에 저장
-      PsyTest.SubmitSurveyResult(totalScore, resultMessage, 'anger');
+      PsyCommon.SubmitSurveyResult(totalScore, resultMessage, 'anger');
 
       // 결과 페이지를 표시하도록 상태 업데이트
       showResult = true;
     });
   }
+
+  void _showAlertDialog() {
+    AlertDialogHelper.showAlert(
+      context,
+      '심리검사',
+      '모든 문항에 답변을 선택해주세요.',
+    );
+  }
+
+  void _showConfirmDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // 화면의 다른 부분을 클릭해도 닫히지 않음
+      builder: (BuildContext context) {
+        return ConfirmDialog(
+          onConfirm: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const AngerTestResults()),
+            );
+          },
+          onCancel: () {
+            Navigator.of(context).pop(); // 다이얼로그 닫기
+          },
+          message: '심리검사를 취소 하시겠습니까?', // 메시지 전달
+          confirmButtonText: '예', // 확인 버튼 텍스트
+          cancelButtonText: '아니오', // 취소 버튼 텍스트
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -123,79 +162,112 @@ class _psyServey3State extends State<psyServey3> {
           ),
         ],
       ),
-
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (showResult) {
-            // 결과 페이지가 표시된 상태에서는 아무 작업도 하지 않음
-            return;
-          }
-
-          int currentPage = _pageController.page!.toInt();
-          // int start = currentPage * 9;
-          // int end = (currentPage + 1) * 9;
-          int start = 0;
-          int end = 0;
-          if (currentPage == 0) {
-            start = 0;
-            end = 9;
-          } else if (currentPage == 1) {
-            start = 9;
-            end = 17;
-          } else if (currentPage == 2) {
-            start = 17;
-            end = 25;
-          }
-
-          bool allAnswered = true;
-          for (int i = start; i < end; i++) {
-            if (answers[i] == null) {
-              allAnswered = false;
-              break;
-            }
-          }
-
-          if (allAnswered) {
-            if (currentPage < 2) {
-              _pageController.nextPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeIn,
-              );
-            } else {
-               _showResultPage();
-            }
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('모든 문항에 답변을 선택해주세요.'),
-              ),
-            );
-          }
-        },
-        child: const Icon(Icons.arrow_forward),
-      ),
     );
   }
 
+
   Widget buildQuestionPageView() {
-    return PageView(
-      controller: _pageController,
+    return Column(
+      
       children: [
-        buildQuestionPage(0, 9),
-        buildQuestionPage(9, 17),
-        buildQuestionPage(17, 25),
+        Expanded(
+          child: PageView(
+            controller: _pageController,
+            children: [
+              buildQuestionPage(0, 9),
+              buildQuestionPage(9, 17),
+              buildQuestionPage(17, 25),
+            ],
+          ),
+        ),
+        Row(
+          
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              heroTag: 'backButton', // Hero 태그를 고유하게 설정
+              onPressed: () {
+                if (_pageController.page == 0) {
+                  _showConfirmDialog();
+                } else {
+                  _pageController.previousPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeIn,
+                  );
+                }
+              },
+              child: const Icon(Icons.arrow_back),
+            ),
+            FloatingActionButton(
+              heroTag: 'nextButton', // Hero 태그를 고유하게 설정
+              onPressed: () {
+                if (showResult) {
+                  // 결과 페이지가 표시된 상태에서는 아무 작업도 하지 않음
+                  return;
+                }
+
+                int currentPage = _pageController.page!.toInt();
+                int start = 0;
+                int end = 0;
+                if (currentPage == 0) {
+                  start = 0;
+                  end = 9;
+                } else if (currentPage == 1) {
+                  start = 9;
+                  end = 17;
+                } else if (currentPage == 2) {
+                  start = 17;
+                  end = 25;
+                }
+
+                bool allAnswered = true;
+                for (int i = start; i < end; i++) {
+                  if (answers[i] == null) {
+                    allAnswered = false;
+                    break;
+                  }
+                }
+
+                if (allAnswered) {
+                  if (currentPage < 2) {
+                    _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeIn,
+                    );
+                  } else {
+                    _showResultPage();
+                  }
+                } else {
+                  _showAlertDialog();
+                }
+              },
+              child: const Icon(Icons.arrow_forward),
+            ),
+          ],
+        ),
       ],
     );
   }
 
   Widget buildQuestionPage(int start, int end) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Table(
-          border: TableBorder.all(color : Colors.grey.shade300, style: BorderStyle.solid,
-                  width: 0.5),
-          columnWidths: const <int, TableColumnWidth>{
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: SingleChildScrollView(
+        child: Column(
+           children: [          
+            Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.8), // 배경색 설정
+              borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+              border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+            ),
+            child: Table(
+              border: TableBorder(
+                horizontalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+                verticalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+                // top, bottom, left, right border can be customized here if needed
+              ),
+              columnWidths: const <int, TableColumnWidth>{
             0: FlexColumnWidth(),
             1: FixedColumnWidth(70),
             2: FixedColumnWidth(70),
@@ -211,7 +283,7 @@ class _psyServey3State extends State<psyServey3> {
                 const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Text(
-                    '질문사항',
+                    '[노바코 분노 검사] 질문사항',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -242,25 +314,48 @@ class _psyServey3State extends State<psyServey3> {
                         onChanged: (int? value) {
                           setState(() {
                             answers[i] = index;
-                          });
-                        },
-                      ),
-                    );
-                  }),
-                ],
-              ),
-          ],
+                              });
+                            },
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+              ],
+            ),
+          )
+        ],
         ),
       ),
     );
   }
 
+
   Widget buildResultPage() {
     return Center(
-      child: Text(
-        '총 점수: $totalScore\n$resultMessage',
-        style: const TextStyle(fontSize: 24),
-        textAlign: TextAlign.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '총 점수: $totalScore\n$resultMessage',
+            style: const TextStyle(fontSize: 24),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const AngerTestResults()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              foregroundColor: secondaryColor,
+            ),              
+            child: const Text('돌아가기'),
+          ),
+        ],
       ),
     );
   }

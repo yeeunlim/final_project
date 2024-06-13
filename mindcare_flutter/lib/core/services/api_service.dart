@@ -6,7 +6,7 @@ import 'auth_service.dart';
 class ChatbotService {
   // 챗봇에 메시지를 보내는 메서드
   static Future<Map<String, dynamic>> sendMessage(String message) async {
-    final token = await AuthHelpers().getToken();
+    final token = await AuthHelpers.getToken();
     final response = await http.get(
       Uri.parse('$chatbotDiaryUrl/chatbot/?s=$message'),
       headers: {
@@ -26,7 +26,7 @@ class ChatbotService {
 class DiaryEntryService {
   // 일기 엔트리 리스트 조회 (GET)
   Future<List<dynamic>> getDiaryEntries({String? entryDate}) async {
-    final token = await AuthHelpers().getToken();
+    final token = await AuthHelpers.getToken();
     final response = await http.get(
       Uri.parse(
           '$chatbotDiaryUrl/diary_entries${entryDate != null ? '?entry_date=$entryDate' : ''}'),
@@ -44,7 +44,7 @@ class DiaryEntryService {
 
   // 특정 ID의 일기 엔트리 조회 (GET)
   Future<Map<String, dynamic>> getDiaryEntryById(int diaryEntryId) async {
-    final token = await AuthHelpers().getToken();
+    final token = await AuthHelpers.getToken();
     final response = await http.get(
       Uri.parse('$chatbotDiaryUrl/diary_entries/$diaryEntryId/'),
       headers: {
@@ -62,7 +62,7 @@ class DiaryEntryService {
   // 일기 엔트리 생성 (POST)
   Future<Map<String, dynamic>> createDiaryEntry(
       String diaryText, String entryDate) async {
-    final token = await AuthHelpers().getToken();
+    final token = await AuthHelpers.getToken();
     final response = await http.post(
       Uri.parse('$chatbotDiaryUrl/diary_entries/'),
       headers: {
@@ -85,7 +85,7 @@ class DiaryEntryService {
   // 일기 엔트리 수정 (PUT)
   Future<Map<String, dynamic>> updateDiaryEntry(
       int id, String diaryText, String entryDate) async {
-    final token = await AuthHelpers().getToken();
+    final token = await AuthHelpers.getToken();
     final response = await http.put(
       Uri.parse('$chatbotDiaryUrl/diary_entries/$id/'),
       headers: {
@@ -108,7 +108,7 @@ class DiaryEntryService {
   // 일기 엔트리 부분 업데이트 (PATCH)
   Future<Map<String, dynamic>> patchDiaryEntry(
       int id, String diaryText, String entryDate) async {
-    final token = await AuthHelpers().getToken();
+    final token = await AuthHelpers.getToken();
     final response = await http.patch(
       Uri.parse('$chatbotDiaryUrl/diary_entries/$id/'),
       headers: {
@@ -130,7 +130,7 @@ class DiaryEntryService {
 
   // 일기 엔트리 삭제 (DELETE)
   Future<void> deleteDiaryEntry(int id) async {
-    final token = await AuthHelpers().getToken();
+    final token = await AuthHelpers.getToken();
     final response = await http.delete(
       Uri.parse('$chatbotDiaryUrl/diary_entries/$id/'),
       headers: {
@@ -164,7 +164,7 @@ class DailyAnalysisService {
 class MonthlyAnalysisService {
   // 해당 유저의 모든 일기 엔트리에서 기분 데이터를 가져옴
   static Future<Map<String, dynamic>> fetchMoodData() async {
-    final token = await AuthHelpers().getToken();
+    final token = await AuthHelpers.getToken();
     try {
       final response = await http.get(
         Uri.parse('$chatbotDiaryUrl/mood_data/'),
@@ -185,7 +185,7 @@ class MonthlyAnalysisService {
   }
   // 특정 월의 일기 데이터 조회
   static Future<List<dynamic>> fetchMonthlyData() async {
-    final token = await AuthHelpers().getToken();
+    final token = await AuthHelpers.getToken();
     try {
       final response = await http.get(
         Uri.parse('$chatbotDiaryUrl/monthly_analysis/2024/6/'),
@@ -202,6 +202,74 @@ class MonthlyAnalysisService {
       }
     } catch (e) {
       throw Exception('Error occurred: $e');
+    }
+  }
+}
+
+
+
+/// HTP TEST
+class HTPApiService {
+  static Future<Map<String, dynamic>?> uploadDrawingBase64(String base64Image, String type) async {
+    String? token = await AuthHelpers.getToken(); // 토큰 가져오기
+    if (token == null) {
+      print('Token is missing!');
+      return null;
+    }
+
+    final url = Uri.parse('$htpTestUrl/upload_drawing/');
+    print("Uploading drawing with token: $token");
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'image': base64Image,
+        'type': type,
+      }),
+    );
+
+    print("Response status: ${response.statusCode}");
+    print("Response body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print('Failed to upload drawing: ${response.body}');
+      return null;
+    }
+  }
+
+  static Future<List<dynamic>?> finalizeDiagnosis(List<String> drawingIds) async {
+    String? token = await AuthHelpers.getToken(); // 토큰 가져오기
+    if (token == null) {
+      print('Token is missing!');
+      return null;
+    }
+
+    final url = Uri.parse('$htpTestUrl/finalize_diagnosis/');
+    print("Finalizing diagnosis with token: $token");
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'drawingIds': drawingIds,
+      }),
+    );
+
+    print("Response status: ${response.statusCode}");
+    print("Response body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print('Failed to finalize diagnosis: ${response.body}');
+      return null;
     }
   }
 }

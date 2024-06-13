@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mindcare_flutter/core/constants/colors.dart';
 import 'dart:convert';
-import 'login_screen.dart';
+import 'package:mindcare_flutter/presentation/screens/login_screen.dart';
+import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
 
 void main() {
   runApp(const MyApp());
@@ -114,6 +116,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
+  void _showAlertDialog(String msg, bool move) {
+    AlertDialogHelper.showAlert(
+      context,
+      '회원가입',
+      '회원가입 $msg',
+      onConfirm: move ? () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      } : null,
+    );
+  }
+
+
   Future<void> _signUp() async {
     setState(() {
       _usernameError = _validateUsername(_usernameController.text);
@@ -143,17 +160,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
 
       if (response.statusCode == 201 || response.statusCode == 204) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('회원가입 성공!')),
-        );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-        );
+        _showAlertDialog(' 되었습니다. 로그인 해주세요.', true);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('회원가입 실패: ${response.body}')),
-        );
+        _showAlertDialog(' 오류 : ${response.body}', false);
       }
     }
   }
@@ -164,7 +173,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/log_in.jpg'),
+            image: NetworkImage(ImageUrls.loginPageBackground),
             fit: BoxFit.cover,
           ),
         ),
@@ -317,18 +326,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       obscureText: obscureText,
     );
   }
-
-  // Widget _buildErrorText(String? errorText) {
-  //   return errorText != null
-  //       ? Align(
-  //           alignment: Alignment.centerLeft,
-  //           child: Text(
-  //             errorText,
-  //             style: const TextStyle(color: Colors.amber, fontSize: 12),
-  //           ),
-  //         )
-  //       : Container();
-  // }
 
   String? _validateUsername(String? value) {
     if (value == null || value.isEmpty) {
