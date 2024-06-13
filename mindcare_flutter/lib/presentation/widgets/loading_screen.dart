@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:mindcare_flutter/core/constants/loading_texts.dart';
+import 'package:mindcare_flutter/core/constants/colors.dart';
 
-import '../../core/constants/urls.dart'; // loadingTexts 사용을 위해 import
+import '../../core/constants/urls.dart';
 
 class LoadingScreen extends StatefulWidget {
   final bool isLoading;
@@ -57,7 +58,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
           height: 400, // 고정 높이
           padding: const EdgeInsets.all(20.0),
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor,
+            color: primaryColor,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(

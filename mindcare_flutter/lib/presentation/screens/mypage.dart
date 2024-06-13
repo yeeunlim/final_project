@@ -5,7 +5,7 @@ import 'package:mindcare_flutter/routes/app_routes.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
-import 'package:mindcare_flutter/core/themes/color_schemes.dart';
+import 'package:mindcare_flutter/core/constants/colors.dart';
 
 class MyPage extends StatefulWidget {
   const MyPage({super.key});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mindcare_flutter/core/themes/color_schemes.dart';
+import 'package:mindcare_flutter/core/constants/colors.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test1.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test2.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test3.dart';

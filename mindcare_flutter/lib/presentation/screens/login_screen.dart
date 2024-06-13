@@ -3,7 +3,7 @@ import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'package:mindcare_flutter/core/services/auth_service.dart';
 import 'package:mindcare_flutter/routes/app_routes.dart';
 import 'register.dart';
-import 'package:mindcare_flutter/core/themes/color_schemes.dart';
+import 'package:mindcare_flutter/core/constants/colors.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -113,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               if (success) {
                                 Navigator.pushNamed(
                                   context,
-                                  AppRoutes.main, // 'AppRoutes.main'을 사용하여 네비게이션
+                                  AppRoutes.chatbotDiary, // 'AppRoutes.main'을 사용하여 네비게이션
                                 );
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(

@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ChatbotResponseView, DiaryAnalysisView, DiaryEntryViewSet, MonthlyAnalysisViewSet, MoodDataViewSet
+from .views import ChatbotResponseView, DiaryEntryViewSet, MonthlyAnalysisViewSet, MoodDataViewSet
 
 app_name = 'chatbot_diary'
 
@@ -11,6 +11,5 @@ router.register(r'monthly_analysis/(?P<year>\d{4})/(?P<month>\d{1,2})', MonthlyA
 
 urlpatterns = [
     path('chatbot/', ChatbotResponseView.as_view(), name='chatbot'),  # http://127.0.0.1:8000/api/chatbot_diary/chatbot/?s=입력문장
-    path('diary_analysis/', DiaryAnalysisView.as_view(), name='diary-analysis'),
     path('', include(router.urls)),
 ]
