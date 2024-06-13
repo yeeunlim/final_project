@@ -7,7 +7,7 @@ import 'package:mindcare_flutter/presentation/screens/psy_test2_home.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test3_home.dart';
 
 import 'package:mindcare_flutter/core/constants/urls.dart';
-import 'package:mindcare_flutter/core/themes/color_schemes.dart';
+import 'package:mindcare_flutter/core/constants/colors.dart';
 
 Map<String, dynamic> get_psyTestInfo(String surveyType) {
   final Color color1 = emotionColors['슬픔'] ?? Colors.red.shade50;
