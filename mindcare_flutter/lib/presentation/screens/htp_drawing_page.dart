@@ -12,10 +12,10 @@ import 'main_screen.dart';
 
 
 class DrawingData {
+  int? id;
   List<DrawingPoints> points;
-  String? drawingId;
 
-  DrawingData({required this.points, this.drawingId});
+  DrawingData({this.id, required this.points});
 }
 
 class DrawingProvider with ChangeNotifier {
@@ -39,13 +39,14 @@ class DrawingProvider with ChangeNotifier {
     return _drawings[step] ?? DrawingData(points: []);
   }
 
-  void updateDrawingId(int step, String drawingId) {
+  void removeDrawing(int step) {
     if (_drawings.containsKey(step)) {
-      _drawings[step]?.drawingId = drawingId;
+      _drawings.remove(step);
       notifyListeners();
     }
   }
 }
+
 
 class HTPDrawingPage extends StatefulWidget {
   final String token;
@@ -55,8 +56,6 @@ class HTPDrawingPage extends StatefulWidget {
   @override
   _HTPDrawingPageState createState() => _HTPDrawingPageState();
 }
-
-
 
 class _HTPDrawingPageState extends State<HTPDrawingPage> {
   final GlobalKey _globalKey = GlobalKey();
@@ -105,15 +104,24 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
 
       var response = await HTPApiService.uploadDrawingBase64(base64Image, _stepsText[_step]);
       if (response != null) {
+        final drawingProvider = Provider.of<DrawingProvider>(context, listen: false);
+
+        // Remove the old drawing ID for this step if it exists
+        final oldDrawing = drawingProvider.getDrawing(_step);
+        if (oldDrawing.id != null) {
+          _drawingIds.remove(oldDrawing.id.toString());
+        }
+
+        // Add new drawing ID
+        _drawingIds.add(response['id'].toString());
+
         setState(() {
-          _drawingIds.add(response['id'].toString());
           _result = '그림이 저장되었습니다.';
         });
         print("Current drawing IDs: $_drawingIds");
 
-        // Save current drawing data
-        final drawingProvider = Provider.of<DrawingProvider>(context, listen: false);
-        drawingProvider.saveDrawing(_step, DrawingData(points: _points));
+        // Save current drawing data with new ID
+        drawingProvider.saveDrawing(_step, DrawingData(id: response['id'], points: _points));
       }
     } catch (e) {
       print("Error in _nextStep: $e");
@@ -273,10 +281,10 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
                                       setState(() {
                                         RenderBox renderBox = context.findRenderObject() as RenderBox;
                                         Offset localPosition = renderBox.globalToLocal(details.localPosition);
-                                        if (localPosition.dx >= 0 &&
-                                            localPosition.dx <= renderBox.size.width &&
-                                            localPosition.dy >= 0 &&
-                                            localPosition.dy <= renderBox.size.height) {
+                                        if (localPosition.dx > 0 &&
+                                            localPosition.dx < renderBox.size.width &&
+                                            localPosition.dy > 0 &&
+                                            localPosition.dy < renderBox.size.height) {
                                           _points.add(DrawingPoints(
                                             points: localPosition,
                                             paint: Paint()
