@@ -17,6 +17,7 @@ from matplotlib import font_manager as fm
 import requests
 from io import BytesIO
 
+
 class UploadDrawing(APIView):
     parser_classes = [JSONParser]
     permission_classes = [IsAuthenticated]
@@ -58,6 +59,7 @@ class UploadDrawing(APIView):
         )
         serializer = DrawingSerializer(drawing)
         return Response(serializer.data)
+
 
 class FinalizeDiagnosis(APIView):
     permission_classes = [IsAuthenticated]
@@ -129,96 +131,36 @@ class FinalizeDiagnosis(APIView):
             except Exception as e:
                 print(f"Error processing drawing {drawing.id}: {e}")
 
-        # return Response(analysis_results)
         return Response(analysis_results, content_type="application/json; charset=utf-8")
 
     def predict(self, model, img):
         results = model(img)
         return results
 
-    # !!!!!!! !!!!!!!!
-    # def extract_detections(self, results, model, img_width, img_height):
-    #     detections = results.xyxy[0].cpu().numpy()
-    #     detections_info = []
-    #     for *xyxy, conf, cls in detections:
-    #         x1, y1, x2, y2 = xyxy
-    #         width = x2 - x1
-    #         height = y2 - y1
-    #         center_x = x1 + width / 2
-    #         center_y = y1 + height / 2
-    #         cls_name = model.names[int(cls)]
 
-    #         left_threshold = 0.3
-    #         right_threshold = 0.7
-    #         top_threshold = 0.3
-    #         bottom_threshold = 0.7
-
-    #         center_x_ratio = center_x / img_width
-    #         center_y_ratio = center_y / img_height
-
-    #         if center_x_ratio < left_threshold:
-    #             x_position = "left"
-    #         elif center_x_ratio > right_threshold:
-    #             x_position = "right"
-    #         else:
-    #             x_position = "center"
-
-    #         if center_y_ratio < top_threshold:
-    #             y_position = "top"
-    #         elif center_y_ratio > bottom_threshold:
-    #             y_position = "bottom"
-    #         else:
-    #             y_position = "center"
-
-    #         if x_position == "center" and y_position == "center":
-    #             centered_position = "center"
-    #         elif x_position == "center":
-    #             centered_position = y_position
-    #         elif y_position == "center":
-    #             centered_position = x_position
-    #         else:
-    #             centered_position = f"{x_position}-{y_position}"
-
-    #         detections_info.append({
-    #             "class": cls_name,
-    #             "x1": x1,
-    #             "y1": y1,
-    #             "x2": x2,
-    #             "y2": y2,
-    #             "width": width,
-    #             "height": height,
-    #             "center_x": center_x,
-    #             "center_y": center_y,
-    #             "width_ratio": width / img_width,
-    #             "height_ratio": height / img_height,
-    #             "center_x_ratio": center_x_ratio,
-    #             "center_y_ratio": center_y_ratio,
-    #             "confidence": conf,
-    #             "centered_position": centered_position
-    #         })
-    #     return detections_info
-    
-    
     def extract_detections(self, results, model, img_width, img_height):
         try:
-            detections = results.xyxy[0].cpu().numpy()
+            detections = results.pandas().xyxy[0]  # 결과를 pandas DataFrame으로 변환
+            print(detections)  # 데이터 확인용 출력
+            if detections.empty:
+                print("No detections found")
+                return []
         except Exception as e:
-            print(f"Error converting results to numpy array: {e}")
+            print(f"Error converting results to DataFrame: {e}")
             return []
 
         detections_info = []
-        for detection in detections:
-            if len(detection) < 6:
-                print(f"Invalid detection format: {detection}")
-                continue
-
+        for index, row in detections.iterrows():
             try:
-                x1, y1, x2, y2, conf, cls = detection[:6]
+                x1, y1, x2, y2 = float(row['xmin']), float(row['ymin']), float(row['xmax']), float(row['ymax'])
+                conf, cls = float(row['confidence']), int(row['class'])
                 width = x2 - x1
                 height = y2 - y1
                 center_x = x1 + width / 2
                 center_y = y1 + height / 2
                 cls_name = model.names[int(cls)]
+                name = row.get('name', cls_name)  # 'name' 필드가 존재하지 않을 경우 cls_name 사용
+                print(f"Detection: x1={x1}, y1={y1}, x2={x2}, y2={y2}, class={cls_name}, name={name}")  # 데이터 확인용 출력
             except Exception as e:
                 print(f"Error extracting detection values: {e}")
                 continue
@@ -256,6 +198,7 @@ class FinalizeDiagnosis(APIView):
 
             detections_info.append({
                 "class": cls_name,
+                "name": name,
                 "x1": x1,
                 "y1": y1,
                 "x2": x2,
@@ -271,7 +214,15 @@ class FinalizeDiagnosis(APIView):
                 "confidence": conf,
                 "centered_position": centered_position
             })
+
+        # Check for missing or invalid data in detections_info
+        for detection in detections_info:
+            if any(value is None for value in detection.values()):
+                print(f"Invalid detection data: {detection}")
+                return []
+
         return detections_info
+
 
 
     def load_analysis_conditions(self, json_path):
@@ -302,25 +253,31 @@ class FinalizeDiagnosis(APIView):
             for condition in analysis_conditions:
                 if condition["class"] == cls_name:
                     for cond in condition["conditions"]:
-                        check_function = eval(cond["check"])
-                        args = [info]
-                        if "count" in check_function.__code__.co_varnames:
-                            args.append(class_counts[cls_name])
-                        if "class_counts" in check_function.__code__.co_varnames:
-                            args.append(class_counts)
-                        if "mean_w" in check_function.__code__.co_varnames:
-                            args.append(class_stats[cls_name]["mean_w"])
-                        if "std_w" in check_function.__code__.co_varnames:
-                            args.append(class_stats[cls_name]["std_w"])
-                        if "mean_h" in check_function.__code__.co_varnames:
-                            args.append(class_stats[cls_name]["mean_h"])
-                        if "std_h" in check_function.__code__.co_varnames:
-                            args.append(class_stats[cls_name]["std_h"])
+                        try:
+                            check_function = self.get_check_function(cond["check"])
+                            args = [info]
+                            
+                            if "count" in check_function.__code__.co_varnames:
+                                args.append(class_counts.get(cls_name, 0))
+                            if "class_counts" in check_function.__code__.co_varnames:
+                                args.append(class_counts)
+                            if "mean_w" in check_function.__code__.co_varnames:
+                                args.append(class_stats.get(cls_name, {}).get("mean_w", 0))
+                            if "std_w" in check_function.__code__.co_varnames:
+                                args.append(class_stats.get(cls_name, {}).get("std_w", 0))
+                            if "mean_h" in check_function.__code__.co_varnames:
+                                args.append(class_stats.get(cls_name, {}).get("mean_h", 0))
+                            if "std_h" in check_function.__code__.co_varnames:
+                                args.append(class_stats.get(cls_name, {}).get("std_h", 0))
 
-                        expected_args = check_function.__code__.co_varnames[:check_function.__code__.co_argcount]
-                        args_to_pass = [arg for name, arg in zip(expected_args, args) if name in expected_args]
-                        if check_function(*args_to_pass):
-                            analysis.add(cond["result"])
+                            expected_args = check_function.__code__.co_varnames[:check_function.__code__.co_argcount]
+                            args_to_pass = [arg for name, arg in zip(expected_args, args) if name in expected_args]
+                            
+                            if check_function(*args_to_pass):
+                                analysis.add(cond["result"])
+                        except Exception as e:
+                            pass
+                            # print(f"Error evaluating condition '{cond['check']}': {e}")
 
             if analysis:
                 analysis_text = f"{cls_name}: {' '.join(analysis)}"
@@ -343,13 +300,51 @@ class FinalizeDiagnosis(APIView):
             additional_text = "당신의 그림에는 상당히 많은 요소들이 나타나고 있어요. 괜찮으신가요? 이는 당신의 마음에 많은 생각과 감정이 공존하고 있음을 나타낼 수 있습니다. 이러한 복잡성은 창의성과 깊이의 표시일 수도 있지만, 동시에 내면의 혼란을 의미할 수도 있어요. 잠시 시간을 내어 이 요소들을 차분히 살펴보시는 게 어떨까요?"
         else:
             base_text = "당신의 그림에는 매우 많은 요소들이 나타나고 있습니다. 이는 당신의 마음이 매우 복잡하고 분주한 상태임을 나타낼 수 있어요. 이런 상태는 창의성의 폭발이나 깊은 통찰력의 징후일 수 있지만, 동시에 과도한 스트레스나 내면의 갈등을 반영할 수도 있습니다."
-            if len(analysis_list) >= 8:
+            if len(analysis_list) >= 6:
                 additional_text = base_text + " 솔직히 말씀드리면, 이 정도로 복잡한 그림은 상당한 심리적 압박감을 나타낼 수 있어 걱정이 됩니다. 전문가와 상담을 받아보시는 것이 좋을 것 같아요. 그들은 당신의 내면을 더 깊이 이해하고 정리하는 데 도움을 줄 수 있습니다."
             else:
                 additional_text = base_text + " 전문적인 심리 상담을 받아보시는 것이 도움이 될 수 있습니다. 상담사는 이 복잡한 요소들을 해석하고, 당신이 내면의 균형을 되찾는 데 도움을 줄 수 있어요. 이는 자기 이해와 성장의 기회가 될 수 있습니다."
 
         analysis_list.insert(0, additional_text)
         return analysis_list
+
+    def get_check_function(self, check_string):
+        function_map = {
+            'lambda info, mean_w, std_w, mean_h, std_h: info["width"] > mean_w + 2 * std_w and info["height"] > mean_h + 2 * std_h':
+                lambda info, mean_w, std_w, mean_h, std_h: info["width"] > mean_w + 2 * std_w and info["height"] > mean_h + 2 * std_h,
+            'lambda info, mean_w, std_w, mean_h, std_h: info["width"] < mean_w - 2 * std_w and info["height"] < mean_h - 2 * std_h':
+                lambda info, mean_w, std_w, mean_h, std_h: info["width"] < mean_w - 2 * std_w and info["height"] < mean_h - 2 * std_h,
+            'lambda info, count: count == 0':
+                lambda info, count: count == 0,
+            'lambda info, count: count >= 3':
+                lambda info, count: count >= 3,
+            'lambda info: info["centered_position"] == "left"':
+                lambda info: info["centered_position"] == "left",
+            'lambda info: info["centered_position"] == "right"':
+                lambda info: info["centered_position"] == "right",
+            'lambda info: info["centered_position"] == "bottom"':
+                lambda info: info["centered_position"] == "bottom",
+            'lambda info: info["centered_position"] == "left-top"':
+                lambda info: info["centered_position"] == "left-top",
+            'lambda info: info["centered_position"] == "right-top"':
+                lambda info: info["centered_position"] == "right-top",
+            'lambda info: info["centered_position"] == "left-bottom"':
+                lambda info: info["centered_position"] == "left-bottom",
+            'lambda info: info["centered_position"] == "right-bottom"':
+                lambda info: info["centered_position"] == "right-bottom",
+            'lambda info, mean_w, std_w, mean_h, std_h: info["width"] > mean_w + 2 * std_w and info["height"] > mean_h + 2 * std_h':
+                lambda info, mean_w, std_w, mean_h, std_h: info["width"] > mean_w + 2 * std_w and info["height"] > mean_h + 2 * std_h,
+            'lambda info, mean_w, std_w, mean_h, std_h: info["width"] < mean_w - 2 * std_w and info["height"] < mean_h - 2 * std_h':
+                lambda info, mean_w, std_w, mean_h, std_h: info["width"] < mean_w - 2 * std_w and info["height"] < mean_h - 2 * std_h,
+            'lambda info, count: count >= 2':
+                lambda info, count: count >= 2,
+        }
+        if check_string in function_map:
+            return function_map[check_string]
+        else:
+            raise ValueError(f"Unknown check function: {check_string}")
+
+
 
     def visualize_and_upload(self, img, detections_info, model, user_id, drawing_type):
         plt.figure(figsize=(10, 10))
@@ -381,5 +376,3 @@ class FinalizeDiagnosis(APIView):
         
         result_img_url = f'https://mindcare-pj.s3.amazonaws.com/{result_file_name}'
         return result_img_url
-
-
