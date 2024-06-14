@@ -59,7 +59,7 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
     try {
       final diaryEntryService = DiaryEntryService();
       await diaryEntryService.deleteDiaryEntry(_entryData['id']);
-      Navigator.pop(context); // 일기 삭제 후 이전 화면으로 돌아갑니다.
+      Navigator.pop(context, true); // 일기 삭제 후 true 반환
     } catch (e) {
       print('Error occurred: $e');
     }
@@ -83,6 +83,7 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
         _entryData = updatedEntryData;
         _isLoading = false; // 로딩 종료
       });
+      Navigator.pop(context, true); // 수정 완료 후 true 반환
     } catch (e) {
       print('Error occurred: $e');
       setState(() {

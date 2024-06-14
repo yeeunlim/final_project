@@ -12,65 +12,98 @@ class EmotionCircles extends StatelessWidget {
   Widget build(BuildContext context) {
     final maxCount = emotionCounts.values.reduce(max); // 가장 빈번한 감정의 수를 찾습니다.
     final random = Random();
-    final size = MediaQuery.of(context).size;
-    final List<Map<String, dynamic>> circles = []; // 타입을 명시하여 리스트 선언
 
-    for (var entry in emotionCounts.entries) {
-      final proportion = entry.value / maxCount; // 비례 계산
-      final radius = 50 + (proportion * 50); // 반지름 계산
-      final emotion = entry.key;
-      final majorCategory = emotionMajorCategory[emotion] ?? '중립'; // 대분류 구하기
-      final color = emotionColors[majorCategory] ?? Colors.grey; // 색상 구하기
-      Offset offset;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final containerSize = Size(constraints.maxWidth, constraints.maxHeight);
+        final double minDistance = 10.0; // 최소 거리 설정
+        final List<Map<String, dynamic>> circles = []; // 타입을 명시하여 리스트 선언
 
-      // 다른 원들과 겹치지 않도록 위치를 찾기
-      bool isOverlapping;
-      do {
-        isOverlapping = false;
-        offset = Offset(
-          size.width / 2 + (random.nextDouble() - 0.5) * size.width / 2,
-          size.height / 2 + (random.nextDouble() - 0.5) * size.height / 2,
+        // 원의 개수에 따라 boundingRect 크기 조정
+        final int numberOfCircles = emotionCounts.length;
+        final double baseWidth = containerSize.width * 0.6; // 기본 너비 설정
+        final double baseHeight = containerSize.height * 0.6; // 기본 높이 설정
+        final double boundingRectWidth = baseWidth + sqrt(numberOfCircles) * 20; // 원의 개수에 따라 너비 조정
+        final double boundingRectHeight = baseHeight + sqrt(numberOfCircles) * 20; // 원의 개수에 따라 높이 조정
+        final Rect boundingRect = Rect.fromLTWH(
+          (containerSize.width - boundingRectWidth) / 2,
+          (containerSize.height - boundingRectHeight) / 2,
+          boundingRectWidth,
+          boundingRectHeight,
         );
 
-        for (var circle in circles) {
-          final distance = (offset - circle['offset']).distance;
-          if (distance < (circle['radius'] + radius) / 2) {
-            isOverlapping = true;
-            break;
-          }
+        for (var entry in emotionCounts.entries) {
+          final proportion = entry.value / maxCount; // 비례 계산
+          final radius = 25 + (proportion * 25); // 반지름 계산 (최대 반지름 50으로 설정)
+          final emotion = entry.key;
+          final majorCategory = emotionMajorCategory[emotion] ?? '중립'; // 대분류 구하기
+          final color = emotionColors[majorCategory] ?? Colors.grey; // 색상 구하기
+
+          bool isOverlapping;
+          int tries = 0; // 시도 횟수 제한
+          Offset offset;
+
+          do {
+            isOverlapping = false;
+
+            // 포락선 안에서 랜덤 위치 생성
+            final x = boundingRect.left + radius + (random.nextDouble() * (boundingRect.width - 2 * radius));
+            final y = boundingRect.top + radius + (random.nextDouble() * (boundingRect.height - 2 * radius));
+            offset = Offset(x, y);
+
+            // 다른 원들과의 거리 계산
+            for (var circle in circles) {
+              final distanceBetweenCenters = (offset - circle['offset']).distance;
+              if (distanceBetweenCenters < (circle['radius'] + radius + minDistance)) {
+                isOverlapping = true;
+                break;
+              }
+            }
+            tries++;
+          } while (isOverlapping && tries < 500); // 최대 500번 시도
+
+          circles.add({
+            'radius': radius,
+            'emotion': emotion,
+            'color': color,
+            'offset': offset,
+          });
         }
-      } while (isOverlapping);
 
-      circles.add({
-        'radius': radius,
-        'emotion': emotion,
-        'color': color,
-        'offset': offset,
-      });
-    }
-
-    return Stack(
-      children: circles.map((circle) {
-        return Positioned(
-          left: (circle['offset'] as Offset).dx - (circle['radius'] as double) / 2,
-          top: (circle['offset'] as Offset).dy - (circle['radius'] as double) / 2,
+        return Center(
           child: Container(
-            width: circle['radius'] as double,
-            height: circle['radius'] as double,
+            width: containerSize.width,
+            height: containerSize.height,
             decoration: BoxDecoration(
-              color: circle['color'] as Color, // 색상 설정
-              shape: BoxShape.circle,
+              color: Colors.white.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(16.0),
             ),
-            child: Center(
-              child: Text(
-                circle['emotion'] as String,
-                style: const TextStyle(color: Colors.black),
-                textAlign: TextAlign.center,
-              ),
+            child: Stack(
+              children: circles.map((circle) {
+                return Positioned(
+                  left: (circle['offset'] as Offset).dx - (circle['radius'] as double),
+                  top: (circle['offset'] as Offset).dy - (circle['radius'] as double),
+                  child: Container(
+                    width: 2 * (circle['radius'] as double), // 원의 지름을 설정
+                    height: 2 * (circle['radius'] as double), // 원의 지름을 설정
+                    decoration: BoxDecoration(
+                      color: circle['color'] as Color, // 색상 설정
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        circle['emotion'] as String,
+                        style: const TextStyle(color: Colors.black),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ),
         );
-      }).toList(),
+      },
     );
   }
 }
