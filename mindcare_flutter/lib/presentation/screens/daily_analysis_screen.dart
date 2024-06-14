@@ -3,9 +3,12 @@ import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/emotion_pie_chart.dart';
 import '../widgets/confirm_dialog.dart';
-import 'package:mindcare_flutter/core/themes/color_schemes.dart';
+import '../widgets/loading_screen.dart';
+import 'package:mindcare_flutter/core/constants/colors.dart';
 import 'package:mindcare_flutter/core/services/api_service.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
+import 'package:mindcare_flutter/core/constants/emotion_responses.dart';
+import 'package:mindcare_flutter/core/constants/emotion_categories.dart'; // 감정 카테고리 파일 임포트
 
 class DailyAnalysisScreen extends StatefulWidget {
   const DailyAnalysisScreen({
@@ -25,23 +28,37 @@ class DailyAnalysisScreen extends StatefulWidget {
 
 class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
   late TextEditingController _editController;
+  late TextEditingController _dateController;
   bool _isEditing = false;
+  late Map<String, dynamic> _entryData;
+  String responseMessage = 'Loading...';
+  bool _isLoading = false; // 로딩 상태 변수 추가
 
   @override
   void initState() {
     super.initState();
     _editController = TextEditingController(text: widget.diaryText);
+    _dateController = TextEditingController(text: widget.entryDate);
+    _entryData = widget.entryData;
+
+    // 감정 응답 설정
+    final mostFeltEmotion = _entryData['most_felt_emotion'] ?? 'Unknown';
+    setState(() {
+      responseMessage = emotionResponses[mostFeltEmotion] ?? '감정을 인식할 수 없습니다.';
+    });
   }
 
   @override
   void dispose() {
     _editController.dispose();
+    _dateController.dispose();
     super.dispose();
   }
 
   Future<void> _deleteDiaryEntry(BuildContext context) async {
     try {
-      await DailyAnalysisService.deleteDiaryEntry(widget.entryData['id']);
+      final diaryEntryService = DiaryEntryService();
+      await diaryEntryService.deleteDiaryEntry(_entryData['id']);
       Navigator.pop(context); // 일기 삭제 후 이전 화면으로 돌아갑니다.
     } catch (e) {
       print('Error occurred: $e');
@@ -49,17 +66,40 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
   }
 
   Future<void> _updateDiaryEntry(BuildContext context) async {
+    setState(() {
+      _isLoading = true; // 로딩 시작
+    });
+
     try {
-      await DailyAnalysisService.updateDiaryEntry(
-        widget.entryData['id'],
+      final diaryEntryService = DiaryEntryService();
+      await diaryEntryService.patchDiaryEntry(
+        _entryData['id'],
         _editController.text,
-        widget.entryDate,
+        _dateController.text,
       );
+      final updatedEntryData = await _fetchDiaryEntry();
       setState(() {
         _isEditing = false;
+        _entryData = updatedEntryData;
+        _isLoading = false; // 로딩 종료
       });
     } catch (e) {
       print('Error occurred: $e');
+      setState(() {
+        _isLoading = false; // 로딩 종료
+      });
+    }
+  }
+
+  Future<Map<String, dynamic>> _fetchDiaryEntry() async {
+    try {
+      final diaryEntryService = DiaryEntryService();
+      final entry = await diaryEntryService.getDiaryEntryById(_entryData['id']);
+
+      return entry;
+    } catch (e) {
+      print('Error occurred: $e');
+      throw Exception('Failed to fetch diary entry');
     }
   }
 
@@ -87,10 +127,11 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
   @override
   Widget build(BuildContext context) {
     // Null 값에 대한 기본 처리
-    final emotionDistribution = widget.entryData['emotion_distribution'] ?? {};
-    final mostFeltEmotion = widget.entryData['most_felt_emotion'] ?? 'Unknown';
-    final mostThoughtBackground = widget.entryData['most_thought_background'] ?? 'Unknown';
-    final responseMessage = widget.entryData['response_message'] ?? 'No response available';
+    final emotionDistribution = _entryData['emotion_distribution'] ?? {};
+    final mostFeltEmotion = _entryData['most_felt_emotion'] ?? 'Unknown';
+    final mostThoughtBackground = _entryData['most_thought_background'] ?? 'Unknown';
+    final emotionCategory = emotionSubCategory[mostFeltEmotion]; // 감정 대분류 구하기
+    final emotionColor = emotionColors[emotionCategory]; // 감정 색상 구하기
 
     return Scaffold(
       appBar: const CustomAppBar(), // 공통 AppBar 사용
@@ -153,6 +194,23 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
+                                // 날짜 표시 및 수정 필드 추가
+                                _isEditing
+                                    ? TextField(
+                                  controller: _dateController,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: 'Entry Date',
+                                  ),
+                                )
+                                    : Text(
+                                  'Date: ${_dateController.text}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
                                 Expanded(
                                   child: Container(
                                     padding: const EdgeInsets.all(5.0),
@@ -163,18 +221,24 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
                                     child: SingleChildScrollView(
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(vertical: 8.0), // 상하 여백 추가
-                                        child: TextField(
+                                        child: _isEditing
+                                            ? TextField(
                                           controller: _editController,
                                           maxLines: null, // 텍스트가 필요한 만큼의 라인을 차지하도록 null로 설정
                                           decoration: const InputDecoration(
                                             border: InputBorder.none, // 테두리 없음
                                             hintText: '일기 내용을 입력하세요.',
                                           ),
+                                        )
+                                            : Text(
+                                          _editController.text,
+                                          style: const TextStyle(fontSize: 16),
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
+                                const SizedBox(height: 10), // 텍스트 필드와 버튼 사이 간격 추가
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
@@ -254,7 +318,7 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
                                                   height: 100,
                                                   decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
-                                                    color: emotionColors[mostFeltEmotion],
+                                                    color: emotionColor,
                                                   ),
                                                   child: Center(
                                                     child: Text(
@@ -321,6 +385,11 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
               ),
             ),
           ),
+          if (_isLoading)
+            const LoadingScreen(
+              isLoading: true,
+              upperText: '수정된 내용을 반영 중입니다.',
+            ),
         ],
       ),
     );

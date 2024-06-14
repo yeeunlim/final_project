@@ -1,24 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:mindcare_flutter/core/services/api_service.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/common_button.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/loading_screen.dart';
-import 'package:mindcare_flutter/core/services/api_service.dart';
-import 'package:mindcare_flutter/core/constants/urls.dart';
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+class ChatbotDiaryEntryScreen extends StatefulWidget {
+  final String? selectedDate;
+
+  const ChatbotDiaryEntryScreen({super.key, this.selectedDate});
 
   @override
-  _MainScreenState createState() => _MainScreenState();
+  _ChatbotDiaryEntryScreenState createState() => _ChatbotDiaryEntryScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
   final TextEditingController _inputController = TextEditingController();
   final FocusNode _inputFocusNode = FocusNode();
   String _chatbotResponse = "오늘은 무슨 일이 있었나요?";
   bool _isLoading = false; // 로딩 상태 관리
+  late String selectedDate; // 선택된 날짜를 저장
+
+  @override
+  void initState() {
+    super.initState();
+    selectedDate = widget.selectedDate ?? DateTime.now().toIso8601String().split('T')[0];
+    print('Selected date: $selectedDate');
+  }
 
   @override
   void dispose() {
@@ -27,9 +37,24 @@ class _MainScreenState extends State<MainScreen> {
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args != null && args is String) {
+      // String 타입의 arguments를 바로 사용
+      selectedDate = args;
+      print('Selected date received: $selectedDate');
+    } else {
+      // args가 null이거나 String 타입이 아닐 경우 현재 날짜 사용
+      selectedDate = DateTime.now().toIso8601String().split('T')[0];
+    }
+  }
+
   Future<void> sendMessage(String message) async {
     try {
-      final responseData = await ApiService.sendMessage(message);
+      final responseData = await ChatbotService.sendMessage(message);
       setState(() {
         _chatbotResponse = responseData['chatbot_response'];
       });
@@ -40,20 +65,24 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> saveDiary() async {
     final diaryText = _inputController.text;
-    final entryDate = DateTime.now().toIso8601String().split('T')[0];
+    final diaryEntryService = DiaryEntryService();
+
     setState(() {
       _isLoading = true; // 로딩 시작
+      print('saveDiary started with diaryText: $diaryText, entryDate: $selectedDate'); // 시작 로그
     });
     try {
-      final responseData = await ApiService.saveDiary(diaryText, entryDate);
+      final responseData = await diaryEntryService.createDiaryEntry(diaryText, selectedDate);
+      // 응답 데이터 로그
+      print('Received responseData: $responseData');
       // 인자 값을 출력합니다.
-      print('Navigating to DailyAnalysisScreen with entryData: $responseData, entryDate: $entryDate, diaryText: $diaryText');
+      print('Navigating to DailyAnalysisScreen with entryData: $responseData, entryDate: $selectedDate, diaryText: $diaryText');
       Navigator.pushNamed(
         context,
         '/daily_analysis',
         arguments: {
           'entryData': responseData,
-          'entryDate': entryDate,
+          'entryDate': selectedDate,
           'diaryText': diaryText,
         },
       );

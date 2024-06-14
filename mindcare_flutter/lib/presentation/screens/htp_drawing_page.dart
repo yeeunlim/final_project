@@ -7,8 +7,8 @@ import 'package:provider/provider.dart';
 import '../widgets/custom_app_bar.dart';
 import 'package:mindcare_flutter/core/services/api_service.dart';
 import 'package:mindcare_flutter/core/services/auth_service.dart';
+import 'chatbot_diary_entry_screen.dart';
 import 'htp_result_page.dart';
-import 'main_screen.dart';
 
 
 class DrawingData {
@@ -187,7 +187,7 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
               onPressed: () {
                 Navigator.of(context).pop();
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => MainScreen()),
+                  MaterialPageRoute(builder: (context) => ChatbotDiaryEntryScreen()),
                   (Route<dynamic> route) => false,
                 );
               },

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mindcare_flutter/core/themes/color_schemes.dart';
+import 'package:mindcare_flutter/core/constants/colors.dart';
 
 class CommonButton extends StatelessWidget {
   final String text;

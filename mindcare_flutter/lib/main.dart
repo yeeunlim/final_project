@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:provider/provider.dart'; // provider 패키지 추가
-import 'routes/app_routes.dart';
-import 'presentation/widgets/auth_checker.dart';
-import 'presentation/screens/htp_drawing_page.dart'; // htp_drawing_page 추가
+import 'package:mindcare_flutter/presentation/widgets/auth_checker.dart';
+import 'package:mindcare_flutter/routes/app_routes.dart';
 
 void main() {
   initializeDateFormatting().then((_) => runApp(const MyApp()));
@@ -14,14 +12,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => DrawingProvider()), // DrawingProvider 추가
-      ],
-      child: MaterialApp(
-        home: const AuthChecker(), // 초기 위젯을 AuthChecker로 설정
-        onGenerateRoute: AppRoutes.generateRoute,
-      ),
+    return MaterialApp(
+      home: const AuthChecker(),
+      routes: getAppRoutes(), // 정적 라우트 설정을 getAppRoutes() 함수로 대체합니다.
+      onGenerateRoute: generateRoute, // 동적 라우트 설정을 generateRoute 함수로 대체합니다.
     );
   }
 }

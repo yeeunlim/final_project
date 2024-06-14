@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mindcare_flutter/core/services/auth_service.dart';
-import 'package:mindcare_flutter/presentation/screens/mypage.dart';
+import 'package:mindcare_flutter/routes/app_routes.dart'; // 라우트 경로를 가져오기 위해 추가
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -27,7 +27,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: () {
-              // 홈 버튼 클릭 이벤트 처리
+              Navigator.of(context).pushNamed(AppRoutes.chatbotDiary); // 홈 버튼 클릭 시 이동할 경로 설정
             },
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 10.0),
@@ -44,26 +44,25 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MyPage()));
-              },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10.0),
-                child: Row(
-                  children: [
-                    Icon(Icons.person, color: Colors.white),
-                    SizedBox(width: 5),
-                    Text('마이페이지', style: TextStyle(color: Colors.white)),
-                  ],
-                ),
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.mypage); // 마이페이지 버튼 클릭 시 이동할 경로 설정
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10.0),
+              child: Row(
+                children: [
+                  Icon(Icons.person, color: Colors.white),
+                  SizedBox(width: 5),
+                  Text('마이페이지', style: TextStyle(color: Colors.white)),
+                ],
               ),
+            ),
           ),
         ),
         MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: () {
-              // 로그인/로그아웃 버튼 클릭 이벤트 처리
               AuthHelpers.logout(context);
             },
             child: const Padding(
