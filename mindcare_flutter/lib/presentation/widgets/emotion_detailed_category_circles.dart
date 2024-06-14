@@ -21,10 +21,10 @@ class EmotionCircles extends StatelessWidget {
 
         // 원의 개수에 따라 boundingRect 크기 조정
         final int numberOfCircles = emotionCounts.length;
-        final double baseWidth = containerSize.width * 0.6; // 기본 너비 설정
-        final double baseHeight = containerSize.height * 0.6; // 기본 높이 설정
-        final double boundingRectWidth = baseWidth + sqrt(numberOfCircles) * 20; // 원의 개수에 따라 너비 조정
-        final double boundingRectHeight = baseHeight + sqrt(numberOfCircles) * 20; // 원의 개수에 따라 높이 조정
+        final double baseWidth = containerSize.width * 0.4; // 기본 너비 설정
+        final double baseHeight = containerSize.height * 0.4; // 기본 높이 설정
+        final double boundingRectWidth = baseWidth + sqrt(numberOfCircles) * 70; // 원의 개수에 따라 너비 조정
+        final double boundingRectHeight = baseHeight + sqrt(numberOfCircles) * 50; // 원의 개수에 따라 높이 조정
         final Rect boundingRect = Rect.fromLTWH(
           (containerSize.width - boundingRectWidth) / 2,
           (containerSize.height - boundingRectHeight) / 2,
@@ -74,10 +74,6 @@ class EmotionCircles extends StatelessWidget {
           child: Container(
             width: containerSize.width,
             height: containerSize.height,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(16.0),
-            ),
             child: Stack(
               children: circles.map((circle) {
                 return Positioned(

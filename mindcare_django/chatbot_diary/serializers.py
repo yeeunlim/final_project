@@ -16,5 +16,5 @@ class MonthlyAnalysisSerializer(serializers.ModelSerializer):
     class Meta:
         model = DiaryEntry
         fields = [
-            'entry_date', 'most_felt_emotion', 'most_thought_background', 'created_at',
+            'entry_date', 'most_felt_emotion', 'most_thought_background', 'created_at', 'emotion_distribution'
         ]

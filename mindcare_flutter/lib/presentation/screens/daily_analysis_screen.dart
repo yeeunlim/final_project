@@ -163,7 +163,7 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
                     mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
                     children: [
                       Image.network(
-                        ImageUrls.normalRabbit, // AWS S3에서 이미지 로드
+                        ImageUrls.analysisRabbit, // AWS S3에서 이미지 로드
                         width: 70,
                         height: 70,
                       ),
@@ -369,10 +369,18 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 20),
-                                  Text(
-                                    responseMessage,
-                                    style: const TextStyle(
-                                        color: Colors.black, fontSize: 16),
+                                  FractionallySizedBox(
+                                    widthFactor: 0.6,
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        responseMessage,
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),

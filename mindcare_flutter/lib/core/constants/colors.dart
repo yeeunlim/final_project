@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 // Colors
-const Color primaryColor = Color(0xFF55446C);
+const Color primaryColor = Color(0xFF554569);
 const Color secondaryColor = Colors.white;
 const Color backgroundColor = Colors.black;
 const Color lightGray = Color(0xFFC9C9C9);
+const Color lightPurple = Color(0xFF8C8CEC);
+const Color deepPurple = Color(0xFF564ECD);
 
 // 감정 색상 팔레트
 const Map<String, Color> emotionColors = {
@@ -66,4 +68,42 @@ const Map<String, Color> emotionColors = {
   '속상함': Color(0xFF66A8DC),
   '실망': Color(0xFF4695D5),
   '외로움': Color(0xFF2B81CB),
+};
+
+// 배경 색상 팔레트
+const Map<String, Color> backgroundColors = {
+  // 가족 (노란색 계열)
+  '가족': Color(0xFFE1C62A),
+  '자녀': Color(0xFFC2A526),
+  '배우자': Color(0xFFA48420),
+  '부모': Color(0xFF866A1B),
+
+  // 관계 (핑크색 계열)
+  '대인관계': Color(0xFFEA6387),
+  '친구': Color(0xFFD45670),
+  '연애': Color(0xFFBD4A63),
+  '결혼': Color(0xFFA43D55),
+  '임신,출산': Color(0xFF8B3248),
+
+  // 교육 (파란색 계열)
+  '학교': Color(0xFF5FA3D7),
+  '학업': Color(0xFF528DC2),
+  '진로': Color(0xFF4576A7),
+  '대학': Color(0xFF396092),
+  '취업': Color(0xFF2D4B7D),
+
+  // 사회 (보라색 계열)
+  '직장': Color(0xFF9558B2),
+  '사업': Color(0xFF81479A),
+  '경제적문제': Color(0xFF6E3A84),
+  '노후': Color(0xFF5A2E6D),
+
+  // 건강 및 라이프스타일 (초록색 계열)
+  '건강문제': Color(0xFF6FBF73),
+  '취미,운동': Color(0xFF5BAF61),
+  '다이어트': Color(0xFF4A9E51),
+  '음주': Color(0xFF3A8D41),
+  '성격': Color(0xFF2C7D33),
+  '사고': Color(0xFF1E6D25),
+  '생활,거주': Color(0xFF105D17),
 };

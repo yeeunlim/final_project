@@ -184,11 +184,13 @@ class MonthlyAnalysisService {
     }
   }
   // 특정 월의 일기 데이터 조회
-  static Future<List<dynamic>> fetchMonthlyData() async {
+  static Future<List<dynamic>> fetchMonthlyData(DateTime selectedMonth) async {
     final token = await AuthHelpers.getToken();
+    final year = selectedMonth.year;
+    final month = selectedMonth.month;
     try {
       final response = await http.get(
-        Uri.parse('$chatbotDiaryUrl/monthly_analysis/2024/6/'),
+        Uri.parse('$chatbotDiaryUrl/monthly_analysis/$year/$month/'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token', // 인증 토큰 추가
@@ -205,7 +207,6 @@ class MonthlyAnalysisService {
     }
   }
 }
-
 
 
 /// HTP TEST

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mindcare_flutter/core/services/api_service.dart';
-import 'package:mindcare_flutter/core/constants/urls.dart';
-import '../widgets/custom_app_bar.dart';
-import '../widgets/custom_drawer.dart';
-import '../widgets/common_button.dart';
+import 'package:mindcare_flutter/presentation/widgets/common_button.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
+import 'package:mindcare_flutter/presentation/widgets/loading_screen.dart';
+
+import '../../core/constants/urls.dart';
 import '../widgets/confirm_dialog.dart';
-import '../widgets/loading_screen.dart';
 
 class ChatbotDiaryEntryScreen extends StatefulWidget {
   final String? selectedDate;
@@ -31,25 +32,37 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // args를 가져옴
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    try {
+      // args가 Map일 경우 (selectedDate가 있는 경우)
+      if (args is Map && args.containsKey('selectedDate')) {
+        selectedDate = args['selectedDate'];
+        print('Selected date received: $selectedDate');
+      } else if (args is String) {
+        // args가 String일 경우 (토큰만 전달된 경우)
+        final token = args;
+        print('Token received: $token');
+        selectedDate = DateTime.now().toIso8601String().split('T')[0];
+      } else {
+        // args가 null이거나 다른 타입인 경우 예외 처리
+        throw Exception('Invalid arguments received');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+
+
+  @override
   void dispose() {
     _inputController.dispose();
     _inputFocusNode.dispose();
     super.dispose();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments;
-
-    if (args != null && args is String) {
-      // String 타입의 arguments를 바로 사용
-      selectedDate = args;
-      print('Selected date received: $selectedDate');
-    } else {
-      // args가 null이거나 String 타입이 아닐 경우 현재 날짜 사용
-      selectedDate = DateTime.now().toIso8601String().split('T')[0];
-    }
   }
 
   Future<void> sendMessage(String message) async {
@@ -73,9 +86,7 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
     });
     try {
       final responseData = await diaryEntryService.createDiaryEntry(diaryText, selectedDate);
-      // 응답 데이터 로그
       print('Received responseData: $responseData');
-      // 인자 값을 출력합니다.
       print('Navigating to DailyAnalysisScreen with entryData: $responseData, entryDate: $selectedDate, diaryText: $diaryText');
       Navigator.pushNamed(
         context,
