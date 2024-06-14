@@ -6,20 +6,20 @@ import 'package:mindcare_flutter/presentation/screens/login_screen.dart';
 import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+// void main() {
+//   runApp(const MyApp());
+// }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: SignUpScreen(),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return const MaterialApp(
+//       home: SignUpScreen(),
+//     );
+//   }
+// }
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -51,15 +51,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String? _passwordError;
   String? _passwordConfirmError;
   String? _birthdateError;
+  Color? _usernameErrorColor;
+
+  bool _isUsernameAvailable = true;
+  // final String _usernameCheckMessage = '';
 
   @override
   void initState() {
     super.initState();
 
+    _usernameFocusNode.addListener(_onUsernameFocusChange);
+
     _usernameFocusNode.addListener(() {
       if (!_usernameFocusNode.hasFocus) {
         setState(() {
-          _usernameError = _validateUsername(_usernameController.text);
+          _usernameError = _validateUsername(_usernameController.text, false);
         });
       }
     });
@@ -116,11 +122,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
+  void _onUsernameFocusChange() {
+    if (!_usernameFocusNode.hasFocus && _usernameError != null && !_isUsernameAvailable) {
+      // 포커스가 다른 곳으로 이동하려고 할 때 에러가 있다면 다시 포커스를 설정
+      FocusScope.of(context).requestFocus(_usernameFocusNode);
+    }
+  }
+
   void _showAlertDialog(String msg, bool move) {
+    String errorMsg = '';
+    if(!move){
+      // 문자열을 ':'로 분할하여 리스트로 변환
+      List<String> parts = msg.split(':');
+      // 리스트의 마지막 요소를 가져옴
+      errorMsg = parts.last;
+
+      if(!msg.contains('<')) {
+        if(errorMsg.contains('[') ){
+          // 대괄호를 제거하는 정규식 패턴과 대체 함수 정의
+          RegExp from = RegExp(r'\}|\"|\[|\]');
+
+          // 각 메시지에 대해 대괄호 제거
+          errorMsg = errorMsg.replaceAll(from, '');
+          // print(errorMsg);
+        }
+      }
+    }    
+
     AlertDialogHelper.showAlert(
       context,
       '회원가입',
-      '회원가입 $msg',
+      move ? msg: '회원가입 실패:\n$errorMsg',
+      // '회원가입 실패:\n$msg',
       onConfirm: move ? () {
         Navigator.pushReplacement(
           context,
@@ -133,7 +166,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Future<void> _signUp() async {
     setState(() {
-      _usernameError = _validateUsername(_usernameController.text);
+      _usernameError = _validateUsername(_usernameController.text, false);
       _emailError = _validateEmail(_emailController.text);
       _passwordError = _validatePassword(_passwordController.text);
       _passwordConfirmError = _validatePasswordConfirm(_passwordConfirmController.text);
@@ -146,7 +179,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _passwordConfirmError == null &&
         _birthdateError == null) {
       final response = await http.post(
-        Uri.parse('http://localhost:8000/api/auth/custom/registration/'),
+        Uri.parse('$userAuthUrl/custom/registration/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': _usernameController.text,
@@ -160,12 +193,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
 
       if (response.statusCode == 201 || response.statusCode == 204) {
-        _showAlertDialog(' 되었습니다. 로그인 해주세요.', true);
+        _showAlertDialog('회원가입 성공:\n로그인 해주세요.', true);
       } else {
-        _showAlertDialog(' 오류 : ${response.body}', false);
+        _showAlertDialog(response.body, false);
       }
     }
   }
+
+  Future<void> _checkUsernameAvailability() async {    
+    setState(() {
+      _usernameError = _validateUsername(_usernameController.text, true);
+    });
+
+    if( _usernameError != null){
+      return;
+    }
+    // print(userAuthUrl);
+
+    final response = await http.post(
+      Uri.parse('$userAuthUrl/custom/check_username/'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'username': _usernameController.text}),
+    );
+
+    final responseData = json.decode(response.body);
+
+    setState(() {
+      _isUsernameAvailable = responseData['available'];
+      _usernameError = _isUsernameAvailable ? '사용 가능한 아이디입니다.' : '이미 사용 중인 아이디입니다.';
+      _usernameErrorColor = _isUsernameAvailable?Colors.green.shade900 :  Colors.red.shade900 ;
+
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -205,12 +265,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          _buildTextFormField(
-                            label: '아이디',
-                            controller: _usernameController,
-                            focusNode: _usernameFocusNode,
-                            errorText: _usernameError,
-                          ),
+              TextField(
+                controller: _usernameController,
+                focusNode: _usernameFocusNode,
+                decoration: InputDecoration(
+                  labelText: '아이디 (중복체크 V)',
+                  errorText: _usernameError,
+                  errorStyle: TextStyle(color: _usernameErrorColor),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.check),
+                    onPressed: _checkUsernameAvailability,
+                  ),
+                ),
+              ),
                           const SizedBox(height: 5),
                           // _buildErrorText(_usernameError),
                           const SizedBox(height: 10),
@@ -320,14 +387,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
         focusedBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Colors.black),
         ),
-        errorText: errorText, // errorText를 추가
+        errorText: errorText, 
+        errorStyle: TextStyle(color: errorText != null ? Colors.red.shade900 : Colors.green.shade700), // 에러 메시지 색상 지정
+        // errorText를 추가
       ),
       style: const TextStyle(color: Colors.black),
       obscureText: obscureText,
     );
   }
 
-  String? _validateUsername(String? value) {
+  String? _validateUsername(String? value, bool newFlag) {
+    if (!newFlag & (_usernameError == '이미 사용 중인 아이디입니다.')){
+      return _usernameError;
+    }
     if (value == null || value.isEmpty) {
       return '아이디를 입력해주세요';
     }

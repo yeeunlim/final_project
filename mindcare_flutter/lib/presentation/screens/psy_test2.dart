@@ -30,12 +30,19 @@ class _psyServey2State extends State<psyServey2> {
     "일상생활에서 겪는 불안감과 초조함을 통제할 수 있었습니까?",
     "일들이 어떻게 돌아가는 지 잘 알고 있다고 느낀 적이 있었습니까?",
   ];
-  
+
   final List<String> choiceLabels = [
     "아니다",
     "가끔\n그렇다",
     "자주\n그렇다",
     "항상\n그렇다"
+  ];
+
+  final List<String> choiceLabels_small = [
+    "아니다",
+    "가끔 그렇다",
+    "자주 그렇다",
+    "항상 그렇다"
   ];
 
   final Map<int, int> answers = {};
@@ -52,21 +59,25 @@ class _psyServey2State extends State<psyServey2> {
       } else {
         // 아니다 3점, 가끔 그렇다 2점, 자주 그렇다 1점, 항상 그렇다 0점
         int newScore = 0;
-        switch(score) {
+        switch (score) {
           case 0:
             newScore = 3;
+            break;
           case 1:
             newScore = 2;
+            break;
           case 2:
             newScore = 1;
+            break;
           case 3:
-            newScore = 0;          
+            newScore = 0;
+            break;
         }
-        totalScore += newScore; 
+        totalScore += newScore;
       }
     });
 
-    return totalScore;   
+    return totalScore;
   }
 
   void _showResultPage() {
@@ -86,7 +97,6 @@ class _psyServey2State extends State<psyServey2> {
 
       showResultDialog(context, 'stress', totalScore.toDouble(), resultMessage, '',);
 
-
       // 결과 페이지를 표시하도록 상태 업데이트
       showResult = true;
     });
@@ -96,7 +106,7 @@ class _psyServey2State extends State<psyServey2> {
     AlertDialogHelper.showAlert(
       context,
       '심리검사',
-      '모든 문항에 답변을 선택해주세요.',
+      '\n모든 문항에 답변을 선택해주세요.',
     );
   }
 
@@ -139,11 +149,12 @@ class _psyServey2State extends State<psyServey2> {
               ),
             ),
           ),
-          Center( // Center를 사용하여 Container가 화면 중앙에 위치하도록 함
+          Center(
+            // Center를 사용하여 Container가 화면 중앙에 위치하도록 함
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.7,
-              height: MediaQuery.of(context).size.height * 0.75,
-              padding: const EdgeInsets.all(30.0),
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.height * 0.8,
+              padding: const EdgeInsets.all(20.0),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(12),
@@ -162,12 +173,11 @@ class _psyServey2State extends State<psyServey2> {
         Expanded(
           child: PageView(
             controller: _pageController,
-            children: [        
+            children: [
               buildQuestionPage(0, 10),
             ],
           ),
         ),
-        
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -213,13 +223,13 @@ class _psyServey2State extends State<psyServey2> {
                     );
                   } else {
                     _showResultPage();
-                  }              
+                  }
                 } else {
                   _showAlertDialog();
                 }
               },
               child: const Icon(Icons.arrow_forward),
-              ),             
+            ),
           ],
         ),
       ],
@@ -227,83 +237,163 @@ class _psyServey2State extends State<psyServey2> {
   }
 
   Widget buildQuestionPage(int start, int end) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(
         child: Column(
-           children: [          
+          children: [
             Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8), // 배경색 설정
-              borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
-              border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
-            ),
-            child: Table(
-              border: TableBorder(
-                horizontalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
-                verticalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
-                // top, bottom, left, right border can be customized here if needed
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.8), // 배경색 설정
+                borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+                border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
               ),
-              columnWidths: const <int, TableColumnWidth>{
-                0: FlexColumnWidth(),
-                1: FixedColumnWidth(50),
-                2: FixedColumnWidth(50),
-                3: FixedColumnWidth(50),
-                4: FixedColumnWidth(50),
-                5: FixedColumnWidth(50),
-              },
-              defaultVerticalAlignment: TableCellVerticalAlignment.middle, // 세로 정렬
-              children: [
-                TableRow(
-                  decoration: const BoxDecoration(),
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        '[스트레스 자각 검사] 질문사항',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    ...choiceLabels.map((choice) => Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            choice,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize:12, fontWeight: FontWeight.bold),
-                          ),
-                        )),
-                  ],
-                ),
-                for (int i = start; i < end; i++)
-                  TableRow(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(questions[i]),
-                      ),
-                      ...List<Widget>.generate(choiceLabels.length, (index) {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Radio<int>(
-                            value: index,
-                            groupValue: answers[i],
-                            onChanged: (int? value) {
-                              setState(() {
-                                answers[i] = index;
-                              });
-                            },
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-              ],
+              child: screenWidth > 600 ? buildWideLayout(start, end) : buildNarrowLayout(start, end),
             ),
-          )
-        ],
+          ],
         ),
       ),
     );
+  }
+
+  Table buildWideLayout(int start, int end) {
+    return Table(
+      border: TableBorder(
+        horizontalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+        verticalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+      ),
+      columnWidths: const <int, TableColumnWidth>{
+        0: FlexColumnWidth(),
+        1: FixedColumnWidth(50),
+        2: FixedColumnWidth(50),
+        3: FixedColumnWidth(50),
+        4: FixedColumnWidth(50),
+        5: FixedColumnWidth(50),
+      },
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+      children: [
+        TableRow(
+          decoration: const BoxDecoration(),
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                '[스트레스 자각 검사] 질문사항',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            ...choiceLabels.map((choice) => Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    choice,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                )),
+          ],
+        ),
+        for (int i = start; i < end; i++)
+          TableRow(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(questions[i]),
+              ),
+              ...List<Widget>.generate(choiceLabels.length, (index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Radio<int>(
+                    value: index,
+                    groupValue: answers[i],
+                    onChanged: (int? value) {
+                      setState(() {
+                        answers[i] = index;
+                      });
+                    },
+                  ),
+                );
+              }),
+            ],
+          ),
+      ],
+    );
+  }
+
+  Column buildNarrowLayout(int start, int end) {
+    return Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.8), // 배경색 설정
+                      borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+                      border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+                    ),
+                    child: Table(
+                      border: TableBorder(
+                        horizontalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+                        verticalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+                      ),
+                      columnWidths: const <int, TableColumnWidth>{
+                        0: FlexColumnWidth(),
+                      },
+                      defaultVerticalAlignment: TableCellVerticalAlignment.middle, // 세로 정렬
+                      children: [
+                        const TableRow(
+                          decoration: BoxDecoration(),
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                '[스트레스 자각 검사] 질문사항',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        for (int i = start; i < end && i < questions.length; i++) ...[
+                          TableRow(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(questions[i]),
+                              ),
+                            ],
+                          ),
+                          TableRow(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(1.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: List<Widget>.generate(choiceLabels.length, (index) {
+                                    return Row(
+                                      children: [
+                                        Radio<int>(
+                                          value: index,
+                                          groupValue: answers[i],
+                                          onChanged: (int? value) {
+                                            setState(() {
+                                              answers[i] = value!;
+                                            });
+                                          },
+                                        ),
+                                        Text(choiceLabels_small[index], style: const TextStyle(fontSize: 14)),
+                                      ],
+                                    );
+                                  }),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              );
   }
 }

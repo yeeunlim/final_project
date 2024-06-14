@@ -23,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
     AlertDialogHelper.showAlert(
       context,
       '로그인',
-      '로그인 실패: 아이디/비밀번호를 확인해 주세요.',
+      '로그인 실패:\n아이디/비밀번호를 확인해 주세요.',
     );
   }
 

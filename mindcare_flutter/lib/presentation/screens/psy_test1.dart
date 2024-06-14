@@ -13,7 +13,6 @@ import 'package:mindcare_flutter/presentation/widgets/psy_test_result.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test1_home.dart';
 import 'package:mindcare_flutter/core/constants/colors.dart';
 
-
 class psyServey1 extends StatefulWidget {
   const psyServey1({super.key});
 
@@ -22,7 +21,6 @@ class psyServey1 extends StatefulWidget {
 }
 
 class _psyServey1State extends State<psyServey1> {
-  
   final PageController _pageController = PageController();
   final List<String> questions = [
     "남들에게 불안하게 보이지 말아야 한다.",
@@ -42,12 +40,20 @@ class _psyServey1State extends State<psyServey1> {
     "신경이 예민해지면, 정신적으로 문제가 생긴 것은 아닌가 걱정된다.",
     "신경이 날카로워 지면, 겁이 난다.",
   ];
-  
+
   final List<String> choiceLabels = [
     "전혀\n그렇지 않다",
     "약간 그러한\n편이다",
     "중간\n이다",
     "꽤\n그러한\n편이다",
+    "매우 그렇다"
+  ];
+
+  final List<String> choiceLabels_small = [
+    "전혀 그렇지 않다",
+    "약간 그러한 편이다",
+    "중간이다",
+    "꽤 그러한 편이다",
     "매우 그렇다"
   ];
 
@@ -62,7 +68,7 @@ class _psyServey1State extends State<psyServey1> {
       if (totalScore <= 15) {
         resultMessage = "불안 자극에 민감하지 않습니다.";
       } else if (totalScore <= 20) {
-        resultMessage = "불안 자극에 약간 민감하게 반응합니다.";        
+        resultMessage = "불안 자극에 약간 민감하게 반응합니다.";
       } else if (totalScore <= 24) {
         resultMessage = "불안 자극에 상당히 민감하게 반응합니다.";
       } else {
@@ -83,7 +89,7 @@ class _psyServey1State extends State<psyServey1> {
     AlertDialogHelper.showAlert(
       context,
       '심리검사',
-      '모든 문항에 답변을 선택해주세요.',
+      '\n모든 문항에 답변을 선택해주세요.',
     );
   }
 
@@ -128,14 +134,13 @@ class _psyServey1State extends State<psyServey1> {
           ),
           Center( // Center를 사용하여 Container가 화면 중앙에 위치하도록 함
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.7,
-              height: MediaQuery.of(context).size.height * 0.75,
-              padding: const EdgeInsets.all(30.0),
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.height * 0.8,
+              padding: const EdgeInsets.all(20.0),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
-              // child: showResult ? buildResultPage() : buildQuestionPageView(),
               child: buildQuestionPageView(),
             ),
           ),
@@ -215,84 +220,163 @@ class _psyServey1State extends State<psyServey1> {
   }
 
   Widget buildQuestionPage(int start, int end) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(
         child: Column(
-          children: [          
+          children: [
             Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8), // 배경색 설정
-              borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
-              border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
-            ),
-            child: Table(
-              border: TableBorder(
-                horizontalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
-                verticalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
-                // top, bottom, left, right border can be customized here if needed
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.8), // 배경색 설정
+                borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+                border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
               ),
-              columnWidths: const <int, TableColumnWidth>{
-                0: FlexColumnWidth(),
-                // 0: FixedColumnWidth(350),
-                1: FixedColumnWidth(50),
-                2: FixedColumnWidth(50),
-                3: FixedColumnWidth(50),
-                4: FixedColumnWidth(50),
-                5: FixedColumnWidth(50),
-              },
-              defaultVerticalAlignment: TableCellVerticalAlignment.middle, // 세로 정렬
-              children: [
-                TableRow(
-                  decoration: const BoxDecoration(),
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        '[불안 민감도 검사] 질문사항',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    ...choiceLabels.map((choice) => Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            choice,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                          ),
-                        )),
-                  ],
-                ),
-                for (int i = start; i < end && i < questions.length; i++)
-                  TableRow(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(questions[i]),
-                      ),
-                      ...List<Widget>.generate(choiceLabels.length, (index) {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Radio<int>(
-                            value: index,
-                            groupValue: answers[i],
-                            onChanged: (int? value) {
-                              setState(() {
-                                answers[i] = value!;
-                              });
-                            },
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-              ],
+              child: screenWidth > 600 ? buildWideLayout(start, end) : buildNarrowLayout(start, end),
             ),
-          )
           ],
         ),
       ),
+    );
+  }
+
+  Table buildWideLayout(int start, int end) {
+    return Table(
+      border: TableBorder(
+        horizontalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+        verticalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+      ),
+      columnWidths: const <int, TableColumnWidth>{
+        0: FlexColumnWidth(),
+        1: FixedColumnWidth(50),
+        2: FixedColumnWidth(50),
+        3: FixedColumnWidth(50),
+        4: FixedColumnWidth(50),
+        5: FixedColumnWidth(50),
+      },
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle, // 세로 정렬
+      children: [
+        TableRow(
+          decoration: const BoxDecoration(),
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                '[불안 민감도 검사] 질문사항',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            ...choiceLabels.map((choice) => Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    choice,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                )),
+          ],
+        ),
+        for (int i = start; i < end && i < questions.length; i++)
+          TableRow(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(questions[i]),
+              ),
+              ...List<Widget>.generate(choiceLabels.length, (index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Radio<int>(
+                    value: index,
+                    groupValue: answers[i],
+                    onChanged: (int? value) {
+                      setState(() {
+                        answers[i] = value!;
+                      });
+                    },
+                  ),
+                );
+              }),
+            ],
+          ),
+      ],
+    );
+  }
+
+  Column buildNarrowLayout(int start, int end) {
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.8), // 배경색 설정
+            borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+            border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+          ),
+          child: Table(
+            border: TableBorder(
+              horizontalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+              verticalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+            ),
+            columnWidths: const <int, TableColumnWidth>{
+              0: FlexColumnWidth(),
+            },
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle, // 세로 정렬
+            children: [
+              const TableRow(
+                decoration: BoxDecoration(),
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      '[불안 민감도 검사] 질문사항',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              for (int i = start; i < end && i < questions.length; i++) ...[
+                TableRow(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(questions[i]),
+                    ),
+                  ],
+                ),
+                TableRow(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(1.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: List<Widget>.generate(choiceLabels.length, (index) {
+                          return Row(
+                            children: [
+                              Radio<int>(
+                                value: index,
+                                groupValue: answers[i],
+                                onChanged: (int? value) {
+                                  setState(() {
+                                    answers[i] = value!;
+                                  });
+                                },
+                              ),
+                              Text(choiceLabels_small[index], style: const TextStyle(fontSize: 14)),
+                            ],
+                          );
+                        }),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

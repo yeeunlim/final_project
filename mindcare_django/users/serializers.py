@@ -27,8 +27,20 @@ class CustomRegisterSerializer(RegisterSerializer):
         data['nickname'] = self.initial_data.get('nickname')
         data['birthdate'] = self.initial_data.get('birthdate')
 
-        print('vali: ', data)
+        if CustomUser.objects.filter(username=data['username']).exists():
+            raise serializers.ValidationError("Username is already in use.")
+        if CustomUser.objects.filter(nickname=data['nickname']).exists():
+            raise serializers.ValidationError("Nickname is already in use.")
+        if CustomUser.objects.filter(nickname=data['email']).exists():
+            raise serializers.ValidationError("Email is already in use.")        
         return data
+
+    def create(self, validated_data):
+        user = CustomUser.objects.create_user(**validated_data)
+        return user
+    
+        # print('vali: ', data)
+        # return data
 
     def save(self, request):
         user = super().save(request)
@@ -69,7 +81,7 @@ class UserUpdateSerializer(serializers.Serializer):
     def validate_email(self, value):
         user = self.context['request'].user
         if CustomUser.objects.filter(email=value).exclude(id=user.id).exists():
-            raise serializers.ValidationError("email is already in use.")
+            raise serializers.ValidationError("Email is already in use.")
             # raise serializers.ValidationError({"email": "email is already in use."})
         return value
     
@@ -96,3 +108,6 @@ class UserUpdateSerializer(serializers.Serializer):
             instance.set_password(validated_data['new_password'])
         instance.save()
         return instance
+    
+class UsernameCheckSerializer(serializers.Serializer):
+    username = serializers.CharField()

@@ -1,16 +1,3 @@
-# from rest_framework import generics, permissions
-# from .models import User
-# from .serializers import UserProfileSerializer
-
-# class UserProfileView(generics.RetrieveUpdateAPIView):
-#     queryset = User.objects.all()
-#     serializer_class = UserProfileSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     def get_object(self):
-#         return self.request.user
-
-
 # 최희정 추가
 from .serializers import CustomRegisterSerializer
 from dj_rest_auth.registration.views import RegisterView
@@ -25,16 +12,10 @@ from dj_rest_auth.views import LoginView
 from rest_framework_simplejwt.tokens import RefreshToken
 from dj_rest_auth.views import LoginView
 from rest_framework.permissions import IsAuthenticated
-from .serializers import UserSerializer, UserUpdateSerializer
+from .serializers import UserSerializer, UserUpdateSerializer, UsernameCheckSerializer
 from django.contrib.auth import update_session_auth_hash
-
-# class CustomRegisterView(RegisterView):
-    # def get_response_data(self, user):
-    #     data = super().get_response_data(user)
-    #     refresh = RefreshToken.for_user(user)
-    #     data['refresh'] = str(refresh)
-    #     data['access'] = str(refresh.access_token)
-    #     return data
+from .models import CustomUser
+from rest_framework.permissions import AllowAny
 
 class CustomRegisterView(RegisterView):
     serializer_class = CustomRegisterSerializer
@@ -106,21 +87,6 @@ class UserDeleteView(APIView):
         user = request.user
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-# class PasswordChangeView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-#         serializer = PasswordChangeSerializer(data=request.data)
-#         user = request.user
-#         if serializer.is_valid():
-#             if not user.check_password(serializer.validated_data['old_password']):
-#                 return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
-#             user.set_password(serializer.validated_data['new_password'])
-#             user.save()
-#             update_session_auth_hash(request, user)  # 세션 유지
-#             return Response(status=status.HTTP_204_NO_CONTENT)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserUpdateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -133,4 +99,17 @@ class UserUpdateView(APIView):
             update_session_auth_hash(request, user)  # 세션 유지
             return Response(UserSerializer(user).data)
         print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class CheckUserNameView(APIView):
+    permission_classes = [AllowAny]  # 이 뷰는 인증이 필요하지 않습니다.
+
+    def post(self, request):
+        serializer = UsernameCheckSerializer(data=request.data)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            if CustomUser.objects.filter(username=username).exists():
+                return Response({'available': False}, status=status.HTTP_200_OK)
+            else:
+                return Response({'available': True}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

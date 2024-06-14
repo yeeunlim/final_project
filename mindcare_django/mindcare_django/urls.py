@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from users.views import CustomLoginView, UserInfoView, UserDeleteView, UserUpdateView, CustomRegisterView, LogoutView
+from users.views import CustomLoginView, UserInfoView, UserDeleteView, UserUpdateView, CustomRegisterView, LogoutView, CheckUserNameView
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/auth/custom/login/', CustomLoginView.as_view(), name='custom-login'),  # CustomLoginView가 연결된 엔드포인트
     path('api/auth/custom/logout/', LogoutView.as_view(), name='logout'),  # Add this line
     path('api/auth/custom/info/', UserInfoView.as_view(), name='user-info'),
+    path('api/auth/custom/check_username/', CheckUserNameView.as_view(), name='check_username'),
     path('api/auth/custom/delete/', UserDeleteView.as_view(), name='user-delete'),    
     path('api/auth/custom/update/', UserUpdateView.as_view(), name='user-update'),    
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

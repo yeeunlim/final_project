@@ -162,7 +162,7 @@ class FinalizeDiagnosis(APIView):
     def extract_detections(self, results, model, img_width, img_height):
         try:
             detections = results.pandas().xyxy[0]  # 결과를 pandas DataFrame으로 변환
-            print(detections)  # 데이터 확인용 출력
+            # print(detections)  # 데이터 확인용 출력
             if detections.empty:
                 print("No detections found")
                 return []
