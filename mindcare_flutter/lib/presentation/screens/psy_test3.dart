@@ -54,6 +54,14 @@ class _psyServey3State extends State<psyServey3> {
     "대단히\n화가 난다"
   ];
 
+  final List<String> choiceLabels_small = [
+    "거의 화를 느끼지 않는다",
+    "조금 화가 난다",
+    "어느 정도 화가 난다",
+    "꽤 화가 난다",
+    "대단히 화가 난다"
+  ];
+
   final Map<int, int> answers = {};
   bool showResult = false;
   String resultMessage = "";
@@ -133,9 +141,9 @@ class _psyServey3State extends State<psyServey3> {
           ),
           Center( // Center를 사용하여 Container가 화면 중앙에 위치하도록 함
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.7,
-              height: MediaQuery.of(context).size.height * 0.7,
-              padding: const EdgeInsets.all(30.0),
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.height * 0.8,
+              padding: const EdgeInsets.all(20.0),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(12),
@@ -145,6 +153,167 @@ class _psyServey3State extends State<psyServey3> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget buildQuestionPage(int start, int end) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: SingleChildScrollView(
+        child: Column(
+           children: [          
+            Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.8), // 배경색 설정
+              borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+              border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+            ),
+            child: screenWidth > 650 ? buildWideLayout(start, end) : buildNarrowLayout(start, end),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Table buildWideLayout(int start, int end) {
+    return Table(
+      border: TableBorder(
+        horizontalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+        verticalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+        // top, bottom, left, right border can be customized here if needed
+      ),
+      columnWidths: const <int, TableColumnWidth>{
+        0: FlexColumnWidth(),
+        1: FixedColumnWidth(70),
+        2: FixedColumnWidth(70),
+        3: FixedColumnWidth(70),
+        4: FixedColumnWidth(70),
+        5: FixedColumnWidth(70),
+      },
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle, // 세로 정렬
+      children: [
+        TableRow(
+          decoration: const BoxDecoration(),
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                '[노바코 분노 검사] 질문사항',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            ...choiceLabels.map((choice) => Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    choice,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize:12, fontWeight: FontWeight.bold),
+                  ),
+                )),
+          ],
+        ),
+        for (int i = start; i < end; i++)
+          TableRow(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(questions[i]),
+              ),
+              ...List<Widget>.generate(choiceLabels.length, (index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Radio<int>(
+                    value: index,
+                    groupValue: answers[i],
+                    onChanged: (int? value) {
+                      setState(() {
+                        answers[i] = index;
+                      });
+                  },
+                ),
+              );
+            }),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Column buildNarrowLayout(int start, int end) {
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.8), // 배경색 설정
+            borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
+            border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+          ),
+          child: Table(
+            border: TableBorder(
+              horizontalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+              verticalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
+            ),
+            columnWidths: const <int, TableColumnWidth>{
+              0: FlexColumnWidth(),
+            },
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle, // 세로 정렬
+            children: [
+              const TableRow(
+                decoration: BoxDecoration(),
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      '[노바코 분노 검사] 질문사항',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              for (int i = start; i < end; i++) ...[
+                TableRow(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(questions[i]),
+                    ),
+                  ],
+                ),
+                TableRow(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(1.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: List<Widget>.generate(choiceLabels.length, (index) {
+                        return Row(
+                          children: [
+                            Radio<int>(
+                              value: index,
+                              groupValue: answers[i],
+                              onChanged: (int? value) {
+                                setState(() {
+                                  answers[i] = value!;
+                                });
+                              },
+                            ),
+                            Text(choiceLabels_small[index], style: const TextStyle(fontSize: 14)),
+                        ],
+                      );
+                  }),
+                ), ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -232,84 +401,4 @@ class _psyServey3State extends State<psyServey3> {
     );
   }
 
-  Widget buildQuestionPage(int start, int end) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: SingleChildScrollView(
-        child: Column(
-           children: [          
-            Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8), // 배경색 설정
-              borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
-              border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
-            ),
-            child: Table(
-              border: TableBorder(
-                horizontalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
-                verticalInside: BorderSide(color: Colors.grey.shade600, width: 0.3),
-                // top, bottom, left, right border can be customized here if needed
-              ),
-              columnWidths: const <int, TableColumnWidth>{
-            0: FlexColumnWidth(),
-            1: FixedColumnWidth(70),
-            2: FixedColumnWidth(70),
-            3: FixedColumnWidth(70),
-            4: FixedColumnWidth(70),
-            5: FixedColumnWidth(70),
-          },
-          defaultVerticalAlignment: TableCellVerticalAlignment.middle, // 세로 정렬
-          children: [
-            TableRow(
-              decoration: const BoxDecoration(),
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    '[노바코 분노 검사] 질문사항',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                ...choiceLabels.map((choice) => Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        choice,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize:12, fontWeight: FontWeight.bold),
-                      ),
-                    )),
-              ],
-            ),
-            for (int i = start; i < end; i++)
-              TableRow(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(questions[i]),
-                  ),
-                  ...List<Widget>.generate(choiceLabels.length, (index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Radio<int>(
-                        value: index,
-                        groupValue: answers[i],
-                        onChanged: (int? value) {
-                          setState(() {
-                            answers[i] = index;
-                              });
-                            },
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-              ],
-            ),
-          )
-        ],
-        ),
-      ),
-    );
-  }
 }

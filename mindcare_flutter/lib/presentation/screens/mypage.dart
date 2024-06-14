@@ -73,7 +73,7 @@ class _MyPageState extends State<MyPage> {
     AlertDialogHelper.showAlert(
       context,
       '마이페이지',
-      errorFlag ? '회원정보 수정 실패 : $errorMsg' : msg,
+      errorFlag ? '회원정보수정 실패:\n$errorMsg' : msg,
     );
   }
 
@@ -93,7 +93,7 @@ class _MyPageState extends State<MyPage> {
           currentPassword,
           newPassword,
         );
-        _showAlertDialog('회원정보가 성공적으로 업데이트되었습니다.', false);
+        _showAlertDialog('회원정보가 성공적으로 업데이트\n되었습니다.', false);
 
       } catch (e) {
         // 오류 처리

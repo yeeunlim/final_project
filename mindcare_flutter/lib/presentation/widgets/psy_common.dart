@@ -7,6 +7,7 @@ import 'package:mindcare_flutter/presentation/screens/psy_test1.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test2.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test3.dart';
 import 'package:mindcare_flutter/core/constants/colors.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
 
 
 import 'package:http/http.dart' as http;
@@ -18,7 +19,7 @@ class PsyCommon {
   static final AuthHelpers _authHelpers = AuthHelpers();
 
   static Future<void> SubmitSurveyResult(int totalScore, String result, String surveyType) async {
-    final url = Uri.parse('http://localhost:8000/api/psy_test/psy_test_results/');
+    final url = Uri.parse('$psyTestUrl/psy_test_results/');
     // const surveyType = 'anxiety'; // 예제에서는 'anxiety' 타입 사용
 
     final token = await AuthHelpers.getToken();
@@ -45,7 +46,7 @@ class PsyCommon {
   static Future<List<dynamic>> fetchTestResults(String surveyType) async {
     try {
       final token = await AuthHelpers.getToken();
-      final url = Uri.parse('http://localhost:8000/api/psy_test/psy_test_get/$surveyType/');
+      final url = Uri.parse('$psyTestUrl/psy_test_get/$surveyType/');
       final response = await http.get(
         url,
         headers: {
@@ -69,7 +70,7 @@ class PsyCommon {
     print(docId);
     try {
       final token = await AuthHelpers.getToken();
-      final url = Uri.parse('http://localhost:8000/api/psy_test/psy_test_delete/$docId/');
+      final url = Uri.parse('$psyTestUrl/psy_test_delete/$docId/');
       final response = await http.delete(
         url,
         headers: {
