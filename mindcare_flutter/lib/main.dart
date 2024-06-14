@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:mindcare_flutter/presentation/screens/htp_drawing_page.dart';
+import 'package:mindcare_flutter/core/services/drawing_provider.dart';
 import 'package:mindcare_flutter/presentation/widgets/auth_checker.dart';
 import 'package:mindcare_flutter/routes/app_routes.dart';
 import 'package:provider/provider.dart';
