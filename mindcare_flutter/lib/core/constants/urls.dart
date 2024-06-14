@@ -13,4 +13,8 @@ class ImageUrls {
   static const String sadRabbit = 'https://mindcare-pj.s3.ap-northeast-2.amazonaws.com/images/sad_rabbit.png';
   static const String analysisRabbit = 'https://mindcare-pj.s3.ap-northeast-2.amazonaws.com/images/analy_rabbit.png';
   static const String loadingImage = 'https://mindcare-pj.s3.ap-northeast-2.amazonaws.com/images/loading_image.gif';
+  // HTP
+  static const String htpMainHouse = 'https://mindcare-pj.s3.ap-northeast-2.amazonaws.com/images/htp_main_house.jpg';
+  static const String htpMainTree = 'https://mindcare-pj.s3.ap-northeast-2.amazonaws.com/images/htp_main_tree.jpg';
+  static const String htpMainPerson = 'https://mindcare-pj.s3.ap-northeast-2.amazonaws.com/images/htp_main_person.jpg';
 }

@@ -2,201 +2,263 @@ import 'package:flutter/material.dart';
 import '../widgets/auth_checker.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
-// import 'main.dart'; // main.dart 파일을 임포트합니다.
-import 'htp_second_page.dart'; // 새로운 페이지 파일을 임포트합니다.
+import 'htp_second_page.dart';
 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class HTPMainPage extends StatelessWidget {
+import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
+import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
+
+import 'package:mindcare_flutter/core/constants/urls.dart';
+
+class HTPMainPage extends StatefulWidget {
   final String token;
 
   const HTPMainPage({Key? key, required this.token}) : super(key: key);
+  
+  @override
+  _HTPTestResultsState createState() => _HTPTestResultsState(token: token);
+} 
+
+class _HTPTestResultsState extends State<HTPMainPage> {
+  final String token;
+
+  _HTPTestResultsState({required this.token});
+
+  List<dynamic> testResults = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTestResults();
+  }
+
+  Future<void> _fetchTestResults() async {
+    final response = await http.get(
+      Uri.parse('$htpTestUrl/results/'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        testResults = json.decode(utf8.decode(response.bodyBytes));
+        isLoading = false;
+      });
+    } else {
+      // Handle error
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void _showResultDialog(dynamic result) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('검사 결과'),
+          content: Text(result['result']),
+          actions: <Widget>[
+            TextButton(
+              child: Text('닫기'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('삭제'),
+              onPressed: () async {
+                final response = await http.delete(
+                  Uri.parse('$htpTestUrl/results/${result['id']}/'),
+                  headers: {'Authorization': 'Bearer $token'},
+                );
+                if (response.statusCode == 204) {
+                  setState(() {
+                    testResults.remove(result);
+                  });
+                  Navigator.of(context).pop();
+                } else {
+                  // 오류 처리
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteResult(int id) async {
+    final response = await http.delete(
+      Uri.parse('$htpTestUrl/results/$id/'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 204) {
+      setState(() {
+        testResults.removeWhere((result) => result['id'] == id);
+      });
+    } else {
+      // Handle error
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(),
       drawer: CustomDrawer(token: token),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/main_page.jpg'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Center(
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.8,
-            height: MediaQuery.of(context).size.height * 0.8,
-            padding: EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(16),
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: NetworkImage(ImageUrls.mainPageBackground),
+                fit: BoxFit.cover,
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 좌측 상단에 "HTP 검사" 타이틀 추가
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade800,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(8.0),
-                        bottomRight: Radius.circular(8.0),
-                      ),
-                    ),
-                    child: Text(
-                      'HTP 검사',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16),
-                // "HTP 검사란?" 박스
-                Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white70,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'HTP 검사란?',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16),
-                // 설명 박스
-                Row(
-                  children: [
-                    Image.asset(
-                      'assets/normal_rabbit.png',
-                      width: 50,
-                      height: 50,
-                    ),
-                    SizedBox(width: 10),
-                    Expanded(
+          ),
+          Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.height * 0.8,
+              padding: const EdgeInsets.all(30.0),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 5,
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
                       child: Container(
-                        padding: EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white70,
-                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.white.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300, width: 0.5),
                         ),
-                        child: Text(
-                          '벅(Buck, 1948)이 고안한 투사적 그림검사로서 집, 나무, 사람을 각각 그리게 하여 '
-                              '내담자의 성격, 행동 양식 및 대인관계를 파악할 수 있습니다. 피험자의 성격적 특징뿐만 아니라 지적 수준을 평가하고 '
-                              '또한 정신장애 및 신경증의 부분적 양상을 파악하는데 널리 사용되기도 합니다.',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.black,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Image.network(
+                                    ImageUrls.normalRabbit,
+                                    width: 70,
+                                    height: 70,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(height: 20),
+                                      Text(
+                                        'HTP 검사란?',
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 18),
+                              const Text(
+                                '벅(Buck, 1948)이 고안한 투사적 그림검사로서 집, 나무, 사람을 각각 그리게 하여 '
+                                '내담자의 성격, 행동 양식 및 대인관계를 파악할 수 있습니다. 피험자의 성격적 특징뿐만 아니라 지적 수준을 평가하고 '
+                                '또한 정신장애 및 신경증의 부분적 양상을 파악하는데 널리 사용되기도 합니다.',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 40),
+                              Center(
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => HTPSecondPage(token: token)),
+                                    );
+                                  },
+                                  child: Text('다음'),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
-                SizedBox(height: 20),
-                // 대화창 스타일의 보라색 박스
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0), // 패딩 조정
-                    decoration: BoxDecoration(
-                      color: Colors.purple.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        DrawingCard(imagePath: 'assets/htpTest/htp_main_house.jpg'),
-                        DrawingCard(imagePath: 'assets/htpTest/htp_main_person.jpg'),
-                        DrawingCard(imagePath: 'assets/htpTest/htp_main_tree.jpg'),
-                      ],
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300, width: 0.5),
+                        ),
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (testResults.isEmpty)
+                              const Text(
+                                '검사 기록이 없습니다.',
+                                style: TextStyle(fontSize: 18),
+                              )
+                            else
+                              const Text(
+                                ' ▶ HTP 검사 리스트',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            const SizedBox(height: 10),
+                            Expanded(
+                              child: isLoading
+                                  ? const Center(child: CircularProgressIndicator())
+                                  : ListView.builder(
+                                      itemCount: testResults.length,
+                                      itemBuilder: (context, index) {
+                                        final result = testResults[index];
+                                        return GestureDetector(
+                                          onTap: () => _showResultDialog(result),
+                                          child: Card(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8.0),
+                                            ),
+                                            margin: const EdgeInsets.symmetric(vertical: 5.0),
+                                            child: ListTile(
+                                              title: Text('검사 ${index + 1} [${result['created_at']}]'),
+                                              subtitle: Text('검사항목: ${result['type']}'),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(height: 40), // 버튼 간의 간격을 조정
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => AuthChecker()),
-                          (Route<dynamic> route) => false,
-                        );
-                      },
-                      child: Text('메인 페이지'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => HTPSecondPage(token: token)), // 새로운 페이지로 이동
-                        );
-                      },
-                      child: Text('다음'),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
-
-class DrawerItem extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  final VoidCallback onTap;
-
-  DrawerItem({required this.icon, required this.text, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.white),
-      title: Text(text, style: TextStyle(color: Colors.white)),
-      onTap: onTap,
-    );
-  }
-}
-
-class DrawingCard extends StatelessWidget {
-  final String imagePath;
-
-  DrawingCard({required this.imagePath});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.all(12.0), // 여백을 추가하여 옆으로 키움
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Image.asset(
-          imagePath,
-          width: 150, // 이미지 크기 확장
-          height: 150,
-        ),
-      ),
-    );
-  }
-}
-
