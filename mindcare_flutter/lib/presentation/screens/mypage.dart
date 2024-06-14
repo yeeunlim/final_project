@@ -65,7 +65,7 @@ class _MyPageState extends State<MyPage> {
     String errorMsg = '';
     if(errorFlag){
       // 문자열을 ':'로 분할하여 리스트로 변환
-      List<String> parts = msg.split(':');
+      List<String> parts = msg.split(': ');
       // 리스트의 마지막 요소를 가져옴
       errorMsg = parts.last;
     }

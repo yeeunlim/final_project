@@ -20,17 +20,17 @@ class AlertDialogHelper {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(color: Colors.white, fontSize: 24),
-                ),
+                // Text(
+                //   title,
+                //   style: const TextStyle(color: Colors.white, fontSize: 24),
+                // ),
                 const SizedBox(height: 16.0),
                 Text(
                   message,
                   style: const TextStyle(color: Colors.white, fontSize: 16),
                   // textAlign: TextAlign.start,
                 ),
-                const SizedBox(height: 15.0),
+                const SizedBox(height: 50.0),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [

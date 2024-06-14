@@ -106,7 +106,7 @@ class _psyServey2State extends State<psyServey2> {
     AlertDialogHelper.showAlert(
       context,
       '심리검사',
-      '모든 문항에 답변을 선택해주세요.',
+      '\n모든 문항에 답변을 선택해주세요.',
     );
   }
 

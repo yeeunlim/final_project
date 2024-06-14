@@ -67,7 +67,7 @@ class PsyCommon {
   }
 
   static Future<void> deleteTestResult(String docId) async {
-    print(docId);
+    // print(docId);
     try {
       final token = await AuthHelpers.getToken();
       final url = Uri.parse('$psyTestUrl/psy_test_delete/$docId/');

@@ -193,7 +193,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
 
       if (response.statusCode == 201 || response.statusCode == 204) {
-        _showAlertDialog('가입 되었습니다. 로그인 해주세요.', true);
+        _showAlertDialog('회원가입 성공:\n로그인 해주세요.', true);
       } else {
         _showAlertDialog(response.body, false);
       }
@@ -208,7 +208,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if( _usernameError != null){
       return;
     }
-    print(userAuthUrl);
+    // print(userAuthUrl);
 
     final response = await http.post(
       Uri.parse('$userAuthUrl/custom/check_username/'),
