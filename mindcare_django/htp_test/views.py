@@ -1,21 +1,26 @@
+import os
+import json
+from django.conf import settings
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 from .models import Drawing
 from .serializers import DrawingSerializer
-import boto3
-import base64
-import uuid
-import torch
-import json
-import os
 from PIL import Image as PILImage
+from io import BytesIO
+import torch
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from matplotlib import font_manager as fm
+import matplotlib.font_manager as fm
 import requests
-from io import BytesIO
+import uuid
+import boto3
+import base64
+
+# JSON 파일 경로 설정
+ANALYSIS_DATA_PATH = os.path.join(settings.BASE_DIR, 'yolov5/analysis_data.json')
 
 
 class UploadDrawing(APIView):
@@ -60,10 +65,9 @@ class UploadDrawing(APIView):
         serializer = DrawingSerializer(drawing)
         return Response(serializer.data)
 
-
 class FinalizeDiagnosis(APIView):
     permission_classes = [IsAuthenticated]
-
+    
     def post(self, request, *args, **kwargs):
         drawing_ids = request.data.get('drawingIds', [])
         user = request.user
@@ -82,8 +86,6 @@ class FinalizeDiagnosis(APIView):
             'tree': '../mindcare_django/yolov5/Tree/best.pt',
             'person': '../mindcare_django/yolov5/Person/best.pt',
         }
-        conditions_json_path = '../mindcare_django/yolov5/analysis_conditions_modify.json'
-        stats_json_path = '../mindcare_django/yolov5/analysis_conditions_modify.json'
 
         analysis_results = []
 
@@ -92,6 +94,13 @@ class FinalizeDiagnosis(APIView):
             '나무를 그려주세요': 'tree',
             '사람을 그려주세요': 'person'
         }
+
+        # JSON 파일에서 데이터를 불러오기
+        with open(ANALYSIS_DATA_PATH, 'r', encoding='utf-8') as f:
+            analysis_data = json.load(f)
+
+        analysis_conditions = analysis_data['conditions']
+        class_stats = analysis_data['stats']
 
         for drawing in drawings:
             try:
@@ -108,10 +117,22 @@ class FinalizeDiagnosis(APIView):
                 model = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path)
                 results = self.predict(model, img)
                 detections_info = self.extract_detections(results, model, img_width, img_height)
-                analysis_conditions = self.load_analysis_conditions(conditions_json_path)
-                class_stats = self.load_class_stats(stats_json_path)
 
-                analysis_texts = self.analyze_detections(detections_info, analysis_conditions, class_stats)
+                # 클래스별 객체 수 계산
+                class_counts = {}
+                for detection in detections_info:
+                    cls_name = detection["class"]
+                    if cls_name in class_counts:
+                        class_counts[cls_name] += 1
+                    else:
+                        class_counts[cls_name] = 1
+
+                # 탐지되지 않은 클래스에 대해 count를 0으로 설정    
+                for condition in analysis_conditions:
+                    if condition["class"] not in class_counts:
+                        class_counts[condition["class"]] = 0
+
+                analysis_texts = self.analyze_detections(detections_info, class_counts, drawing_type, analysis_conditions, class_stats)
                 result_text = "\n".join(analysis_texts)
 
                 result_img_url = self.visualize_and_upload(img, detections_info, model, user.id, drawing_type)
@@ -136,7 +157,6 @@ class FinalizeDiagnosis(APIView):
     def predict(self, model, img):
         results = model(img)
         return results
-
 
     def extract_detections(self, results, model, img_width, img_height):
         try:
@@ -215,73 +235,94 @@ class FinalizeDiagnosis(APIView):
                 "centered_position": centered_position
             })
 
-        # Check for missing or invalid data in detections_info
-        for detection in detections_info:
-            if any(value is None for value in detection.values()):
-                print(f"Invalid detection data: {detection}")
-                return []
-
         return detections_info
 
-
-
-    def load_analysis_conditions(self, json_path):
-        with open(json_path, 'r', encoding='utf-8') as f:
-            conditions = json.load(f)
-        return conditions
-
-    def load_class_stats(self, json_path):
-        with open(json_path, 'r', encoding='utf-8') as f:
-            stats = json.load(f)
-        return stats
-
-    def analyze_detections(self, detections_info, analysis_conditions, class_stats):
+    def analyze_detections(self, detections_info, class_counts, drawing_type, analysis_conditions, class_stats):
         analysis_texts = set()
-        class_counts = {}
 
+        # 클래스 그룹핑
+        house_classes = {'문', '창문', '연기', '연못', '산'}
+        tree_classes = {'나무', '나무전체', '그네', '가지', '나뭇잎', '꽃', '열매', '새'}
+        person_classes = {'사람전체', '코', '입', '목', '손', '다리'}
+
+        # 현재 그림 타입에 해당하는 클래스 그룹 선택
+        if drawing_type == 'house':
+            relevant_classes = house_classes
+        elif drawing_type == 'tree':
+            relevant_classes = tree_classes
+        elif drawing_type == 'person':
+            relevant_classes = person_classes
+        else:
+            relevant_classes = set()
+
+        # 탐지된 객체 수 계산
+        for cls in relevant_classes:
+            if cls not in class_counts:
+                class_counts[cls] = 0
+
+        # 탐지된 객체에 대한 분석 수행
         for info in detections_info:
             cls_name = info["class"]
-            if cls_name in class_counts:
-                class_counts[cls_name] += 1
-            else:
-                class_counts[cls_name] = 1
+            if cls_name in relevant_classes:
+                analysis = set()
 
-        for info in detections_info:
-            cls_name = info["class"]
-            analysis = set()
+                for condition in analysis_conditions:
+                    if condition["class"] == cls_name:
+                        for cond in condition["conditions"]:
+                            try:
+                                check_function = eval(cond["check"])
+                                args = [info]
+                                if "count" in check_function.__code__.co_varnames:
+                                    args.append(class_counts[cls_name])
+                                if "class_counts" in check_function.__code__.co_varnames:
+                                    args.append(class_counts)
+                                if "mean_w" in check_function.__code__.co_varnames:
+                                    mean_w = class_stats.get(cls_name, {}).get("mean_w", 0)
+                                    std_w = class_stats.get(cls_name, {}).get("std_w", 0)
+                                    mean_h = class_stats.get(cls_name, {}).get("mean_h", 0)
+                                    std_h = class_stats.get(cls_name, {}).get("std_h", 0)
+                                    args.extend([mean_w, std_w, mean_h, std_h])
 
-            for condition in analysis_conditions:
-                if condition["class"] == cls_name:
-                    for cond in condition["conditions"]:
-                        try:
-                            check_function = self.get_check_function(cond["check"])
-                            args = [info]
-                            
-                            if "count" in check_function.__code__.co_varnames:
-                                args.append(class_counts.get(cls_name, 0))
-                            if "class_counts" in check_function.__code__.co_varnames:
-                                args.append(class_counts)
-                            if "mean_w" in check_function.__code__.co_varnames:
-                                args.append(class_stats.get(cls_name, {}).get("mean_w", 0))
-                            if "std_w" in check_function.__code__.co_varnames:
-                                args.append(class_stats.get(cls_name, {}).get("std_w", 0))
-                            if "mean_h" in check_function.__code__.co_varnames:
-                                args.append(class_stats.get(cls_name, {}).get("mean_h", 0))
-                            if "std_h" in check_function.__code__.co_varnames:
-                                args.append(class_stats.get(cls_name, {}).get("std_h", 0))
+                                expected_args = check_function.__code__.co_varnames[:check_function.__code__.co_argcount]
+                                args_to_pass = [arg for name, arg in zip(expected_args, args) if name in expected_args]
+                                if check_function(*args_to_pass):
+                                    analysis.add(cond["result"])
+                            except Exception as e:
+                                print(f"Error evaluating condition '{cond['check']}']: {e}")
 
-                            expected_args = check_function.__code__.co_varnames[:check_function.__code__.co_argcount]
-                            args_to_pass = [arg for name, arg in zip(expected_args, args) if name in expected_args]
-                            
-                            if check_function(*args_to_pass):
-                                analysis.add(cond["result"])
-                        except Exception as e:
-                            pass
-                            # print(f"Error evaluating condition '{cond['check']}': {e}")
+                if analysis:
+                    analysis_text = f"{cls_name}: {' '.join(analysis)}"
+                    analysis_texts.add(analysis_text)
 
-            if analysis:
-                analysis_text = f"{cls_name}: {' '.join(analysis)}"
-                analysis_texts.add(analysis_text)
+        # 탐지되지 않은 클래스에 대한 분석 수행
+        for cls_name in relevant_classes:
+            if class_counts[cls_name] == 0:
+                analysis = set()
+                for condition in analysis_conditions:
+                    if condition["class"] == cls_name:
+                        for cond in condition["conditions"]:
+                            try:
+                                check_function = eval(cond["check"])
+                                args = [{"class": cls_name}, 0]
+                                if "class_counts" in check_function.__code__.co_varnames:
+                                    args.append(class_counts)
+                                if "mean_w" in check_function.__code__.co_varnames:
+                                    mean_w = class_stats.get(cls_name, {}).get("mean_w", 0)
+                                    std_w = class_stats.get(cls_name, {}).get("std_w", 0)
+                                    mean_h = class_stats.get(cls_name, {}).get("mean_h", 0)
+                                    std_h = class_stats.get(cls_name, {}).get("std_h", 0)
+                                    args.extend([mean_w, std_w, mean_h, std_h])
+
+                                expected_args = check_function.__code__.co_varnames[:check_function.__code__.co_argcount]
+                                args_to_pass = [arg for name, arg in zip(expected_args, args) if name in expected_args]
+                                if check_function(*args_to_pass):
+                                    analysis.add(cond["result"])
+                            except Exception as e:
+                                print(f"Error evaluating condition '{cond['check']}']: {e}")
+
+                if analysis:
+                    analysis_text = f"{cls_name}: {' '.join(analysis)}"
+                    analysis_texts.add(analysis_text)
 
         analysis_list = list(analysis_texts)
 
@@ -300,52 +341,15 @@ class FinalizeDiagnosis(APIView):
             additional_text = "당신의 그림에는 상당히 많은 요소들이 나타나고 있어요. 괜찮으신가요? 이는 당신의 마음에 많은 생각과 감정이 공존하고 있음을 나타낼 수 있습니다. 이러한 복잡성은 창의성과 깊이의 표시일 수도 있지만, 동시에 내면의 혼란을 의미할 수도 있어요. 잠시 시간을 내어 이 요소들을 차분히 살펴보시는 게 어떨까요?"
         else:
             base_text = "당신의 그림에는 매우 많은 요소들이 나타나고 있습니다. 이는 당신의 마음이 매우 복잡하고 분주한 상태임을 나타낼 수 있어요. 이런 상태는 창의성의 폭발이나 깊은 통찰력의 징후일 수 있지만, 동시에 과도한 스트레스나 내면의 갈등을 반영할 수도 있습니다."
-            if len(analysis_list) >= 6:
+            if len(analysis_list) >= 8:
                 additional_text = base_text + " 솔직히 말씀드리면, 이 정도로 복잡한 그림은 상당한 심리적 압박감을 나타낼 수 있어 걱정이 됩니다. 전문가와 상담을 받아보시는 것이 좋을 것 같아요. 그들은 당신의 내면을 더 깊이 이해하고 정리하는 데 도움을 줄 수 있습니다."
             else:
                 additional_text = base_text + " 전문적인 심리 상담을 받아보시는 것이 도움이 될 수 있습니다. 상담사는 이 복잡한 요소들을 해석하고, 당신이 내면의 균형을 되찾는 데 도움을 줄 수 있어요. 이는 자기 이해와 성장의 기회가 될 수 있습니다."
 
         analysis_list.insert(0, additional_text)
         return analysis_list
-
-    def get_check_function(self, check_string):
-        function_map = {
-            'lambda info, mean_w, std_w, mean_h, std_h: info["width"] > mean_w + 2 * std_w and info["height"] > mean_h + 2 * std_h':
-                lambda info, mean_w, std_w, mean_h, std_h: info["width"] > mean_w + 2 * std_w and info["height"] > mean_h + 2 * std_h,
-            'lambda info, mean_w, std_w, mean_h, std_h: info["width"] < mean_w - 2 * std_w and info["height"] < mean_h - 2 * std_h':
-                lambda info, mean_w, std_w, mean_h, std_h: info["width"] < mean_w - 2 * std_w and info["height"] < mean_h - 2 * std_h,
-            'lambda info, count: count == 0':
-                lambda info, count: count == 0,
-            'lambda info, count: count >= 3':
-                lambda info, count: count >= 3,
-            'lambda info: info["centered_position"] == "left"':
-                lambda info: info["centered_position"] == "left",
-            'lambda info: info["centered_position"] == "right"':
-                lambda info: info["centered_position"] == "right",
-            'lambda info: info["centered_position"] == "bottom"':
-                lambda info: info["centered_position"] == "bottom",
-            'lambda info: info["centered_position"] == "left-top"':
-                lambda info: info["centered_position"] == "left-top",
-            'lambda info: info["centered_position"] == "right-top"':
-                lambda info: info["centered_position"] == "right-top",
-            'lambda info: info["centered_position"] == "left-bottom"':
-                lambda info: info["centered_position"] == "left-bottom",
-            'lambda info: info["centered_position"] == "right-bottom"':
-                lambda info: info["centered_position"] == "right-bottom",
-            'lambda info, mean_w, std_w, mean_h, std_h: info["width"] > mean_w + 2 * std_w and info["height"] > mean_h + 2 * std_h':
-                lambda info, mean_w, std_w, mean_h, std_h: info["width"] > mean_w + 2 * std_w and info["height"] > mean_h + 2 * std_h,
-            'lambda info, mean_w, std_w, mean_h, std_h: info["width"] < mean_w - 2 * std_w and info["height"] < mean_h - 2 * std_h':
-                lambda info, mean_w, std_w, mean_h, std_h: info["width"] < mean_w - 2 * std_w and info["height"] < mean_h - 2 * std_h,
-            'lambda info, count: count >= 2':
-                lambda info, count: count >= 2,
-        }
-        if check_string in function_map:
-            return function_map[check_string]
-        else:
-            raise ValueError(f"Unknown check function: {check_string}")
-
-
-
+    
+    
     def visualize_and_upload(self, img, detections_info, model, user_id, drawing_type):
         plt.figure(figsize=(10, 10))
         plt.imshow(img)
@@ -360,7 +364,6 @@ class FinalizeDiagnosis(APIView):
 
             rect = patches.Rectangle((x1, y1), width, height, linewidth=2, edgecolor='red', facecolor='none')
             ax.add_patch(rect)
-
             plt.text(x1, y1, f'{class_name} {confidence:.2f}', bbox=dict(facecolor='yellow', alpha=0.5), fontproperties=fm.FontProperties(fname='yolov5/applegothic.ttf'))
 
         plt.axis('off')
@@ -376,3 +379,21 @@ class FinalizeDiagnosis(APIView):
         
         result_img_url = f'https://mindcare-pj.s3.amazonaws.com/{result_file_name}'
         return result_img_url
+
+
+class HTPTestResultsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        drawings = Drawing.objects.filter(user=user).order_by('-created_at')
+        serializer = DrawingSerializer(drawings, many=True)
+        return Response(serializer.data,  content_type='application/json; charset=utf-8')
+
+    def delete(self, request, pk, *args, **kwargs):
+        try:
+            drawing = Drawing.objects.get(pk=pk, user=request.user)
+            drawing.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Drawing.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
