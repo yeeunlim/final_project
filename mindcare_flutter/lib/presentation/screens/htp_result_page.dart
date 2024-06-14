@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
 import '../widgets/custom_app_bar.dart';
 import 'package:mindcare_flutter/presentation/screens/htp_main_page.dart';
 
@@ -21,11 +22,11 @@ class _ResultPageState extends State<ResultPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: const CustomAppBar(),
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/main_page.jpg'),
+            image: NetworkImage(ImageUrls.mainPageBackground),
             fit: BoxFit.cover,
           ),
         ),

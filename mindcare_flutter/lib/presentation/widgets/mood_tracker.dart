@@ -68,89 +68,106 @@ class MoodTracker extends StatelessWidget {
         calendarBuilders: CalendarBuilders(
           defaultBuilder: (context, day, focusedDay) {
             final isPastDate = day.isBefore(DateTime.now()); // 현재 날짜 이전의 날짜인지 확인
-            if (moodData.keys.any((d) => isSameDay(d, day))) { // moodData에 날짜가 있는 경우
+            final textColor = isPastDate ? lightGray : Colors.white;
+            final defaultDecoration = BoxDecoration(
+              shape: BoxShape.circle, // 원형으로 표시
+            );
+
+            // 선택된 날짜가 moodData에 있는 경우
+            if (moodData.keys.any((d) => isSameDay(d, day))) {
               final emotion = moodData.entries.firstWhere((entry) => isSameDay(entry.key, day)).value;
-              final color = getMoodColor(emotion); // 감정 색상 가져오기
+              final color = getMoodColor(emotion);
               return Container(
                 margin: const EdgeInsets.all(4.0),
-                decoration: BoxDecoration(
+                decoration: defaultDecoration.copyWith(
                   color: color,
-                  shape: BoxShape.circle, // 원형으로 표시
                 ),
                 child: Center(
                   child: Text(
                     day.day.toString(),
-                    style: TextStyle(color: isPastDate ? lightGray : Colors.white, fontSize: 18.0), // 현재 날짜 이전이면 회색 텍스트, 그렇지 않으면 흰색 텍스트, 크기 조정
+                    style: TextStyle(color: Colors.white, fontSize: 18.0),
                   ),
                 ),
               );
             } else {
-              return Center(
-                child: Text(
-                  day.day.toString(),
-                  style: TextStyle(color: isPastDate ? lightGray : Colors.white, fontSize: 18.0), // 현재 날짜 이전이면 회색 텍스트, 그렇지 않으면 흰색 텍스트, 크기 조정
+              return Container(
+                margin: const EdgeInsets.all(4.0),
+                decoration: defaultDecoration,
+                child: Center(
+                  child: Text(
+                    day.day.toString(),
+                    style: TextStyle(color: textColor, fontSize: 18.0), // 현재 날짜 이전이면 회색 텍스트, 그렇지 않으면 검은색 텍스트, 크기 조정
+                  ),
                 ),
               );
             }
           },
           selectedBuilder: (context, day, focusedDay) {
-            final isPastDate = day.isBefore(DateTime.now()); // 현재 날짜 이전의 날짜인지 확인
-            if (moodData.keys.any((d) => isSameDay(d, day))) { // 선택된 날짜가 moodData에 있는 경우
+            final isPastDate = day.isBefore(DateTime.now());
+            final textColor = isPastDate ? lightGray : Colors.white;
+            final defaultDecoration = BoxDecoration(
+              shape: BoxShape.circle,
+            );
+
+            if (moodData.keys.any((d) => isSameDay(d, day))) {
               final emotion = moodData.entries.firstWhere((entry) => isSameDay(entry.key, day)).value;
-              final color = getMoodColor(emotion); // 감정 색상 가져오기
+              final color = getMoodColor(emotion);
               return Container(
                 margin: const EdgeInsets.all(4.0),
-                decoration: BoxDecoration(
+                decoration: defaultDecoration.copyWith(
                   color: color,
-                  shape: BoxShape.circle,
                 ),
                 child: Center(
                   child: Text(
                     day.day.toString(),
-                    style: TextStyle(color: isPastDate ? lightGray : Colors.white, fontSize: 18.0), // 현재 날짜 이전이면 회색 텍스트, 그렇지 않으면 흰색 텍스트, 크기 조정
+                    style: TextStyle(color: Colors.white, fontSize: 18.0),
                   ),
                 ),
               );
             } else {
-              return Center(
-                child: Text(
-                  day.day.toString(),
-                  style: TextStyle(fontWeight: FontWeight.bold, color: isPastDate ? lightGray : Colors.white, fontSize: 18.0), // 현재 날짜 이전이면 회색 텍스트, 그렇지 않으면 흰색 텍스트, 크기 조정
+              return Container(
+                margin: const EdgeInsets.all(4.0),
+                decoration: defaultDecoration,
+                child: Center(
+                  child: Text(
+                    day.day.toString(),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: textColor, fontSize: 18.0),
+                  ),
                 ),
               );
             }
           },
           todayBuilder: (context, day, focusedDay) {
-            final isPastDate = day.isBefore(DateTime.now()); // 현재 날짜 이전의 날짜인지 확인
-            if (moodData.keys.any((d) => isSameDay(d, day))) { // 오늘 날짜가 moodData에 있는 경우
+            final isPastDate = day.isBefore(DateTime.now());
+            final textColor = isPastDate ? lightGray : Colors.white;
+            final defaultDecoration = BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2.0),
+            );
+
+            if (moodData.keys.any((d) => isSameDay(d, day))) {
               final emotion = moodData.entries.firstWhere((entry) => isSameDay(entry.key, day)).value;
-              final color = getMoodColor(emotion); // 감정 색상 가져오기
+              final color = getMoodColor(emotion);
               return Container(
                 margin: const EdgeInsets.all(4.0),
-                decoration: BoxDecoration(
+                decoration: defaultDecoration.copyWith(
                   color: color,
-                  shape: BoxShape.circle, // 원형으로 표시
-                  border: Border.all(color: Colors.white, width: 2.0), // 현재 날짜에 대한 테두리 설정
                 ),
                 child: Center(
                   child: Text(
                     day.day.toString(),
-                    style: const TextStyle(color: Colors.white, fontSize: 18.0), // 오늘 날짜는 흰색 텍스트, 크기 조정
+                    style: const TextStyle(color: Colors.white, fontSize: 18.0),
                   ),
                 ),
               );
             } else {
-              // 오늘 날짜에 일기가 없으면 배경을 표시하지 않음
               return Container(
                 margin: const EdgeInsets.all(4.0),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2.0), // 현재 날짜에 대한 테두리 설정
-                ),
+                decoration: defaultDecoration,
                 child: Center(
                   child: Text(
                     day.day.toString(),
-                    style: const TextStyle(color: Colors.white, fontSize: 18.0), // 오늘 날짜는 흰색 텍스트, 크기 조정
+                    style: const TextStyle(color: Colors.white, fontSize: 18.0),
                   ),
                 ),
               );

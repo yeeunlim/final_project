@@ -60,7 +60,7 @@ class UploadDrawing(APIView):
             user=user,
             type=drawing_type,  # 영어로 변환된 타입 저장
             image_url=image_url,
-            result='진단 중입니다...'
+            result='결과가 없습니다.'
         )
         serializer = DrawingSerializer(drawing)
         return Response(serializer.data)
@@ -150,7 +150,8 @@ class FinalizeDiagnosis(APIView):
                     'result': result_text
                 })
             except Exception as e:
-                print(f"Error processing drawing {drawing.id}: {e}")
+                pass
+                # print(f"Error processing drawing {drawing.id}: {e}")
 
         return Response(analysis_results, content_type="application/json; charset=utf-8")
 
@@ -161,12 +162,13 @@ class FinalizeDiagnosis(APIView):
     def extract_detections(self, results, model, img_width, img_height):
         try:
             detections = results.pandas().xyxy[0]  # 결과를 pandas DataFrame으로 변환
-            print(detections)  # 데이터 확인용 출력
+            # print(detections)  # 데이터 확인용 출력
             if detections.empty:
                 print("No detections found")
                 return []
         except Exception as e:
-            print(f"Error converting results to DataFrame: {e}")
+            pass
+            # print(f"Error converting results to DataFrame: {e}")
             return []
 
         detections_info = []
@@ -180,9 +182,9 @@ class FinalizeDiagnosis(APIView):
                 center_y = y1 + height / 2
                 cls_name = model.names[int(cls)]
                 name = row.get('name', cls_name)  # 'name' 필드가 존재하지 않을 경우 cls_name 사용
-                print(f"Detection: x1={x1}, y1={y1}, x2={x2}, y2={y2}, class={cls_name}, name={name}")  # 데이터 확인용 출력
+                # print(f"Detection: x1={x1}, y1={y1}, x2={x2}, y2={y2}, class={cls_name}, name={name}")  # 데이터 확인용 출력
             except Exception as e:
-                print(f"Error extracting detection values: {e}")
+                # print(f"Error extracting detection values: {e}")
                 continue
 
             left_threshold = 0.3
@@ -288,7 +290,8 @@ class FinalizeDiagnosis(APIView):
                                 if check_function(*args_to_pass):
                                     analysis.add(cond["result"])
                             except Exception as e:
-                                print(f"Error evaluating condition '{cond['check']}']: {e}")
+                                pass
+                                # print(f"Error evaluating condition '{cond['check']}']: {e}")
 
                 if analysis:
                     analysis_text = f"{cls_name}: {' '.join(analysis)}"
@@ -318,7 +321,8 @@ class FinalizeDiagnosis(APIView):
                                 if check_function(*args_to_pass):
                                     analysis.add(cond["result"])
                             except Exception as e:
-                                print(f"Error evaluating condition '{cond['check']}']: {e}")
+                                pass
+                                # print(f"Error evaluating condition '{cond['check']}']: {e}")
 
                 if analysis:
                     analysis_text = f"{cls_name}: {' '.join(analysis)}"

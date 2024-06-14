@@ -4,48 +4,13 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'dart:ui' as ui;
 import 'dart:convert';
 import 'package:provider/provider.dart';
-import '../widgets/custom_app_bar.dart';
 import 'package:mindcare_flutter/core/services/api_service.dart';
-import 'package:mindcare_flutter/core/services/auth_service.dart';
+import 'package:mindcare_flutter/core/services/drawing_provider.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'chatbot_diary_entry_screen.dart';
 import 'htp_result_page.dart';
-
-
-class DrawingData {
-  int? id;
-  List<DrawingPoints> points;
-
-  DrawingData({this.id, required this.points});
-}
-
-class DrawingProvider with ChangeNotifier {
-  Map<int, DrawingData> _drawings = {};
-  int _currentStep = 0;
-
-  Map<int, DrawingData> get drawings => _drawings;
-  int get currentStep => _currentStep;
-
-  void saveDrawing(int step, DrawingData data) {
-    _drawings[step] = data;
-    notifyListeners();
-  }
-
-  void setCurrentStep(int step) {
-    _currentStep = step;
-    notifyListeners();
-  }
-
-  DrawingData getDrawing(int step) {
-    return _drawings[step] ?? DrawingData(points: []);
-  }
-
-  void removeDrawing(int step) {
-    if (_drawings.containsKey(step)) {
-      _drawings.remove(step);
-      notifyListeners();
-    }
-  }
-}
+import '../widgets/custom_drawer.dart';
+import '../widgets/custom_app_bar.dart';
 
 
 class HTPDrawingPage extends StatefulWidget {
@@ -222,12 +187,12 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
         return true;
       },
       child: Scaffold(
-        appBar: CustomAppBar(),
-        drawer: HTPCustomDrawer(token: widget.token),
+        appBar: const CustomAppBar(),
+        drawer: CustomDrawer(token: widget.token),
         body: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/main_page.jpg'),
+              image: NetworkImage(ImageUrls.mainPageBackground),
               fit: BoxFit.cover,
             ),
           ),
@@ -454,61 +419,4 @@ class DrawingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(DrawingPainter oldDelegate) => true;
-}
-
-class DrawingPoints {
-  Paint paint;
-  Offset points;
-
-  DrawingPoints({required this.points, required this.paint});
-}
-
-class HTPCustomDrawer extends StatelessWidget {
-  final String token;
-
-  HTPCustomDrawer({required this.token});
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      child: Container(
-        color: Color(0xff110f12),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            _drawerItem(icon: Icons.home, text: 'Home', onTap: () {
-              Navigator.pushReplacementNamed(context, '/home');
-            }),
-            _drawerItem(icon: Icons.person, text: 'Profile', onTap: () {
-              Navigator.pushReplacementNamed(context, '/profile');
-            }),
-            _drawerItem(icon: Icons.settings, text: 'Settings', onTap: () {
-              Navigator.pushReplacementNamed(context, '/settings');
-            }),
-            _drawerItem(icon: Icons.logout, text: 'Logout', onTap: () {
-              AuthHelpers.logout(context);
-            }),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _drawerItem({required IconData icon, required String text, required GestureTapCallback onTap}) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.white),
-      title: Text(text, style: TextStyle(color: Colors.white)),
-      onTap: onTap,
-    );
-  }
 }
