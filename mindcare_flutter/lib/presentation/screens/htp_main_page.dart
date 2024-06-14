@@ -11,7 +11,6 @@ import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
 
 import 'package:mindcare_flutter/core/constants/urls.dart';
-import 'package:mindcare_flutter/core/themes/color_schemes.dart';
 
 class HTPMainPage extends StatefulWidget {
   final String token;
