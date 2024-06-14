@@ -16,6 +16,22 @@ class MonthlyAnalysisScreen extends StatefulWidget {
 }
 
 class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
+  late Future<Map<String, dynamic>> _moodDataFuture;
+  late Future<List<dynamic>> _monthlyDataFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _reloadData();
+  }
+
+  void _reloadData() {
+    setState(() {
+      _moodDataFuture = fetchMoodData();
+      _monthlyDataFuture = fetchMonthlyData();
+    });
+  }
+
   Future<Map<String, dynamic>> fetchMoodData() async {
     try {
       final moodData = await MonthlyAnalysisService.fetchMoodData();
@@ -51,7 +67,7 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
           entry['entry_date'] ==
               selectedDate.toIso8601String().split('T')[0]);
           print('Fetched diary entry: $diaryEntry');
-          Navigator.pushNamed(
+          final result = await Navigator.pushNamed(
             context,
             '/daily_analysis',
             arguments: {
@@ -60,6 +76,10 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
               'diaryText': diaryEntry['diary_text'],
             },
           );
+          if (result == true) {
+            // 데이터 로드 함수 호출
+            _reloadData();
+          }
         } else {
           throw Exception('No diary entry found');
         }
@@ -68,13 +88,17 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
       }
     } else {
       print('Navigating to main screen');
-      Navigator.pushNamed(
+      final result = await Navigator.pushNamed(
         context,
         '/chatbot_diary',
         arguments: {
           'selectedDate': selectedDate.toIso8601String().split('T')[0]
         },
       );
+      if (result == true) {
+        // 데이터 로드 함수 호출
+        _reloadData();
+      }
     }
   }
 
@@ -138,7 +162,7 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
           borderRadius: BorderRadius.circular(16.0),
         ),
         child: FutureBuilder<Map<String, dynamic>>(
-          future: fetchMoodData(),
+          future: _moodDataFuture,
           builder: (context, snapshot) {
             print('Snapshot state: ${snapshot.connectionState}');
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -146,11 +170,8 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
             } else if (snapshot.hasError) {
               print('Snapshot error: ${snapshot.error}');
               return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              print('No data in snapshot');
-              return const Center(child: Text('No mood data available'));
             } else {
-              final moodData = snapshot.data!;
+              final moodData = snapshot.data ?? {};
               print('Mood data in builder: $moodData');
               final moodMap = createMoodMap(moodData);
               print('Mood map: $moodMap');
@@ -174,14 +195,33 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
         ),
         child: SingleChildScrollView( // 감정 분석 박스 내용 스크롤 가능하게 설정
           child: FutureBuilder<List<dynamic>>(
-            future: fetchMonthlyData(),
+            future: _monthlyDataFuture,
             builder: (context, monthlySnapshot) {
               if (monthlySnapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               } else if (monthlySnapshot.hasError) {
                 return Center(child: Text('Error: ${monthlySnapshot.error}'));
               } else if (!monthlySnapshot.hasData || monthlySnapshot.data!.isEmpty) {
-                return const Center(child: Text('No monthly data available'));
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 30.0),
+                      Text(
+                        '이번 달에는 아직 작성한 일기가 없어요.\n일기를 작성하고 월별 통계를 확인해보세요.',
+                        style: TextStyle(fontSize: 20), // 텍스트 크기 조정
+                        textAlign: TextAlign.center, // 텍스트를 중앙 정렬
+                      ),
+                      const SizedBox(height: 16.0),
+                      Image.network(
+                        ImageUrls.analysisRabbit,
+                        height: 100, // 이미지 높이 조정
+                        fit: BoxFit.contain,
+                      ),
+                    ],
+                  ),
+                );
+
               } else {
                 final monthlyData = monthlySnapshot.data!;
                 print('Monthly data in builder: $monthlyData');
@@ -210,7 +250,8 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
                       ),
                     ),
                     SizedBox(
-                      height: 300, // 고정 높이 설정
+                      height: 400,
+                      width: 600,
                       child: Center(
                         child: EmotionCircles(emotionCounts: emotionCounts),
                       ),

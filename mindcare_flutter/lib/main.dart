@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:provider/provider.dart';
+import 'package:mindcare_flutter/presentation/screens/htp_drawing_page.dart';
 import 'package:mindcare_flutter/presentation/widgets/auth_checker.dart';
 import 'package:mindcare_flutter/routes/app_routes.dart';
-import 'package:mindcare_flutter/presentation/screens/htp_drawing_page.dart'; // DrawingProvider 경로에 맞게 임포트
+import 'package:provider/provider.dart';
 
 void main() {
   initializeDateFormatting().then((_) => runApp(const MyApp()));
@@ -11,13 +11,11 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => DrawingProvider()), // DrawingProvider 추가
-        // 다른 Providers를 추가할 수 있습니다.
+        ChangeNotifierProvider(create: (_) => DrawingProvider()), 
       ],
       child: MaterialApp(
         home: const AuthChecker(),
