@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
+import 'package:mindcare_flutter/presentation/widgets/common_button.dart';
 import 'htp_drawing_page.dart';
 
 class HTPSecondPage extends StatelessWidget {
@@ -150,20 +151,20 @@ class HTPSecondPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      ElevatedButton(
+                      CommonButton(
+                        text: '이전 페이지',
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        child: Text('이전 페이지'),
                       ),
-                      ElevatedButton(
+                      CommonButton(
+                        text: '시작하기',
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => HTPDrawingPage(token: token)),
                           );
                         },
-                        child: Text('시작하기'),
                       ),
                     ],
                   ),
