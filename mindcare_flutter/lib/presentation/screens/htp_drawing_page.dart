@@ -301,6 +301,7 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
     final drawingProvider = Provider.of<DrawingProvider>(context);
     final double fixedSize = 700.0;
     final bool isScreenSmall = MediaQuery.of(context).size.width < 600 || MediaQuery.of(context).size.height < 600;
+
     return WillPopScope(
       onWillPop: () async {
         if (_step > 0) {
@@ -449,7 +450,7 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
                                           });
                                         },
                                         child: CustomPaint(
-                                          size: const Size(fixedSize, fixedSize),
+                                          size: Size(fixedSize, fixedSize),
                                           painter: DrawingPainter(pointsList: _points),
                                         ),
                                       ),
