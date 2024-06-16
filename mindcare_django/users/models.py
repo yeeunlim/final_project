@@ -1,5 +1,23 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
+# from django.core.exceptions import ValidationError
+
+# class EmailAddress(models.Model):
+#     email = models.EmailField(unique=True)
+#     is_primary = models.BooleanField(default=False)
+
+#     def clean(self):
+#         # is_primary가 True인 다른 이메일 주소가 있는지 확인
+#         if self.is_primary:
+#             if EmailAddress.objects.filter(is_primary=True).exclude(id=self.id).exists():
+#                 raise ValidationError("Primary email address already exists.")
+
+#     def save(self, *args, **kwargs):
+#         self.clean()  # 저장하기 전에 검증
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return self.email
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, name, nickname, birthdate, password=None):
