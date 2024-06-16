@@ -12,9 +12,10 @@ class AuthHelpers {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('jwt_token');
       if (token == null) {
-        throw Exception("No JWT token found");
+        print("No JWT token found");
+        return null; // 예외를 던지지 않고 null 반환
       }
-      // print("토큰 가져옴: $token");
+      print("JWT token found: $token");
       return token;
     } catch (e) {
       print('Error getting token: $e');
@@ -25,24 +26,52 @@ class AuthHelpers {
   static Future<bool> checkLoginStatus() async {
     try {
       final token = await getToken();
+      print('Token retrieved: $token');
       if (token != null) {
-        Map<String, dynamic> decodedToken;
-        try {
-          decodedToken = JwtDecoder.decode(token);
-          // print('Decoded Token: $decodedToken');
-        } catch (e) {
-          print('Failed to decode token: $e');
+        if (JwtDecoder.isExpired(token)) {
+          print('Token expired');
           return false;
         }
-
-        if (!JwtDecoder.isExpired(token)) {
-          return true;
-        }
+        return true;
       }
     } catch (e) {
       print('Failed to check login status: $e');
     }
     return false;
+  }
+
+  static Future<String?> getRefreshToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final refreshToken = prefs.getString('refresh_token');
+      if (refreshToken == null) {
+        throw Exception("No refresh token found");
+      }
+      return refreshToken;
+    } catch (e) {
+      print('Error getting refresh token: $e');
+      return null;
+    }
+  }
+
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('jwt_token', token);
+  }
+
+  static Future<void> saveRefreshToken(String refreshToken) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('refresh_token', refreshToken);
+  }
+
+  static Future<void> deleteToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('jwt_token');
+  }
+
+  static Future<void> deleteRefreshToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('refresh_token');
   }
 
   static Future<void> logout(BuildContext context) async {
@@ -62,6 +91,7 @@ class AuthHelpers {
 
     if (response.statusCode == 200) {
       await prefs.remove('jwt_token');
+      await prefs.remove('refresh_token');
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
             (Route<dynamic> route) => false,
@@ -89,8 +119,12 @@ class AuthHelpers {
         var data = json.decode(response.body);
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('jwt_token', data['access_token']);
+        await prefs.setString('refresh_token', data['refresh_token']);
 
-        // print("토큰 저장됨: ${prefs.getString('jwt_token')}");
+        // 토큰이 저장되었는지 확인
+        String? savedToken = prefs.getString('jwt_token');
+        print('Saved JWT token: $savedToken');
+
         return true;
       } else {
         print('로그인 실패: ${response.body}');

@@ -1,277 +1,89 @@
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:mindcare_flutter/core/constants/urls.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:mindcare_flutter/presentation/screens/login_screen.dart';
+import '../constants/urls.dart';
 import 'auth_service.dart';
+import 'dart:convert';
 
-class ChatbotService {
-  // 챗봇에 메시지를 보내는 메서드
-  static Future<Map<String, dynamic>> sendMessage(String message) async {
-    final token = await AuthHelpers.getToken();
-    final response = await http.get(
-      Uri.parse('$chatbotDiaryUrl/chatbot/?s=$message'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token', // 인증 토큰 추가
-      },
-    );
+class ApiService {
+  static Future<http.Response> sendAuthenticatedRequest(
+      BuildContext context, String url, String method,
+      {Map<String, String>? headers, dynamic body}) async {
+    String? token = await AuthHelpers.getToken();
+    if (token == null || JwtDecoder.isExpired(token)) {
+      final refreshToken = await AuthHelpers.getRefreshToken();
+      if (refreshToken == null || JwtDecoder.isExpired(refreshToken)) {
+        _redirectToLogin(context);
+        return Future.error('토큰이 만료되었습니다.');
+      }
 
-    if (response.statusCode == 200) {
-      return jsonDecode(utf8.decode(response.bodyBytes));
-    } else {
-      throw Exception('Failed to get response: ${response.statusCode}');
+      // Refresh the token
+      final newToken = await _refreshToken(context, refreshToken);
+      if (newToken == null) {
+        _redirectToLogin(context);
+        return Future.error('토큰 갱신에 실패하였습니다.');
+      }
+      token = newToken;
     }
-  }
-}
 
-class DiaryEntryService {
-  // 일기 엔트리 리스트 조회 (GET)
-  Future<List<dynamic>> getDiaryEntries({String? entryDate}) async {
-    final token = await AuthHelpers.getToken();
-    final response = await http.get(
-      Uri.parse(
-          '$chatbotDiaryUrl/diary_entries${entryDate != null ? '?entry_date=$entryDate' : ''}'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
+    headers ??= {};
+    headers['Authorization'] = 'Bearer $token';
+    headers['Content-Type'] = 'application/json';
 
-    if (response.statusCode == 200) {
-      return jsonDecode(utf8.decode(response.bodyBytes));
-    } else {
-      throw Exception('Failed to load diary entries');
+    http.Response response;
+    switch (method) {
+      case 'GET':
+        response = await http.get(Uri.parse(url), headers: headers);
+        break;
+      case 'POST':
+        response = await http.post(Uri.parse(url), headers: headers, body: jsonEncode(body));
+        break;
+      case 'PUT':
+        response = await http.put(Uri.parse(url), headers: headers, body: jsonEncode(body));
+        break;
+      case 'PATCH':
+        response = await http.patch(Uri.parse(url), headers: headers, body: jsonEncode(body));
+        break;
+      case 'DELETE':
+        response = await http.delete(Uri.parse(url), headers: headers);
+        break;
+      default:
+        throw Exception('Invalid HTTP method');
     }
-  }
 
-  // 특정 ID의 일기 엔트리 조회 (GET)
-  Future<Map<String, dynamic>> getDiaryEntryById(int diaryEntryId) async {
-    final token = await AuthHelpers.getToken();
-    final response = await http.get(
-      Uri.parse('$chatbotDiaryUrl/diary_entries/$diaryEntryId/'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(utf8.decode(response.bodyBytes));
-    } else {
-      throw Exception('Failed to load diary entry');
+    if (response.statusCode == 401) {
+      _redirectToLogin(context);
+      return Future.error('토큰이 만료되었습니다.');
     }
+
+    return response;
   }
 
-  // 일기 엔트리 생성 (POST)
-  Future<Map<String, dynamic>> createDiaryEntry(
-      String diaryText, String entryDate) async {
-    final token = await AuthHelpers.getToken();
-    print('Creating diary entry with text: $diaryText');
+  static Future<String?> _refreshToken(BuildContext context, String refreshToken) async {
     final response = await http.post(
-      Uri.parse('$chatbotDiaryUrl/diary_entries/'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'diary_text': diaryText,
-        'entry_date': entryDate,
-      }),
-    );
-
-    if (response.statusCode == 201) {
-      return jsonDecode(utf8.decode(response.bodyBytes));
-    } else {
-      throw Exception('Failed to create diary entry');
-    }
-  }
-
-  // 일기 엔트리 수정 (PUT)
-  Future<Map<String, dynamic>> updateDiaryEntry(
-      int id, String diaryText, String entryDate) async {
-    final token = await AuthHelpers.getToken();
-    final response = await http.put(
-      Uri.parse('$chatbotDiaryUrl/diary_entries/$id/'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'diary_text': diaryText,
-        'entry_date': entryDate,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(utf8.decode(response.bodyBytes));
-    } else {
-      throw Exception('Failed to update diary entry');
-    }
-  }
-
-  // 일기 엔트리 부분 업데이트 (PATCH)
-  Future<Map<String, dynamic>> patchDiaryEntry(
-      int id, String diaryText, String entryDate) async {
-    final token = await AuthHelpers.getToken();
-    final response = await http.patch(
-      Uri.parse('$chatbotDiaryUrl/diary_entries/$id/'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'diary_text': diaryText,
-        'entry_date': entryDate,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(utf8.decode(response.bodyBytes));
-    } else {
-      throw Exception('Failed to update diary entry');
-    }
-  }
-
-  // 일기 엔트리 삭제 (DELETE)
-  Future<void> deleteDiaryEntry(int id) async {
-    final token = await AuthHelpers.getToken();
-    final response = await http.delete(
-      Uri.parse('$chatbotDiaryUrl/diary_entries/$id/'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode != 204) {
-      throw Exception('Failed to delete diary entry');
-    }
-  }
-}
-
-class DailyAnalysisService {
-  Future<String> fetchEmotionComment(String mostFeltEmotion) async {
-    final response = await http.post(
-      Uri.parse('$chatbotDiaryUrl/emotion_comment/'),
+      Uri.parse('$userAuthUrl/custom/refresh/'), // 리프레시 엔드포인트 URL
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'most_felt_emotion': mostFeltEmotion}),
+      body: jsonEncode({'refresh': refreshToken}),
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return data['emotion_comment'];
+      final newToken = data['access'];
+      await AuthHelpers.saveToken(newToken);
+      return newToken;
     } else {
-      throw Exception('Failed to load response message');
-    }
-  }
-}
-
-class MonthlyAnalysisService {
-  // 해당 유저의 모든 일기 엔트리에서 기분 데이터를 가져옴
-  static Future<Map<String, dynamic>> fetchMoodData() async {
-    final token = await AuthHelpers.getToken();
-    try {
-      final response = await http.get(
-        Uri.parse('$chatbotDiaryUrl/mood_data/'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token', // 인증 토큰 추가
-        },
-      );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(utf8.decode(response.bodyBytes));
-      } else {
-        throw Exception('Failed to load mood data: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error occurred: $e');
-    }
-  }
-  // 특정 월의 일기 데이터 조회
-  static Future<List<dynamic>> fetchMonthlyData(DateTime selectedMonth) async {
-    final token = await AuthHelpers.getToken();
-    final year = selectedMonth.year;
-    final month = selectedMonth.month;
-    try {
-      final response = await http.get(
-        Uri.parse('$chatbotDiaryUrl/monthly_analysis/$year/$month/'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token', // 인증 토큰 추가
-        },
-      );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(utf8.decode(response.bodyBytes));
-      } else {
-        throw Exception('Failed to load monthly data: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error occurred: $e');
-    }
-  }
-}
-
-
-/// HTP TEST
-class HTPApiService {
-  static Future<Map<String, dynamic>?> uploadDrawingBase64(String base64Image, String type) async {
-    String? token = await AuthHelpers.getToken(); // 토큰 가져오기
-    if (token == null) {
-      print('Token is missing!');
       return null;
     }
+  }
 
-    final url = Uri.parse('$htpTestUrl/upload_drawing/');
-    print("Uploading drawing with token: $token");
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
-        'image': base64Image,
-        'type': type,
-      }),
+  static void _redirectToLogin(BuildContext context) {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (Route<dynamic> route) => false,
     );
-
-    print("Response status: ${response.statusCode}");
-    print("Response body: ${response.body}");
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      print('Failed to upload drawing: ${response.body}');
-      return null;
-    }
-  }
-
-  static Future<List<dynamic>?> finalizeDiagnosis(List<String> drawingIds) async {
-    String? token = await AuthHelpers.getToken(); // 토큰 가져오기
-    if (token == null) {
-      print('Token is missing!');
-      return null;
-    }
-
-    final url = Uri.parse('$htpTestUrl/finalize_diagnosis/');
-    print("Finalizing diagnosis with token: $token");
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
-        'drawingIds': drawingIds,
-      }),
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('토큰이 만료되었습니다. 다시 로그인해 주세요.')),
     );
-
-    print("Response status: ${response.statusCode}");
-    print("Response body: ${response.body}");
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      print('Failed to finalize diagnosis: ${response.body}');
-      return null;
-    }
   }
 }

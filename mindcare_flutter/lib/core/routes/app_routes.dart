@@ -5,6 +5,7 @@ import 'package:mindcare_flutter/presentation/screens/chatbot_diary_entry_screen
 import 'package:mindcare_flutter/presentation/screens/monthly_analysis_screen.dart';
 import 'package:mindcare_flutter/presentation/screens/mypage.dart';
 import 'package:mindcare_flutter/presentation/screens/register.dart';
+import '../../presentation/widgets/auth_checker.dart';
 
 // 라우트 경로를 상수로 정의한 클래스
 class AppRoutes {
@@ -16,28 +17,30 @@ class AppRoutes {
   static const String register = '/register';
 }
 
-// 라우팅 테이블을 정의합니다.
+// 정적 라우팅
 Map<String, WidgetBuilder> getAppRoutes() {
   return {
-    AppRoutes.chatbotDiary: (context) => const ChatbotDiaryEntryScreen(),
-    AppRoutes.monthlyAnalysis: (context) => const MonthlyAnalysisScreen(),
-    AppRoutes.mypage: (context) => const MyPage(),
+    AppRoutes.chatbotDiary: (context) => const AuthChecker(child: ChatbotDiaryEntryScreen()),
+    AppRoutes.monthlyAnalysis: (context) => const AuthChecker(child: MonthlyAnalysisScreen()),
+    AppRoutes.mypage: (context) => const AuthChecker(child: MyPage()),
     AppRoutes.login: (context) => const LoginScreen(),
     AppRoutes.register: (context) => const SignUpScreen(),
   };
 }
 
-// 동적 라우팅을 처리하는 함수를 정의합니다.
+// 동적 라우팅
 Route<dynamic>? generateRoute(RouteSettings settings) {
   switch (settings.name) {
     case AppRoutes.dailyAnalysis:
       final args = settings.arguments as Map<String, dynamic>;
       return MaterialPageRoute(
         builder: (context) {
-          return DailyAnalysisScreen(
-            entryDate: args['entryDate'],
-            entryData: args['entryData'],
-            diaryText: args['diaryText'],
+          return AuthChecker(
+            child: DailyAnalysisScreen(
+              entryDate: args['entryDate'],
+              entryData: args['entryData'],
+              diaryText: args['diaryText'],
+            ),
           );
         },
       );
@@ -45,8 +48,10 @@ Route<dynamic>? generateRoute(RouteSettings settings) {
       final args = settings.arguments as Map<String, dynamic>?;
       return MaterialPageRoute(
         builder: (context) {
-          return ChatbotDiaryEntryScreen(
-            selectedDate: args?['selectedDate'],
+          return AuthChecker(
+            child: ChatbotDiaryEntryScreen(
+              selectedDate: args?['selectedDate'],
+            ),
           );
         },
       );

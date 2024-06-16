@@ -6,7 +6,7 @@ import '../../core/constants/colors.dart';
 class MoodScoreChart extends StatelessWidget {
   final Map<String, double> dailyMoodScores;
 
-  MoodScoreChart({required this.dailyMoodScores});
+  const MoodScoreChart({super.key, required this.dailyMoodScores});
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +56,7 @@ class MoodScoreChartPainter extends CustomPainter {
     final minDate = DateTime.parse(dates.first);
     final totalDays = maxDate.difference(minDate).inDays;
 
-    final pixelInterval = 70; // 날짜 간격을 픽셀 단위로 고정
+    const pixelInterval = 70; // 날짜 간격을 픽셀 단위로 고정
 
     final path = Path();
     bool isFirstPoint = true;
@@ -71,7 +71,7 @@ class MoodScoreChartPainter extends CustomPainter {
       final y = ((100 - i) / 200) * size.height;
       textPainter.text = TextSpan(
         text: i.toString(),
-        style: TextStyle(color: Colors.black, fontSize: 12), // 텍스트 크기 조정
+        style: const TextStyle(color: Colors.black, fontSize: 12), // 텍스트 크기 조정
       );
       textPainter.layout();
       textPainter.paint(canvas, Offset(-30, y - textPainter.height / 2)); // 왼쪽으로 떨어지게 설정
@@ -90,12 +90,12 @@ class MoodScoreChartPainter extends CustomPainter {
     while (x <= size.width) {
       textPainter.text = TextSpan(
         text: dateFormatter.format(currentDate),
-        style: TextStyle(color: Colors.black, fontSize: 12), // 텍스트 크기 조정
+        style: const TextStyle(color: Colors.black, fontSize: 12), // 텍스트 크기 조정
       );
       textPainter.layout();
       textPainter.paint(canvas, Offset(x - textPainter.width / 2, size.height));
       x += pixelInterval;
-      currentDate = currentDate.add(Duration(days: 1));
+      currentDate = currentDate.add(const Duration(days: 1));
     }
 
     canvas.translate(30, 0); // 전체 그래프를 오른쪽으로 이동

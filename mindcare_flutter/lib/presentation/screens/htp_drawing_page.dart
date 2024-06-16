@@ -4,11 +4,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
-import 'package:mindcare_flutter/core/services/api_service.dart';
 import 'package:mindcare_flutter/core/services/drawing_provider.dart';
 import 'package:mindcare_flutter/core/constants/colors.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
+import '../../core/services/api_service.dart';
 import 'chatbot_diary_entry_screen.dart';
 import 'htp_result_page.dart';
 import '../widgets/custom_drawer.dart';
@@ -17,7 +17,7 @@ import '../widgets/custom_app_bar.dart';
 class HTPDrawingPage extends StatefulWidget {
   final String token;
 
-  HTPDrawingPage({required this.token});
+  const HTPDrawingPage({super.key, required this.token});
 
   @override
   _HTPDrawingPageState createState() => _HTPDrawingPageState();
@@ -31,7 +31,7 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
   List<DrawingPoints> _points = [];
   bool _isErasing = false;
   int _step = 0;
-  List<String> _drawingIds = [];
+  final List<String> _drawingIds = [];
 
   final List<String> _stepsText = [
     "집을 그려주세요",
@@ -62,15 +62,24 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
 
   Future<void> _nextStep() async {
     try {
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
       final boundary = _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 3.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       final buffer = byteData!.buffer.asUint8List();
       final base64Image = base64Encode(buffer);
 
-      var response = await HTPApiService.uploadDrawingBase64(base64Image, _stepsText[_step]);
-      if (response != null) {
+      var response = await ApiService.sendAuthenticatedRequest(
+        context,
+        '$htpTestUrl/upload_drawing/',
+        'POST',
+        body: {
+          'image': base64Image,
+          'type': _stepsText[_step],
+        },
+      );
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
         final drawingProvider = Provider.of<DrawingProvider>(context, listen: false);
 
         final oldDrawing = drawingProvider.getDrawing(_step);
@@ -78,11 +87,11 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
           _drawingIds.remove(oldDrawing.id.toString());
         }
 
-        _drawingIds.add(response['id'].toString());
+        _drawingIds.add(responseData['id'].toString());
 
         setState(() {});
 
-        drawingProvider.saveDrawing(_step, DrawingData(id: response['id'], points: _points));
+        drawingProvider.saveDrawing(_step, DrawingData(id: responseData['id'], points: _points));
       }
     } catch (e) {
       // Error handling
@@ -103,11 +112,18 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
   Future<void> _finalizeDiagnosis() async {
     HTPAlertDialogHelper.showLoadingDialog(context, '진단 중입니다...');
 
-    var response = await HTPApiService.finalizeDiagnosis(_drawingIds);
+    var response = await ApiService.sendAuthenticatedRequest(
+      context,
+      '$htpTestUrl/finalize_diagnosis/',
+      'POST',
+      body: {
+        'drawingIds': _drawingIds,
+      },
+    );
     Navigator.of(context).pop();
 
-    if (response != null) {
-      List<Map<String, dynamic>> results = List<Map<String, dynamic>>.from(response);
+    if (response.statusCode == 200) {
+      List<Map<String, dynamic>> results = List<Map<String, dynamic>>.from(jsonDecode(response.body));
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -153,9 +169,9 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
+                const Text(
                   'HTP 검사를 종료하시겠습니까?',
-                  style: const TextStyle(color: Colors.white, fontSize: 20),
+                  style: TextStyle(color: Colors.white, fontSize: 20),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 50.0),
@@ -174,8 +190,8 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
                       onPressed: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => ChatbotDiaryEntryScreen()),
-                          (Route<dynamic> route) => false,
+                          MaterialPageRoute(builder: (context) => const ChatbotDiaryEntryScreen()),
+                              (Route<dynamic> route) => false,
                         );
                       },
                       child: const Text('종료', style: TextStyle(color: Colors.white)),
@@ -205,78 +221,78 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
     );
   }
 
-Future<bool> _showExitConfirmationDialog() async {
-  return await showDialog(
-    context: context,
-    builder: (context) => Dialog(
-      backgroundColor: primaryColor,
-      child: Container(
-        width: 300,
-        height: 180,
-        padding: const EdgeInsets.all(16.0),
-        decoration: const BoxDecoration(
-          color: primaryColor,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '그림이 지워집니다',
-              style: const TextStyle(color: Colors.white, fontSize: 20),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 10),
-            Text(
-              '뒤로 가면 현재 그린 그림이 모두 지워집니다. 그래도 이동하시겠습니까?',
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
+  Future<bool> _showExitConfirmationDialog() async {
+    return await showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: primaryColor,
+        child: Container(
+          width: 300,
+          height: 180,
+          padding: const EdgeInsets.all(16.0),
+          decoration: const BoxDecoration(
+            color: primaryColor,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                '그림이 지워집니다',
+                style: TextStyle(color: Colors.white, fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                '뒤로 가면 현재 그린 그림이 모두 지워집니다. 그래도 이동하시겠습니까?',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
                     ),
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                    child: const Text('취소', style: TextStyle(color: Colors.white)),
                   ),
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                  child: const Text('취소', style: TextStyle(color: Colors.white)),
-                ),
-                const SizedBox(width: 8.0),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
+                  const SizedBox(width: 8.0),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
                     ),
+                    onPressed: () {
+                      Navigator.of(context).pop(true);
+                    },
+                    child: const Text('확인', style: TextStyle(color: Colors.white)),
                   ),
-                  onPressed: () {
-                    Navigator.of(context).pop(true);
-                  },
-                  child: const Text('확인', style: TextStyle(color: Colors.white)),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  ) ?? false;
-}
+    ) ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
     final drawingProvider = Provider.of<DrawingProvider>(context);
-    final double fixedSize = 700.0;
+    const double fixedSize = 700.0;
     final bool isScreenSmall = MediaQuery.of(context).size.width < 700 || MediaQuery.of(context).size.height < 700;
 
     return WillPopScope(
@@ -303,7 +319,7 @@ Future<bool> _showExitConfirmationDialog() async {
             if (constraints.maxWidth < fixedSize || constraints.maxHeight < fixedSize) {
               return Center(
                 child: Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     image: DecorationImage(
                       image: NetworkImage(ImageUrls.mainPageBackground),
                       fit: BoxFit.cover,
@@ -317,8 +333,8 @@ Future<bool> _showExitConfirmationDialog() async {
                         width: 150,
                         height: 150,
                       ),
-                      SizedBox(height: 20),
-                      Text(
+                      const SizedBox(height: 20),
+                      const Text(
                         '그림을 그리기에 캔버스 크기가 너무 작습니다. \n정확한 진단을 위해 화면(해상도 700x700이상)을 조정해주세요.',
                         style: TextStyle(color: Colors.blue, fontSize: 16),
                         textAlign: TextAlign.center,
@@ -329,7 +345,7 @@ Future<bool> _showExitConfirmationDialog() async {
               );
             }
             return Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 image: DecorationImage(
                   image: NetworkImage(ImageUrls.mainPageBackground),
                   fit: BoxFit.cover,
@@ -339,7 +355,7 @@ Future<bool> _showExitConfirmationDialog() async {
                 child: Container(
                   width: fixedSize,
                   height: fixedSize,
-                  padding: EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(16),
@@ -350,17 +366,17 @@ Future<bool> _showExitConfirmationDialog() async {
                       Align(
                         alignment: Alignment.topLeft,
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                           decoration: BoxDecoration(
                             color: Colors.grey.shade800,
-                            borderRadius: BorderRadius.only(
+                            borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(8.0),
                               bottomRight: Radius.circular(8.0),
                             ),
                           ),
                           child: Text(
                             'HTP 검사 - ${_stepsText[_step]}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -368,7 +384,7 @@ Future<bool> _showExitConfirmationDialog() async {
                           ),
                         ),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Expanded(
                         child: Row(
                           children: [
@@ -431,7 +447,7 @@ Future<bool> _showExitConfirmationDialog() async {
                                           });
                                         },
                                         child: CustomPaint(
-                                          size: Size(fixedSize, fixedSize),
+                                          size: const Size(fixedSize, fixedSize),
                                           painter: DrawingPainter(pointsList: _points),
                                         ),
                                       ),
@@ -450,9 +466,9 @@ Future<bool> _showExitConfirmationDialog() async {
                                     children: [
                                       Row(
                                         children: [
-                                          Text("Pen: "),
+                                          const Text("Pen: "),
                                           IconButton(
-                                            icon: Icon(Icons.create),
+                                            icon: const Icon(Icons.create),
                                             onPressed: () {
                                               setState(() {
                                                 _isErasing = false;
@@ -471,13 +487,13 @@ Future<bool> _showExitConfirmationDialog() async {
                                       ),
                                       Row(
                                         children: [
-                                          Text("Color: "),
+                                          const Text("Color: "),
                                           GestureDetector(
                                             onTap: () {
                                               showDialog(
                                                 context: context,
                                                 builder: (context) => AlertDialog(
-                                                  title: Text("Select Color"),
+                                                  title: const Text("Select Color"),
                                                   content: SingleChildScrollView(
                                                     child: BlockPicker(
                                                       pickerColor: _color,
@@ -494,16 +510,16 @@ Future<bool> _showExitConfirmationDialog() async {
                                               width: 24,
                                               height: 24,
                                               color: _color,
-                                              margin: EdgeInsets.only(bottom: 16.0),
+                                              margin: const EdgeInsets.only(bottom: 16.0),
                                             ),
                                           ),
                                         ],
                                       ),
                                       Row(
                                         children: [
-                                          Text("Eraser: "),
+                                          const Text("Eraser: "),
                                           IconButton(
-                                            icon: Icon(Icons.brush),
+                                            icon: const Icon(Icons.brush),
                                             onPressed: _enableEraser,
                                           ),
                                         ],
@@ -528,20 +544,20 @@ Future<bool> _showExitConfirmationDialog() async {
                         children: [
                           ElevatedButton(
                             onPressed: _confirmCancel,
-                            child: Text('취소'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
                               foregroundColor: Colors.white,
                             ),
+                            child: const Text('취소'),
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           ElevatedButton(
                             onPressed: _nextStep,
-                            child: Text(_step < 2 ? '다음' : '진단'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primaryColor,
                               foregroundColor: secondaryColor,
                             ),
+                            child: Text(_step < 2 ? '다음' : '진단'),
                           ),
                         ],
                       ),
@@ -576,4 +592,3 @@ class DrawingPainter extends CustomPainter {
   @override
   bool shouldRepaint(DrawingPainter oldDelegate) => true;
 }
-

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../core/services/diary_entry_service.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/emotion_pie_chart.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/loading_screen.dart';
 import 'package:mindcare_flutter/core/constants/colors.dart';
-import 'package:mindcare_flutter/core/services/api_service.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'package:mindcare_flutter/core/constants/emotion_responses.dart';
 import 'package:mindcare_flutter/core/constants/emotion_categories.dart'; // 감정 카테고리 파일 임포트
@@ -57,7 +57,7 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
 
   Future<void> _deleteDiaryEntry(BuildContext context) async {
     try {
-      final diaryEntryService = DiaryEntryService();
+      final diaryEntryService = DiaryEntryService(context);
       await diaryEntryService.deleteDiaryEntry(_entryData['id']);
       Navigator.pop(context, true); // 일기 삭제 후 true 반환
     } catch (e) {
@@ -71,7 +71,7 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
     });
 
     try {
-      final diaryEntryService = DiaryEntryService();
+      final diaryEntryService = DiaryEntryService(context);
       await diaryEntryService.patchDiaryEntry(
         _entryData['id'],
         _editController.text,
@@ -94,7 +94,7 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
 
   Future<Map<String, dynamic>> _fetchDiaryEntry() async {
     try {
-      final diaryEntryService = DiaryEntryService();
+      final diaryEntryService = DiaryEntryService(context);
       final entry = await diaryEntryService.getDiaryEntryById(_entryData['id']);
 
       return entry;

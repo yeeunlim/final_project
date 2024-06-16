@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
-import 'api_service.dart';
+import 'monthly_analysis_service.dart';
 
 class MonthlyAnalysisModel extends ChangeNotifier {
+  final BuildContext context;
+  late final MonthlyAnalysisService _service;
+
+  MonthlyAnalysisModel(this.context) {
+    _service = MonthlyAnalysisService(context);
+  }
+
   DateTime _focusedMonth = DateTime(DateTime.now().year, DateTime.now().month);
   Future<Map<String, dynamic>>? _moodDataFuture;
   Future<List<dynamic>>? _monthlyDataFuture;
@@ -55,7 +62,7 @@ class MonthlyAnalysisModel extends ChangeNotifier {
 
   Future<Map<String, dynamic>> fetchMoodData() async {
     try {
-      final moodData = await MonthlyAnalysisService.fetchMoodData();
+      final moodData = await _service.fetchMoodData();
       return moodData;
     } catch (e) {
       print('Error in fetchMoodData: $e');
@@ -65,7 +72,7 @@ class MonthlyAnalysisModel extends ChangeNotifier {
 
   Future<List<dynamic>> fetchMonthlyData(DateTime month) async {
     try {
-      final monthlyData = await MonthlyAnalysisService.fetchMonthlyData(month);
+      final monthlyData = await _service.fetchMonthlyData(month);
       return monthlyData;
     } catch (e) {
       print('Error in fetchMonthlyData: $e');

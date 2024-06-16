@@ -7,7 +7,7 @@ import '../../core/utils/calculate_mood_score.dart';
 class KeywordCircles extends StatelessWidget {
   final List<dynamic> monthlyData; // 월별 데이터를 추가
 
-  const KeywordCircles({Key? key, required this.monthlyData}) : super(key: key);
+  const KeywordCircles({super.key, required this.monthlyData});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class KeywordCircles extends StatelessWidget {
       return LayoutBuilder(
         builder: (context, constraints) {
           final containerSize = Size(constraints.maxWidth, constraints.maxHeight);
-          final double minDistance = 10.0; // 최소 거리 설정
+          const double minDistance = 10.0; // 최소 거리 설정
           final List<Map<String, dynamic>> circles = []; // 타입을 명시하여 리스트 선언
 
           // 원의 개수에 따라 boundingRect 크기 조정
@@ -90,7 +90,7 @@ class KeywordCircles extends StatelessWidget {
           }
 
           return Center(
-            child: Container(
+            child: SizedBox(
               width: containerSize.width,
               height: containerSize.height,
               child: Stack(

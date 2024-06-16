@@ -35,14 +35,14 @@ class CustomDrawer extends StatelessWidget {
             Container(
               color: Colors.black,
               padding: const EdgeInsets.all(16.0),
-              child: Row(
+              child: const Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     backgroundColor: primaryColor,
                     radius: 11,
                   ),
-                  const SizedBox(width: 16),
-                  const Text(
+                  SizedBox(width: 16),
+                  Text(
                     '나의 감정 분석',
                     style: TextStyle(color: Colors.white, fontSize: 20),
                   ),
@@ -66,14 +66,14 @@ class CustomDrawer extends StatelessWidget {
             Container(
               color: Colors.black,
               padding: const EdgeInsets.all(16.0),
-              child: Row(
+              child: const Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     backgroundColor: primaryColor,
                     radius: 11,
                   ),
-                  const SizedBox(width: 16),
-                  const Text(
+                  SizedBox(width: 16),
+                  Text(
                     '심리 검사',
                     style: TextStyle(color: Colors.white, fontSize: 20),
                   ),

@@ -6,7 +6,7 @@ import 'package:mindcare_flutter/core/constants/colors.dart'; // 색상 파일 �
 class EmotionCircles extends StatelessWidget {
   final Map<String, int> emotionCounts;
 
-  const EmotionCircles({Key? key, required this.emotionCounts}) : super(key: key);
+  const EmotionCircles({super.key, required this.emotionCounts});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class EmotionCircles extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final containerSize = Size(constraints.maxWidth, constraints.maxHeight);
-        final double minDistance = 10.0; // 최소 거리 설정
+        const double minDistance = 10.0; // 최소 거리 설정
         final List<Map<String, dynamic>> circles = []; // 타입을 명시하여 리스트 선언
 
         // 원의 개수에 따라 boundingRect 크기 조정
@@ -71,7 +71,7 @@ class EmotionCircles extends StatelessWidget {
         }
 
         return Center(
-          child: Container(
+          child: SizedBox(
             width: containerSize.width,
             height: containerSize.height,
             child: Stack(

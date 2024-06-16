@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';

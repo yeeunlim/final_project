@@ -91,15 +91,15 @@ class _MoodTrackerState extends State<MoodTracker> {
           print('Has diary for selected day: $hasDiary');
           widget.onDateSelected(selectedDay, hasDiary); // 날짜 선택 콜백 호출
         },
-        headerStyle: HeaderStyle(
-          titleTextStyle: const TextStyle(color: Colors.white, fontSize: 22.0), // 월과 년도를 표시한 텍스트를 흰색으로 설정
+        headerStyle: const HeaderStyle(
+          titleTextStyle: TextStyle(color: Colors.white, fontSize: 22.0), // 월과 년도를 표시한 텍스트를 흰색으로 설정
           formatButtonVisible: false, // 형식 버튼 숨김
           titleCentered: true, // 제목을 중앙 정렬
-          leftChevronIcon: const Icon(
+          leftChevronIcon: Icon(
             Icons.chevron_left,
             color: Colors.white, // 왼쪽 화살표 아이콘 색상
           ),
-          rightChevronIcon: const Icon(
+          rightChevronIcon: Icon(
             Icons.chevron_right,
             color: Colors.white, // 오른쪽 화살표 아이콘 색상
           ),
@@ -112,7 +112,7 @@ class _MoodTrackerState extends State<MoodTracker> {
           defaultBuilder: (context, day, focusedDay) {
             final isPastDate = day.isBefore(DateTime.now()); // 현재 날짜 이전의 날짜인지 확인
             final textColor = isPastDate ? lightGray : Colors.white;
-            final defaultDecoration = BoxDecoration(
+            const defaultDecoration = BoxDecoration(
               shape: BoxShape.circle, // 원형으로 표시
             );
 
@@ -153,7 +153,7 @@ class _MoodTrackerState extends State<MoodTracker> {
           selectedBuilder: (context, day, focusedDay) {
             final isPastDate = day.isBefore(DateTime.now());
             final textColor = isPastDate ? lightGray : Colors.white;
-            final defaultDecoration = BoxDecoration(
+            const defaultDecoration = BoxDecoration(
               shape: BoxShape.circle,
             );
 

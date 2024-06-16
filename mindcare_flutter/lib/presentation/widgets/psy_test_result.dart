@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:mindcare_flutter/presentation/widgets/psy_common.dart';
-import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test1_home.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test2_home.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test3_home.dart';

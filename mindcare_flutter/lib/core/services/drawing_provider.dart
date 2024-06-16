@@ -15,7 +15,7 @@ class DrawingData {
 }
 
 class DrawingProvider with ChangeNotifier {
-  Map<int, DrawingData> _drawings = {};
+  final Map<int, DrawingData> _drawings = {};
   int _currentStep = 0;
 
   Map<int, DrawingData> get drawings => _drawings;

@@ -10,7 +10,7 @@ class ResultPage extends StatefulWidget {
   final List<String> drawingIds;
   final List<Map<String, dynamic>> results;
 
-  ResultPage({required this.token, required this.drawingIds, required this.results});
+  const ResultPage({super.key, required this.token, required this.drawingIds, required this.results});
 
   @override
   State<StatefulWidget> createState() {
@@ -27,7 +27,7 @@ class _ResultPageState extends State<ResultPage> {
       appBar: const CustomAppBar(),
       drawer: CustomDrawer(token: widget.token),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           image: DecorationImage(
             image: NetworkImage(ImageUrls.mainPageBackground),
             fit: BoxFit.cover,
@@ -39,9 +39,9 @@ class _ResultPageState extends State<ResultPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: EdgeInsets.all(16.0),
-                  margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-                  constraints: BoxConstraints(maxWidth: 800), // 겉박스 최대 너비 제한
+                  padding: const EdgeInsets.all(16.0),
+                  margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                  constraints: const BoxConstraints(maxWidth: 800), // 겉박스 최대 너비 제한
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(10.0),
@@ -51,9 +51,9 @@ class _ResultPageState extends State<ResultPage> {
                     children: [
                       Text(
                         'HTP 검사결과 - ${widget.results[_currentIndex]['type'].toString().toUpperCase()}',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
                           // 좌측 이미지 박스
@@ -72,19 +72,19 @@ class _ResultPageState extends State<ResultPage> {
                               ),
                             ),
                           ),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           // 우측 텍스트 박스
                           Expanded(
                             flex: 1,
                             child: AspectRatio(
                               aspectRatio: 1.0, // 정사각형 비율 유지
                               child: Container(
-                                padding: EdgeInsets.all(16.0),
+                                padding: const EdgeInsets.all(16.0),
                                 color: Colors.grey[200],
                                 child: SingleChildScrollView(
                                   child: Text(
                                     '${widget.results[_currentIndex]['result']}',
-                                    style: TextStyle(fontSize: 16),
+                                    style: const TextStyle(fontSize: 16),
                                   ),
                                 ),
                               ),
@@ -92,7 +92,7 @@ class _ResultPageState extends State<ResultPage> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 20), // 텍스트 박스와 버튼 사이에 여백 추가
+                      const SizedBox(height: 20), // 텍스트 박스와 버튼 사이에 여백 추가
                       Center(
                         child: ElevatedButton(
                           onPressed: () {
@@ -111,13 +111,13 @@ class _ResultPageState extends State<ResultPage> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryColor,
                             foregroundColor: secondaryColor,
-                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.arrow_forward),
-                              SizedBox(width: 10),
+                              const Icon(Icons.arrow_forward),
+                              const SizedBox(width: 10),
                               Text(_currentIndex < widget.results.length - 1 ? '다음' : '완료'),
                             ],
                           ),

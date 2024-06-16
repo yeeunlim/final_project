@@ -11,7 +11,7 @@ import 'package:mindcare_flutter/core/constants/urls.dart';
 class HTPMainPage extends StatefulWidget {
   final String token;
 
-  const HTPMainPage({Key? key, required this.token}) : super(key: key);
+  const HTPMainPage({super.key, required this.token});
   
   @override
   _HTPTestResultsState createState() => _HTPTestResultsState(token: token);
@@ -80,7 +80,7 @@ class _HTPTestResultsState extends State<HTPMainPage> {
           child: Container(
             width: MediaQuery.of(context).size.width * 0.8,
             height: MediaQuery.of(context).size.height * 0.6,
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
               color: primaryColor,
               borderRadius: BorderRadius.circular(12),
@@ -98,13 +98,13 @@ class _HTPTestResultsState extends State<HTPMainPage> {
                       : Container(),
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 // 우측 텍스트 박스
                 Expanded(
                   flex: 1,
                   child: Container(
                     height: double.infinity,
-                    padding: EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(16.0),
                     color: Colors.grey[200],
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,7 +124,7 @@ class _HTPTestResultsState extends State<HTPMainPage> {
                               ),
                               child: Text(
                                 result['result'],
-                                style: TextStyle(fontSize: 16),
+                                style: const TextStyle(fontSize: 16),
                               ),
                             ),
                           ),
@@ -134,13 +134,13 @@ class _HTPTestResultsState extends State<HTPMainPage> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             TextButton(
-                              child: Text('닫기', style: TextStyle(color: primaryColor)),
+                              child: const Text('닫기', style: TextStyle(color: primaryColor)),
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
                             ),
                             TextButton(
-                              child: Text('삭제', style: TextStyle(color: primaryColor)), // 버튼 텍스트 색깔 설정
+                              child: const Text('삭제', style: TextStyle(color: primaryColor)), // 버튼 텍스트 색깔 설정
                               onPressed: () async {
                                 final response = await http.delete(
                                   Uri.parse('$htpTestUrl/results/${result['id']}/'),
@@ -292,12 +292,12 @@ class _HTPTestResultsState extends State<HTPMainPage> {
                                     ),
                                   ],
                                 ),
-                                Flexible(
+                                const Flexible(
                                   child: SingleChildScrollView(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const Text(
+                                        Text(
                                           '\nHTP(House, Tree, Person) 검사'
                                           '\n벅(Buck, 1948)이 고안한 투사적 그림검사로서 집, 나무, 사람을 각각 그리게 하여 '
                                           '내담자의 성격, 행동 양식 및 대인관계를 파악할 수 있습니다. 피험자의 성격적 특징뿐만 아니라 지적 수준을 평가하고 '
@@ -312,7 +312,7 @@ class _HTPTestResultsState extends State<HTPMainPage> {
                                           '받으시는 것을 추천드립니다.',
                                           style: TextStyle(fontSize: 17),
                                         ),
-                                        const SizedBox(height: 40),
+                                        SizedBox(height: 40),
                                       ],
                                     ),
                                   ),
@@ -361,7 +361,7 @@ class _HTPTestResultsState extends State<HTPMainPage> {
                                     ),
                             ),
                             if (!isScreenSmall) ...[
-                              SizedBox(height: 20),
+                              const SizedBox(height: 20),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -371,10 +371,10 @@ class _HTPTestResultsState extends State<HTPMainPage> {
                                     height: 50,
                                     fit: BoxFit.contain,
                                   ),
-                                  SizedBox(width: 10),
+                                  const SizedBox(width: 10),
                                   Flexible(
                                     child: ConstrainedBox(
-                                      constraints: BoxConstraints(
+                                      constraints: const BoxConstraints(
                                         minWidth: 100, // 버튼의 최소 너비
                                         maxWidth: 200, // 버튼의 최대 너비
                                       ),

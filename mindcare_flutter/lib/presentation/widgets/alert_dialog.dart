@@ -101,7 +101,7 @@ class HTPAlertDialogHelper {
                         style: const TextStyle(color: Colors.white, fontSize: 18),
                       ),
                       const SizedBox(height: 16.0), // 텍스트와 프로그레스 인디케이터 사이의 간격
-                      CircularProgressIndicator(
+                      const CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     ],

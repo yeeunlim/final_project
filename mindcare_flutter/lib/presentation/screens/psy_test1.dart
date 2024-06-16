@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
@@ -11,7 +8,6 @@ import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
 import 'package:mindcare_flutter/presentation/widgets/confirm_dialog.dart';
 import 'package:mindcare_flutter/presentation/widgets/psy_test_result.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test1_home.dart';
-import 'package:mindcare_flutter/core/constants/colors.dart';
 
 class psyServey1 extends StatefulWidget {
   const psyServey1({super.key});

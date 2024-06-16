@@ -53,13 +53,13 @@ class BarChartPainter extends CustomPainter {
 class BarChartWidget extends StatelessWidget {
   final Map<String, int> majorCategoryCounts;
 
-  const BarChartWidget({Key? key, required this.majorCategoryCounts}) : super(key: key);
+  const BarChartWidget({super.key, required this.majorCategoryCounts});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
+        SizedBox(
           width: 480, // 고정 너비 설정
           height: 90, // 고정 높이 설정
           child: ClipRRect(

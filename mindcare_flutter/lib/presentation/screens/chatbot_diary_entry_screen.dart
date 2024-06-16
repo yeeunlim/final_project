@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:mindcare_flutter/core/services/api_service.dart';
 import 'package:mindcare_flutter/presentation/widgets/common_button.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
 import 'package:mindcare_flutter/presentation/widgets/loading_screen.dart';
 
 import '../../core/constants/urls.dart';
+import '../../core/services/chatbot_service.dart';
 import '../widgets/confirm_dialog.dart';
+import '../../core/services/diary_entry_service.dart';
 
 class ChatbotDiaryEntryScreen extends StatefulWidget {
   final String? selectedDate;
@@ -55,7 +56,6 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
     }
   }
 
-
   @override
   void dispose() {
     _inputController.dispose();
@@ -63,9 +63,9 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
     super.dispose();
   }
 
-  Future<void> sendMessage(String message) async {
+  Future<void> sendMessage(BuildContext context, String message) async {
     try {
-      final responseData = await ChatbotService.sendMessage(message);
+      final responseData = await ChatbotService.sendMessage(context, message);
       setState(() {
         _chatbotResponse = responseData['chatbot_response'];
       });
@@ -76,7 +76,7 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
 
   Future<void> saveDiary() async {
     final diaryText = _inputController.text;
-    final diaryEntryService = DiaryEntryService();
+    final diaryEntryService = DiaryEntryService(context);
 
     setState(() {
       _isLoading = true; // 로딩 시작
@@ -84,11 +84,6 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
     });
     try {
       final responseData = await diaryEntryService.createDiaryEntry(diaryText, selectedDate);
-
-      // responseData가 null인 경우 처리
-      if (responseData == null) {
-        throw Exception('Failed to create diary entry: No response data received');
-      }
 
       print('Received responseData: $responseData');
       print('Navigating to DailyAnalysisScreen with entryData: $responseData, entryDate: $selectedDate, diaryText: $diaryText');
@@ -112,8 +107,6 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
       });
     }
   }
-
-
 
   void _showConfirmDialog() {
     showDialog(
@@ -223,7 +216,7 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
                                     _inputFocusNode.requestFocus();
                                     final lines = text.split('\n');
                                     if (lines.isNotEmpty) {
-                                      sendMessage(lines.last);
+                                      sendMessage(context, lines.last);
                                     }
                                   },
                                 ),

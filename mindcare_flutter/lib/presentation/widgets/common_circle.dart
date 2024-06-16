@@ -4,7 +4,7 @@ import 'package:mindcare_flutter/core/constants/colors.dart';
 class CommonCircle extends StatelessWidget {
   final String circleText;
 
-  const CommonCircle({required this.circleText, Key? key}) : super(key: key);
+  const CommonCircle({required this.circleText, super.key});
 
   @override
   Widget build(BuildContext context) {
