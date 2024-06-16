@@ -30,6 +30,14 @@ class AuthHelpers {
       if (token != null) {
         if (JwtDecoder.isExpired(token)) {
           print('Token expired');
+          final refreshToken = await getRefreshToken();
+          if (refreshToken != null) {
+            final newToken = await refreshTokenWithRefreshToken(refreshToken);
+            if (newToken != null) {
+              await saveToken(newToken);
+              return true;
+            }
+          }
           return false;
         }
         return true;
@@ -251,7 +259,7 @@ class AuthHelpers {
     }
   }
 
-  static Future<String?> refreshToken(BuildContext context, String refreshToken) async {
+  static Future<String?> refreshTokenWithRefreshToken(String refreshToken) async {
     final response = await http.post(
       Uri.parse('$userAuthUrl/token/refresh/'), // 리프레시 엔드포인트 URL
       headers: {'Content-Type': 'application/json'},

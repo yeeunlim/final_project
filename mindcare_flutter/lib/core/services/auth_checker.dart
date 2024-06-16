@@ -31,10 +31,7 @@ class _AuthCheckerState extends State<AuthChecker> {
 
       if (!loggedIn) {
         if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (Route<dynamic> route) => false,
-          );
+          AuthHelpers.redirectToLogin(context);
         }
       }
     } catch (e) {

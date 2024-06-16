@@ -17,7 +17,7 @@ class ApiService {
       }
 
       // Refresh the token
-      final newToken = await AuthHelpers.refreshToken(context, refreshToken);
+      final newToken = await AuthHelpers.refreshTokenWithRefreshToken(refreshToken);
       if (newToken == null) {
         AuthHelpers.redirectToLogin(context);
         return Future.error('토큰 갱신에 실패하였습니다.');

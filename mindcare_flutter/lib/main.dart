@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mindcare_flutter/core/services/drawing_provider.dart';
 import 'package:mindcare_flutter/presentation/screens/chatbot_diary_entry_screen.dart';
-import 'package:mindcare_flutter/presentation/widgets/auth_checker.dart';
+import 'package:mindcare_flutter/core/services/auth_checker.dart';
 import 'package:mindcare_flutter/core/services/monthly_analysis_provider.dart';
 import 'package:mindcare_flutter/core/routes/app_routes.dart';
 import 'package:provider/provider.dart';

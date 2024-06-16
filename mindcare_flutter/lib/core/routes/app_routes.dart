@@ -5,7 +5,7 @@ import 'package:mindcare_flutter/presentation/screens/chatbot_diary_entry_screen
 import 'package:mindcare_flutter/presentation/screens/monthly_analysis_screen.dart';
 import 'package:mindcare_flutter/presentation/screens/mypage.dart';
 import 'package:mindcare_flutter/presentation/screens/register.dart';
-import '../../presentation/widgets/auth_checker.dart';
+import '../services/auth_checker.dart';
 
 // 라우트 경로를 상수로 정의한 클래스
 class AppRoutes {
