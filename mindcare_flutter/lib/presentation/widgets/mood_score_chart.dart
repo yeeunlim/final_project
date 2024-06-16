@@ -10,18 +10,15 @@ class MoodScoreChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: CustomPaint(
-          size: Size(
-            dailyMoodScores.length * 70.0, // 그래프의 너비를 일기 개수에 따라 동적으로 설정
-            200, // 높이를 적절히 설정
-          ),
-          painter: MoodScoreChartPainter(
-            dailyMoodScores: dailyMoodScores,
-          ),
+      child: CustomPaint(
+        size: Size(
+          500, // 그래프의 너비를 고정
+          260, // 높이를 적절히 설정
+        ),
+        painter: MoodScoreChartPainter(
+          dailyMoodScores: dailyMoodScores,
         ),
       ),
     );
@@ -35,6 +32,11 @@ class MoodScoreChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final double padding = 40.0; // 그래프 패딩 설정
+    final double chartPadding = 20.0; // 그래프 좌우 패딩 설정
+    final double chartWidth = size.width - padding * 2 - chartPadding * 2;
+    final double chartHeight = size.height - padding * 2;
+
     final paint = Paint()
       ..color = deepPurple
       ..strokeWidth = 2.0 // 선의 두께를 적절하게 설정
@@ -56,7 +58,7 @@ class MoodScoreChartPainter extends CustomPainter {
     final minDate = DateTime.parse(dates.first);
     final totalDays = maxDate.difference(minDate).inDays;
 
-    const pixelInterval = 70; // 날짜 간격을 픽셀 단위로 고정
+    final pixelInterval = chartWidth / (dates.length - 1); // 날짜 간격을 동적으로 설정
 
     final path = Path();
     bool isFirstPoint = true;
@@ -68,45 +70,44 @@ class MoodScoreChartPainter extends CustomPainter {
     );
 
     for (int i = -100; i <= 100; i += 50) {
-      final y = ((100 - i) / 200) * size.height;
+      final y = padding + ((100 - i) / 200) * chartHeight;
       textPainter.text = TextSpan(
         text: i.toString(),
         style: const TextStyle(color: Colors.black, fontSize: 12), // 텍스트 크기 조정
       );
       textPainter.layout();
-      textPainter.paint(canvas, Offset(-30, y - textPainter.height / 2)); // 왼쪽으로 떨어지게 설정
+      textPainter.paint(canvas, Offset(padding - 30, y - textPainter.height / 2)); // 왼쪽으로 떨어지게 설정
 
       // Draw horizontal lines
       if (i == 0) {
-        canvas.drawLine(Offset(0, y), Offset(size.width, y), zeroLinePaint);
+        canvas.drawLine(Offset(padding + chartPadding, y), Offset(size.width - padding - chartPadding, y), zeroLinePaint);
       }
     }
 
     // Draw X-axis (Dates)
     final dateFormatter = DateFormat('MM/dd');
-    double x = 30;
+    double x = padding + chartPadding;
     DateTime currentDate = minDate;
 
-    while (x <= size.width) {
-      textPainter.text = TextSpan(
-        text: dateFormatter.format(currentDate),
-        style: const TextStyle(color: Colors.black, fontSize: 12), // 텍스트 크기 조정
-      );
-      textPainter.layout();
-      textPainter.paint(canvas, Offset(x - textPainter.width / 2, size.height));
+    for (int i = 0; i < dates.length; i++) {
+      if (i % 3 == 0) { // 3일 간격으로 날짜 표시
+        textPainter.text = TextSpan(
+          text: dateFormatter.format(DateTime.parse(dates[i])),
+          style: const TextStyle(color: Colors.black, fontSize: 10), // 텍스트 크기 조정
+        );
+        textPainter.layout();
+        textPainter.paint(canvas, Offset(x - textPainter.width / 2, size.height - padding + 10));
+      }
       x += pixelInterval;
-      currentDate = currentDate.add(const Duration(days: 1));
     }
-
-    canvas.translate(30, 0); // 전체 그래프를 오른쪽으로 이동
 
     // Draw a smooth curve instead of straight lines
     final smoothPath = Path();
     for (int i = 0; i < dates.length; i++) {
       final parsedDate = DateTime.parse(dates[i]);
       final daysOffset = parsedDate.difference(minDate).inDays;
-      final x = daysOffset * pixelInterval / 1; // 날짜 간격을 픽셀 단위로 고정
-      final y = ((100 - dailyMoodScores[dates[i]]!) / 200) * size.height;
+      final x = padding + chartPadding + daysOffset * pixelInterval; // 날짜 간격을 동적으로 설정
+      final y = padding + ((100 - dailyMoodScores[dates[i]]!) / 200) * chartHeight;
 
       if (isFirstPoint) {
         smoothPath.moveTo(x, y);
@@ -114,13 +115,13 @@ class MoodScoreChartPainter extends CustomPainter {
       } else {
         final prevParsedDate = DateTime.parse(dates[i - 1]);
         final prevDaysOffset = prevParsedDate.difference(minDate).inDays;
-        final prevX = prevDaysOffset * pixelInterval / 1;
-        final prevY = ((100 - dailyMoodScores[dates[i - 1]]!) / 200) * size.height;
+        final prevX = padding + chartPadding + prevDaysOffset * pixelInterval;
+        final prevY = padding + ((100 - dailyMoodScores[dates[i - 1]]!) / 200) * chartHeight;
         final controlX = (prevX + x) / 2;
         smoothPath.cubicTo(controlX, prevY, controlX, y, x, y);
       }
 
-      canvas.drawCircle(Offset(x, y), 6.0, pointPaint); // 점의 크기 조정
+      canvas.drawCircle(Offset(x, y), 4.0, pointPaint); // 점의 크기 조정
     }
     canvas.drawPath(smoothPath, paint);
   }

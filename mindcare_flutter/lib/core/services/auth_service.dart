@@ -250,4 +250,31 @@ class AuthHelpers {
       throw Exception('An unknown error occurred');
     }
   }
+
+  static Future<String?> refreshToken(BuildContext context, String refreshToken) async {
+    final response = await http.post(
+      Uri.parse('$userAuthUrl/token/refresh/'), // 리프레시 엔드포인트 URL
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'refresh': refreshToken}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final newToken = data['access'];
+      await saveToken(newToken);
+      return newToken;
+    } else {
+      return null;
+    }
+  }
+
+  static void redirectToLogin(BuildContext context) {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (Route<dynamic> route) => false,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('토큰이 만료되었습니다. 다시 로그인해 주세요.')),
+    );
+  }
 }

@@ -30,6 +30,32 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
     super.initState();
     selectedDate = widget.selectedDate ?? DateTime.now().toIso8601String().split('T')[0];
     print('Selected date: $selectedDate');
+    _checkTodayDiary(); // 오늘 일기 확인 로직 추가
+  }
+
+  Future<void> _checkTodayDiary() async {
+    try {
+      final diaryEntryService = DiaryEntryService(context);
+      final today = DateTime.now().toIso8601String().split('T')[0];
+      final entries = await diaryEntryService.getDiaryEntries(entryDate: today);
+
+      if (entries.isNotEmpty) {
+        final diaryEntry = entries.firstWhere((entry) =>
+        entry['entry_date'] == today);
+
+        Navigator.pushReplacementNamed(
+          context,
+          '/daily_analysis',
+          arguments: {
+            'entryDate': diaryEntry['entry_date'],
+            'entryData': diaryEntry,
+            'diaryText': diaryEntry['diary_text'],
+          },
+        );
+      }
+    } catch (e) {
+      print('Error occurred while checking today\'s diary entry: $e');
+    }
   }
 
   @override

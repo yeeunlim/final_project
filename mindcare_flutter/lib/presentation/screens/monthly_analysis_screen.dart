@@ -49,7 +49,7 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
             entryDate: selectedDate.toIso8601String().split('T')[0]);
         if (entries.isNotEmpty) {
           final diaryEntry = entries.firstWhere((entry) =>
-          entry['entry_date'] ==
+              entry['entry_date'] ==
               selectedDate.toIso8601String().split('T')[0]);
           final result = await Navigator.pushNamed(
             context,
@@ -121,29 +121,29 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
                   scrollDirection: Axis.vertical,
                   child: isVerticalLayout
                       ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: buildChildren(
-                        context,
-                        moodTrackerWidth,
-                        moodTrackerHeight,
-                        analysisWidth,
-                        analysisHeight,
-                        model),
-                  )
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: buildChildren(
+                              context,
+                              moodTrackerWidth,
+                              moodTrackerHeight,
+                              analysisWidth,
+                              analysisHeight,
+                              model),
+                        )
                       : SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: buildChildren(
-                          context,
-                          moodTrackerWidth,
-                          moodTrackerHeight,
-                          analysisWidth,
-                          analysisHeight,
-                          model),
-                    ),
-                  ),
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: buildChildren(
+                                context,
+                                moodTrackerWidth,
+                                moodTrackerHeight,
+                                analysisWidth,
+                                analysisHeight,
+                                model),
+                          ),
+                        ),
                 );
               },
             ),
@@ -172,30 +172,30 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
         child: model.moodDataFuture == null
             ? const Center(child: CircularProgressIndicator())
             : FutureBuilder<Map<String, dynamic>>(
-          future: model.moodDataFuture,
-          builder: (context, snapshot) {
-            print('Snapshot state: ${snapshot.connectionState}');
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              print('Snapshot error: ${snapshot.error}');
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else {
-              final moodData = snapshot.data ?? {};
-              final moodMap = createMoodMap(moodData);
+                future: model.moodDataFuture,
+                builder: (context, snapshot) {
+                  print('Snapshot state: ${snapshot.connectionState}');
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    print('Snapshot error: ${snapshot.error}');
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else {
+                    final moodData = snapshot.data ?? {};
+                    final moodMap = createMoodMap(moodData);
 
-              return MoodTracker(
-                moodData: moodMap,
-                onDateSelected: _onDateSelected,
-                onPageChanged: (focusedDay) {
-                  print('mood tracker is calling provider: $focusedDay');
-                  model.setFocusedMonth(focusedDay);
+                    return MoodTracker(
+                      moodData: moodMap,
+                      onDateSelected: _onDateSelected,
+                      onPageChanged: (focusedDay) {
+                        print('mood tracker is calling provider: $focusedDay');
+                        model.setFocusedMonth(focusedDay);
+                      },
+                      initialFocusedMonth: model.focusedMonth,
+                    );
+                  }
                 },
-                initialFocusedMonth: model.focusedMonth,
-              );
-            }
-          },
-        ),
+              ),
       ),
       const SizedBox(width: 16, height: 16),
       Container(
@@ -211,211 +211,212 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
           child: model.monthlyDataFuture == null
               ? const Center(child: CircularProgressIndicator())
               : FutureBuilder<List<dynamic>>(
-            future: model.monthlyDataFuture,
-            builder: (context, monthlySnapshot) {
-              if (monthlySnapshot.connectionState ==
-                  ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (monthlySnapshot.hasError) {
-                print('MonthlySnapshot error: ${monthlySnapshot.error}');
-                return Center(
-                    child: Text('Error: ${monthlySnapshot.error}'));
-              } else if (!monthlySnapshot.hasData ||
-                  monthlySnapshot.data!.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 30.0),
-                      const Text(
-                        '이번 달에는 아직 작성한 일기가 없어요.\n일기를 작성하고 월별 통계를 확인해보세요.',
-                        style: TextStyle(fontSize: 20), // 텍스트 크기 조정
-                        textAlign: TextAlign.center, // 텍스트를 중앙 정렬
-                      ),
-                      const SizedBox(height: 16.0),
-                      Image.network(
-                        ImageUrls.analysisRabbit,
-                        height: 100, // 이미지 높이 조정
-                        fit: BoxFit.contain,
-                      ),
-                    ],
-                  ),
-                );
-              } else {
-                final monthlyData = monthlySnapshot.data!;
-                final majorCategoryCounts =
-                calculateMajorCategoryCounts(monthlyData);
-                final subCategoryRatios =
-                calculateSubCategoryRatios(monthlyData);
-                final dailyMoodScores =
-                calculateDailyMoodScores(monthlyData);
-
-                final totalEmotions =
-                majorCategoryCounts.values.reduce((a, b) => a + b);
-
-                return Column(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Text(
-                        '한눈에 보는 한 달의 감정 분석',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Column(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Text(
-                            '한 달 간 느꼈던 감정은 몇 가지일까요?',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ),
-                        Row(
+                  future: model.monthlyDataFuture,
+                  builder: (context, monthlySnapshot) {
+                    if (monthlySnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (monthlySnapshot.hasError) {
+                      print('MonthlySnapshot error: ${monthlySnapshot.error}');
+                      return Center(
+                          child: Text('Error: ${monthlySnapshot.error}'));
+                    } else if (!monthlySnapshot.hasData ||
+                        monthlySnapshot.data!.isEmpty) {
+                      return Center(
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: CommonCircle(
-                                circleText: totalEmotions.toString(),
-                              ),
+                            const SizedBox(height: 30.0),
+                            const Text(
+                              '이번 달에는 아직 작성한 일기가 없어요.\n일기를 작성하고 월별 통계를 확인해보세요.',
+                              style: TextStyle(fontSize: 20), // 텍스트 크기 조정
+                              textAlign: TextAlign.center, // 텍스트를 중앙 정렬
                             ),
-                            const SizedBox(width: 16),
-                            Container(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: BarChartWidget(
-                                  majorCategoryCounts:
-                                  majorCategoryCounts,
-                                ),
-                              ),
+                            const SizedBox(height: 16.0),
+                            Image.network(
+                              ImageUrls.analysisRabbit,
+                              height: 100, // 이미지 높이 조정
+                              fit: BoxFit.contain,
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                    buildDivider(), // 중복된 Divider 사용
-                    Column(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 10.0),
-                          child: Text(
-                            '한 달 간 키워드를 확인해보세요!',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
+                      );
+                    } else {
+                      final monthlyData = monthlySnapshot.data!;
+                      final majorCategoryCounts =
+                          calculateMajorCategoryCounts(monthlyData);
+                      final subCategoryRatios =
+                          calculateSubCategoryRatios(monthlyData);
+                      final dailyMoodScores =
+                          calculateDailyMoodScores(monthlyData);
+
+                      final totalEmotions =
+                          majorCategoryCounts.values.reduce((a, b) => a + b);
+
+                      return Column(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Text(
+                              '한눈에 보는 한 달의 감정 분석',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(
-                          height: 400,
-                          width: 600,
-                          child: Center(
-                            child: KeywordCircles(
-                              monthlyData: monthlyData,
-                            ),
-                          ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          Column(
                             children: [
-                              Icon(Icons.info, color: Colors.white),
-                              SizedBox(width: 8.0),
-                              Text(
-                                '원이 흰색에 가까울수록 긍정적인 감정과, 보라색에 가까울수록 부정적인 감정과 자주 연결되었음을 나타내요.',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
+                              const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Text(
+                                  '한 달 간 느꼈던 감정은 몇 가지일까요?',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: CommonCircle(
+                                      circleText: totalEmotions.toString(),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Container(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: BarChartWidget(
+                                        majorCategoryCounts:
+                                            majorCategoryCounts,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                    buildDivider(), // 중복된 Divider 사용
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        children: [
-                          const Text(
-                            '이번 달의 기분 점수를 알아보세요.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
+                          buildDivider(), // 중복된 Divider 사용
+                          Column(
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.only(top: 10.0),
+                                child: Text(
+                                  '한 달 간 키워드를 확인해보세요!',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 400,
+                                width: 600,
+                                child: Center(
+                                  child: KeywordCircles(
+                                    monthlyData: monthlyData,
+                                  ),
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.info, color: Colors.white),
+                                    SizedBox(width: 8.0),
+                                    Text(
+                                      '원이 흰색에 가까울수록 긍정적인 감정과, 보라색에 가까울수록 부정적인 감정과 자주 연결되었음을 나타내요.',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          buildDivider(), // 중복된 Divider 사용
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              children: [
+                                const Text(
+                                  '이번 달의 기분 점수를 알아보세요.',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CommonCircle(
+                                      circleText:
+                                          calculateAverageMoodScore(monthlyData)
+                                              .toString(),
+                                    ),
+                                    const SizedBox(width: 40),
+                                    SizedBox(
+                                      height: 300,
+                                      width: 500,
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(16.0),
+                                          child: MoodScoreChart(
+                                            dailyMoodScores: dailyMoodScores,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+
+                          buildDivider(), // 중복된 Divider 사용
+                          Column(
                             children: [
-                              CommonCircle(
-                                circleText:
-                                calculateAverageMoodScore(monthlyData)
-                                    .toString(),
-                              ),
-                              const SizedBox(width: 40),
-                              SizedBox(
-                                height: 300,
-                                width: 500,
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: MoodScoreChart(
-                                      dailyMoodScores: dailyMoodScores,
-                                    ),
+                              const Padding(
+                                padding: EdgeInsets.only(top: 16.0),
+                                child: Text(
+                                  '한 달 동안 가졌던 마음을 요약해드릴게요!',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
                                   ),
+                                ),
+                              ),
+                              const SizedBox(height: 30),
+                              Container(
+                                padding: const EdgeInsets.all(16.0), // 내부 패딩
+                                decoration: BoxDecoration(
+                                  color: Colors.white
+                                      .withOpacity(0.3), // 반투명한 흰색 배경
+                                  borderRadius: BorderRadius.circular(
+                                      100.0), // 모서리 둥글게 설정
+                                ),
+                                child: EmotionPieChart(
+                                  emotionDistribution: subCategoryRatios,
                                 ),
                               ),
                             ],
                           ),
                         ],
-                      ),
-                    ),
-                    buildDivider(), // 중복된 Divider 사용
-                    Column(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 16.0),
-                          child: Text(
-                            '한 달 동안 가졌던 마음을 요약해드릴게요!',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        Container(
-                          padding: const EdgeInsets.all(16.0), // 내부 패딩
-                          decoration: BoxDecoration(
-                            color: Colors.white
-                                .withOpacity(0.3), // 반투명한 흰색 배경
-                            borderRadius: BorderRadius.circular(
-                                100.0), // 모서리 둥글게 설정
-                          ),
-                          child: EmotionPieChart(
-                            emotionDistribution: subCategoryRatios,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              }
-            },
-          ),
+                      );
+                    }
+                  },
+                ),
         ),
       ),
     ];
