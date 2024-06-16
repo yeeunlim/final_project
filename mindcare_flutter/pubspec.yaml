@@ -27,6 +27,28 @@ environment:
 # dependencies can be manually updated by changing the version numbers below to
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
+# dependencies:
+#   flutter:
+#     sdk: flutter
+#   http: ^1.2.1
+#   jwt_decoder: ^2.0.1
+#   shared_preferences: ^2.0.7
+#   cupertino_icons: ^1.0.2
+#   fl_chart: ^0.68.0
+#   table_calendar: ^3.0.4
+#   intl: ^0.17.0
+
+#   provider: ^5.0.0
+#   image_picker: ^0.8.4+1
+#   path_provider: ^2.0.11
+#   flutter_drawing_board: ^0.3.0
+#   flutter_colorpicker:
+#     git:
+#       url: https://github.com/mchome/flutter_colorpicker.git
+#       ref: master
+#   flutter_screenutil: ^5.3.1+2
+#   whiteboard: ^0.0.2
+
 dependencies:
   flutter:
     sdk: flutter
@@ -37,16 +59,22 @@ dependencies:
   fl_chart: ^0.68.0
   table_calendar: ^3.0.4
   intl: ^0.17.0
-
   provider: ^5.0.0
   image_picker: ^0.8.4+1
   path_provider: ^2.0.11
+  flutter_drawing_board: ^0.7.0+2
+  flutter_colorpicker:
+    git:
+      url: https://github.com/mchome/flutter_colorpicker.git
+      ref: master
+  flutter_screenutil: ^5.3.1+2
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_colorpicker: ^1.0.3
+  # flutter_colorpicker: ^0.6.1
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your

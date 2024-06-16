@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+class DrawingPoints {
+  Paint paint;
+  Offset points;
+
+  DrawingPoints({required this.paint, required this.points});
+}
+
 class DrawingData {
   int? id;
   List<DrawingPoints> points;
@@ -34,11 +41,4 @@ class DrawingProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-}
-
-class DrawingPoints {
-  Paint paint;
-  Offset points;
-
-  DrawingPoints({required this.points, required this.paint});
 }

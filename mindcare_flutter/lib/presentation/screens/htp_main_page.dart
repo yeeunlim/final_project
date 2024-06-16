@@ -78,8 +78,8 @@ class _HTPTestResultsState extends State<HTPMainPage> {
           ),
           backgroundColor: Colors.transparent,
           child: Container(
-            width: 1000, // 고정된 가로 크기
-            height: 600, // 고정된 세로 크기
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.6,
             padding: EdgeInsets.all(16.0),
             decoration: BoxDecoration(
               color: primaryColor,
@@ -188,31 +188,38 @@ class _HTPTestResultsState extends State<HTPMainPage> {
   }
 
   // HTP 검사 결과 리스트 불러오기
-Widget _buildTestSection(String type, String title) {
-  List<dynamic> filteredResults = testResults.where((result) => result['type'] == type).toList();
+  Widget _buildTestSection(String type, String title) {
+    List<dynamic> filteredResults = testResults.where((result) => result['type'] == type).toList();
   
-  return ExpansionTile(
-    title: Text(title),
-    children: filteredResults.map((result) {
-      return GestureDetector(
-        onTap: () => _showResultDialog(result),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
+    return ExpansionTile(
+      title: Text(title),
+      children: filteredResults.map((result) {
+        return GestureDetector(
+          onTap: () => _showResultDialog(result),
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            margin: const EdgeInsets.symmetric(vertical: 5.0),
+            child: ListTile(
+              title: Text('검사 [${result['created_at'].split('T')[0]}]'),
+              subtitle: Text('검사항목: ${result['type']}'),
+            ),
           ),
-          margin: const EdgeInsets.symmetric(vertical: 5.0),
-          child: ListTile(
-            title: Text('검사 [${result['created_at'].split('T')[0]}]'),
-            subtitle: Text('검사항목: ${result['type']}'),
-          ),
-        ),
-      );
-    }).toList(),
-  );
-}
+        );
+      }).toList(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    // 화면의 너비와 높이를 감지합니다.
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // 특정 크기 이하일 때 버튼과 이미지를 숨깁니다.
+    final isScreenSmall = screenWidth < 550 || screenHeight < 300;
+
     return Scaffold(
       appBar: const CustomAppBar(),
       drawer: CustomDrawer(token: token),
@@ -228,29 +235,27 @@ Widget _buildTestSection(String type, String title) {
           ),
           Center(
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.8,
-              height: MediaQuery.of(context).size.height * 0.8,
+              width: screenWidth * 0.8,
+              height: screenHeight * 0.8,
               padding: const EdgeInsets.all(30.0),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
-
-                
                 children: [
                   Expanded(
                     flex: 5,
-                    child:  Padding(
+                    child: Padding(
                       padding: const EdgeInsets.all(5.0),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
-                          height: MediaQuery.of(context).size.height * 0.8, // 고정된 높이 설정
+                          height: screenHeight * 0.8,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.5), // 배경색 설정
-                            borderRadius: BorderRadius.circular(12), // 둥근 테두리 설정
-                            border: Border.all(color: Colors.grey.shade300, width: 0.5), // 테두리 설정
+                            color: Colors.white.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade300, width: 0.5),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
@@ -266,14 +271,14 @@ Widget _buildTestSection(String type, String title) {
                                       height: 70,
                                     ),
                                     const SizedBox(
-                                      width: 10, // 그림과 텍스트 사이의 간격
+                                      width: 10,
                                     ),
                                     const Flexible(
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           SizedBox(
-                                            height: 20, // 텍스트를 그림의 오른쪽 아래에 맞추기 위한 공간
+                                            height: 20,
                                           ),
                                           Text(
                                             'HTP 검사란?',
@@ -346,7 +351,7 @@ Widget _buildTestSection(String type, String title) {
                             const SizedBox(height: 10),
                             Expanded(
                               child: isLoading
-                                  ? const Center(child: CircularProgressIndicator())
+                                  ? const Center(child: Text('로딩 중'))
                                   : ListView(
                                       children: [
                                         _buildTestSection('house', 'House'),
@@ -355,50 +360,50 @@ Widget _buildTestSection(String type, String title) {
                                       ],
                                     ),
                             ),
-SizedBox(height: 20),
-Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-    Image.network(
-      ImageUrls.normalRabbit,
-      width: 50,
-      height: 50,
-      fit: BoxFit.contain,
-    ),
-    SizedBox(width: 10),
-    Flexible(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minWidth: 100, // 버튼의 최소 너비
-          maxWidth: 200, // 버튼의 최대 너비
-        ),
-        child: CommonButton(
-          text: '다음',
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HTPSecondPage(token: widget.token)),
-            );
-          },
-        ),
-      ),
-    ),
-  ],
-),
-
-
+                            if (!isScreenSmall) ...[
+                              SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.network(
+                                    ImageUrls.normalRabbit,
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.contain,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Flexible(
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        minWidth: 100, // 버튼의 최소 너비
+                                        maxWidth: 200, // 버튼의 최대 너비
+                                      ),
+                                      child: CommonButton(
+                                        text: '다음',
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(builder: (context) => HTPSecondPage(token: widget.token)),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ],
+                        ),
+                      ),
                     ),
                   ),
-                    ),
-              ),
                 ],
-          ),
+              ),
             ),
-      ),
+          ),
         ],
       ),
-      );
+    );
   }
 }
 

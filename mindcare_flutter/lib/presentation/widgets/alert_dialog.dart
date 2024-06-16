@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mindcare_flutter/core/constants/colors.dart';
+import 'package:mindcare_flutter/core/constants/urls.dart';
 
 class AlertDialogHelper {
   static void showAlert(
@@ -63,3 +64,55 @@ class AlertDialogHelper {
     );
   }
 }
+
+
+
+
+class HTPAlertDialogHelper {
+  static void showLoadingDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: primaryColor,
+          child: Container(
+            width: 350,
+            height: 150,
+            padding: const EdgeInsets.all(16.0),
+            decoration: const BoxDecoration(
+              color: primaryColor,
+            ),
+            child: Row(
+              children: [
+                Image.network(
+                  ImageUrls.normalRabbit,
+                  width: 100,
+                  height: 100,
+                ),
+                const SizedBox(width: 16.0), // 이미지와 텍스트 사이의 간격
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start, // 좌측 정렬
+                    children: [
+                      Text(
+                        message,
+                        style: const TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                      const SizedBox(height: 16.0), // 텍스트와 프로그레스 인디케이터 사이의 간격
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
