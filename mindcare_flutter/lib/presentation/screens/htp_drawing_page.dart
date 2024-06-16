@@ -31,7 +31,8 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
   List<DrawingPoints> _points = [];
   bool _isErasing = false;
   int _step = 0;
-  final List<String> _drawingIds = [];
+  List<String> _drawingIds = [];
+  double _devicePixelRatio = 1.0;
 
   final List<String> _stepsText = [
     "집을 그려주세요",
@@ -39,7 +40,13 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
     "사람을 그려주세요"
   ];
 
-  // Offset _offset = Offset(0, 0);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    setState(() {
+      _devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+    });
+  }
 
   void _changeColor(Color color) {
     setState(() {
@@ -236,15 +243,15 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 '그림이 지워집니다',
-                style: TextStyle(color: Colors.white, fontSize: 20),
+                style: const TextStyle(color: Colors.white, fontSize: 20),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 10),
-              const Text(
+              SizedBox(height: 10),
+              Text(
                 '뒤로 가면 현재 그린 그림이 모두 지워집니다. 그래도 이동하시겠습니까?',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20.0),
@@ -292,9 +299,8 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
   @override
   Widget build(BuildContext context) {
     final drawingProvider = Provider.of<DrawingProvider>(context);
-    const double fixedSize = 700.0;
-    final bool isScreenSmall = MediaQuery.of(context).size.width < 700 || MediaQuery.of(context).size.height < 700;
-
+    final double fixedSize = 700.0;
+    final bool isScreenSmall = MediaQuery.of(context).size.width < 600 || MediaQuery.of(context).size.height < 600;
     return WillPopScope(
       onWillPop: () async {
         if (_step > 0) {
@@ -304,8 +310,6 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
               _step--;
               _points = drawingProvider.getDrawing(_step).points;
             });
-            return false;
-          } else {
             return false;
           }
         }
@@ -319,7 +323,9 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
             if (constraints.maxWidth < fixedSize || constraints.maxHeight < fixedSize) {
               return Center(
                 child: Container(
-                  decoration: const BoxDecoration(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
                     image: DecorationImage(
                       image: NetworkImage(ImageUrls.mainPageBackground),
                       fit: BoxFit.cover,
@@ -402,9 +408,7 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
                                         onPanStart: (details) {
                                           setState(() {
                                             RenderBox renderBox = _globalKey.currentContext!.findRenderObject() as RenderBox;
-                                            double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
                                             Offset localPosition = renderBox.globalToLocal(details.globalPosition);
-                                            localPosition = localPosition.scale(1 / devicePixelRatio, 1 / devicePixelRatio);
 
                                             _points.add(DrawingPoints(
                                               points: localPosition,
@@ -419,9 +423,7 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
                                         onPanUpdate: (details) {
                                           setState(() {
                                             RenderBox renderBox = _globalKey.currentContext!.findRenderObject() as RenderBox;
-                                            double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
                                             Offset localPosition = renderBox.globalToLocal(details.globalPosition);
-                                            localPosition = localPosition.scale(1 / devicePixelRatio, 1 / devicePixelRatio);
 
                                             if (localPosition.dx >= 0 &&
                                                 localPosition.dx <= renderBox.size.width &&
