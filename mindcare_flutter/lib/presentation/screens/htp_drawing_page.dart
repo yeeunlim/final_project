@@ -32,6 +32,7 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
   bool _isErasing = false;
   int _step = 0;
   List<String> _drawingIds = [];
+  double _devicePixelRatio = 1.0;
 
   final List<String> _stepsText = [
     "집을 그려주세요",
@@ -39,7 +40,13 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
     "사람을 그려주세요"
   ];
 
-  // Offset _offset = Offset(0, 0);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    setState(() {
+      _devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+    });
+  }
 
   void _changeColor(Color color) {
     setState(() {
@@ -205,79 +212,79 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
     );
   }
 
-Future<bool> _showExitConfirmationDialog() async {
-  return await showDialog(
-    context: context,
-    builder: (context) => Dialog(
-      backgroundColor: primaryColor,
-      child: Container(
-        width: 300,
-        height: 180,
-        padding: const EdgeInsets.all(16.0),
-        decoration: const BoxDecoration(
-          color: primaryColor,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '그림이 지워집니다',
-              style: const TextStyle(color: Colors.white, fontSize: 20),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 10),
-            Text(
-              '뒤로 가면 현재 그린 그림이 모두 지워집니다. 그래도 이동하시겠습니까?',
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
+  Future<bool> _showExitConfirmationDialog() async {
+    return await showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: primaryColor,
+        child: Container(
+          width: 300,
+          height: 180,
+          padding: const EdgeInsets.all(16.0),
+          decoration: const BoxDecoration(
+            color: primaryColor,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '그림이 지워집니다',
+                style: const TextStyle(color: Colors.white, fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10),
+              Text(
+                '뒤로 가면 현재 그린 그림이 모두 지워집니다. 그래도 이동하시겠습니까?',
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
                     ),
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                    child: const Text('취소', style: TextStyle(color: Colors.white)),
                   ),
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                  child: const Text('취소', style: TextStyle(color: Colors.white)),
-                ),
-                const SizedBox(width: 8.0),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
+                  const SizedBox(width: 8.0),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
                     ),
+                    onPressed: () {
+                      Navigator.of(context).pop(true);
+                    },
+                    child: const Text('확인', style: TextStyle(color: Colors.white)),
                   ),
-                  onPressed: () {
-                    Navigator.of(context).pop(true);
-                  },
-                  child: const Text('확인', style: TextStyle(color: Colors.white)),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  ) ?? false;
-}
+    ) ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
     final drawingProvider = Provider.of<DrawingProvider>(context);
     final double fixedSize = 700.0;
-    final bool isScreenSmall = MediaQuery.of(context).size.width < 700 || MediaQuery.of(context).size.height < 700;
+    final bool isScreenSmall = MediaQuery.of(context).size.width < 600 || MediaQuery.of(context).size.height < 600;
 
     return WillPopScope(
       onWillPop: () async {
@@ -288,8 +295,6 @@ Future<bool> _showExitConfirmationDialog() async {
               _step--;
               _points = drawingProvider.getDrawing(_step).points;
             });
-            return false;
-          } else {
             return false;
           }
         }
@@ -303,6 +308,8 @@ Future<bool> _showExitConfirmationDialog() async {
             if (constraints.maxWidth < fixedSize || constraints.maxHeight < fixedSize) {
               return Center(
                 child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
                   decoration: BoxDecoration(
                     image: DecorationImage(
                       image: NetworkImage(ImageUrls.mainPageBackground),
@@ -386,9 +393,7 @@ Future<bool> _showExitConfirmationDialog() async {
                                         onPanStart: (details) {
                                           setState(() {
                                             RenderBox renderBox = _globalKey.currentContext!.findRenderObject() as RenderBox;
-                                            double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
                                             Offset localPosition = renderBox.globalToLocal(details.globalPosition);
-                                            localPosition = localPosition.scale(1 / devicePixelRatio, 1 / devicePixelRatio);
 
                                             _points.add(DrawingPoints(
                                               points: localPosition,
@@ -403,9 +408,7 @@ Future<bool> _showExitConfirmationDialog() async {
                                         onPanUpdate: (details) {
                                           setState(() {
                                             RenderBox renderBox = _globalKey.currentContext!.findRenderObject() as RenderBox;
-                                            double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
                                             Offset localPosition = renderBox.globalToLocal(details.globalPosition);
-                                            localPosition = localPosition.scale(1 / devicePixelRatio, 1 / devicePixelRatio);
 
                                             if (localPosition.dx >= 0 &&
                                                 localPosition.dx <= renderBox.size.width &&
