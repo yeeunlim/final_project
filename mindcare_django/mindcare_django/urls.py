@@ -28,7 +28,7 @@ urlpatterns = [
     path('api/auth/custom/delete/', UserDeleteView.as_view(), name='user-delete'),    
     path('api/auth/custom/update/', UserUpdateView.as_view(), name='user-update'),    
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     path('api/psy_test/', include('psy_test.urls')),  # 추가된 부분
     path('api/htp_test/', include('htp_test.urls', namespace='htp_test')),
