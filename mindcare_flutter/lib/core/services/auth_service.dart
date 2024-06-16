@@ -14,7 +14,7 @@ class AuthHelpers {
       if (token == null) {
         throw Exception("No JWT token found");
       }
-      print("토큰 가져옴: $token");
+      // print("토큰 가져옴: $token");
       return token;
     } catch (e) {
       print('Error getting token: $e');
@@ -29,7 +29,7 @@ class AuthHelpers {
         Map<String, dynamic> decodedToken;
         try {
           decodedToken = JwtDecoder.decode(token);
-          print('Decoded Token: $decodedToken');
+          // print('Decoded Token: $decodedToken');
         } catch (e) {
           print('Failed to decode token: $e');
           return false;
@@ -90,7 +90,7 @@ class AuthHelpers {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('jwt_token', data['access_token']);
 
-        print("토큰 저장됨: ${prefs.getString('jwt_token')}");
+        // print("토큰 저장됨: ${prefs.getString('jwt_token')}");
         return true;
       } else {
         print('로그인 실패: ${response.body}');

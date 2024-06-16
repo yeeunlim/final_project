@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:mindcare_flutter/core/services/api_service.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
-import 'package:mindcare_flutter/core/constants/emotion_categories.dart';
+import 'package:mindcare_flutter/presentation/widgets/emotion_pie_chart.dart';
 import 'package:provider/provider.dart';
-import 'package:mindcare_flutter/providers/monthly_analysis_provider.dart';
+import 'package:mindcare_flutter/core/services/monthly_analysis_provider.dart';
 import '../../core/constants/colors.dart';
-import '../../core/constants/emotion_scores.dart';
+import '../../core/utils/calculate_emotion_category_counts.dart';
+import '../../core/utils/calculate_mood_score.dart';
 import '../widgets/common_circle.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/mood_score_chart.dart';
 import '../widgets/mood_tracker.dart';
 import '../widgets/emotion_major_category_chart.dart';
-import '../widgets/emotion_detailed_category_circles.dart';
+import '../widgets/keyword_circles.dart';
 
 class MonthlyAnalysisScreen extends StatefulWidget {
   const MonthlyAnalysisScreen({super.key});
@@ -26,11 +27,21 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<MonthlyAnalysisModel>(context, listen: false).reloadData();
+      _reloadData();
     });
   }
 
+  void _reloadData() {
+    try {
+      Provider.of<MonthlyAnalysisModel>(context, listen: false).reloadData();
+    } catch (e) {
+      print('Error reloading data: $e');
+    }
+  }
+
   void _onDateSelected(DateTime selectedDate, bool hasDiary) async {
+    print(
+        'Selected date in monthly analysis screen: $selectedDate, Has diary: $hasDiary');
     if (hasDiary) {
       try {
         final diaryEntryService = DiaryEntryService();
@@ -49,10 +60,10 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
               'diaryText': diaryEntry['diary_text'],
             },
           );
+          print('Navigation to /daily_analysis result: $result');
           if (result == true) {
-            // 데이터 로드 함수 호출
-            Provider.of<MonthlyAnalysisModel>(context, listen: false)
-                .reloadData();
+            print('Reloading data for selected date: $selectedDate');
+            _reloadData();
           }
         } else {
           throw Exception('No diary entry found');
@@ -69,9 +80,10 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
           'selectedDate': selectedDate.toIso8601String().split('T')[0]
         },
       );
+      print('Navigation to /chatbot_diary result: $result');
       if (result == true) {
-        // 데이터 로드 함수 호출
-        Provider.of<MonthlyAnalysisModel>(context, listen: false).reloadData();
+        print('Reloading data for selected date: $selectedDate');
+        _reloadData();
       }
     }
   }
@@ -175,6 +187,11 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
                     return MoodTracker(
                       moodData: moodMap,
                       onDateSelected: _onDateSelected,
+                      onPageChanged: (focusedDay) {
+                        print('mood tracker is calling provider: $focusedDay');
+                        model.setFocusedMonth(focusedDay);
+                      },
+                      initialFocusedMonth: model.focusedMonth,
                     );
                   }
                 },
@@ -184,7 +201,7 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
       Container(
         width: analysisWidth,
         height: analysisHeight,
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(30.0),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.3),
           borderRadius: BorderRadius.circular(16.0),
@@ -200,6 +217,7 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
                         ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (monthlySnapshot.hasError) {
+                      print('MonthlySnapshot error: ${monthlySnapshot.error}');
                       return Center(
                           child: Text('Error: ${monthlySnapshot.error}'));
                     } else if (!monthlySnapshot.hasData ||
@@ -225,10 +243,10 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
                       );
                     } else {
                       final monthlyData = monthlySnapshot.data!;
-                      print('Monthly data in builder: $monthlyData');
                       final majorCategoryCounts =
                           calculateMajorCategoryCounts(monthlyData);
-                      final emotionCounts = calculateEmotionCounts(monthlyData);
+                      final subCategoryRatios =
+                          calculateSubCategoryRatios(monthlyData);
                       final dailyMoodScores =
                           calculateDailyMoodScores(monthlyData);
 
@@ -283,17 +301,11 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
                               ),
                             ],
                           ),
-                          FractionallySizedBox(
-                            widthFactor: 0.9, // 부모의 0.8 길이로 설정
-                            child: Divider(
-                              color: lightGray, // 경계선 색상 설정
-                              thickness: 3, // 경계선 두께 설정
-                            ),
-                          ),
+                          buildDivider(), // 중복된 Divider 사용
                           Column(
                             children: [
                               const Padding(
-                                padding: EdgeInsets.only(top: 16.0),
+                                padding: EdgeInsets.only(top: 10.0),
                                 child: Text(
                                   '한 달 간 키워드를 확인해보세요!',
                                   style: TextStyle(
@@ -306,19 +318,32 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
                                 height: 400,
                                 width: 600,
                                 child: Center(
-                                  child: EmotionCircles(
-                                      emotionCounts: emotionCounts),
+                                  child: KeywordCircles(
+                                    monthlyData: monthlyData,
+                                  ),
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.info, color: Colors.white),
+                                    SizedBox(width: 8.0),
+                                    Text(
+                                      '원이 흰색에 가까울수록 긍정적인 감정과, 보라색에 가까울수록 부정적인 감정과 자주 연결되었음을 나타내요.',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
-                          FractionallySizedBox(
-                            widthFactor: 0.9, // 부모의 0.8 길이로 설정
-                            child: Divider(
-                              color: lightGray, // 경계선 색상 설정
-                              thickness: 3, // 경계선 두께 설정
-                            ),
-                          ),
+                          buildDivider(), // 중복된 Divider 사용
                           Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Column(
@@ -337,7 +362,7 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
                                     CommonCircle(
                                       circleText:
                                           calculateAverageMoodScore(monthlyData)
-                                              .toStringAsFixed(2),
+                                              .toString(),
                                     ),
                                     const SizedBox(width: 40),
                                     Container(
@@ -358,6 +383,34 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
                               ],
                             ),
                           ),
+                          buildDivider(), // 중복된 Divider 사용
+                          Column(
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.only(top: 16.0),
+                                child: Text(
+                                  '한 달 동안 가졌던 마음을 요약해드릴게요!',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 30),
+                              Container(
+                                padding: const EdgeInsets.all(16.0), // 내부 패딩
+                                decoration: BoxDecoration(
+                                  color: Colors.white
+                                      .withOpacity(0.3), // 반투명한 흰색 배경
+                                  borderRadius: BorderRadius.circular(
+                                      100.0), // 모서리 둥글게 설정
+                                ),
+                                child: EmotionPieChart(
+                                  emotionDistribution: subCategoryRatios,
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       );
                     }
@@ -368,98 +421,22 @@ class _MonthlyAnalysisScreenState extends State<MonthlyAnalysisScreen> {
     ];
   }
 
-  // majorCategoryCounts와 계산
-  Map<String, int> calculateMajorCategoryCounts(List<dynamic> monthlyData) {
-    final counts = {'긍정': 0, '중립': 0, '부정': 0};
-    for (var entry in monthlyData) {
-      final emotion = entry['most_felt_emotion'];
-      final majorCategory = emotionMajorCategory[emotion] ?? '중립';
-      if (counts.containsKey(majorCategory)) {
-        counts[majorCategory] = counts[majorCategory]! + 1;
-      }
-    }
-    print('Major Category Counts: $counts'); // 데이터를 출력하여 확인
-    return counts;
-  }
-
-  // 감정별 횟수 계산
-  Map<String, int> calculateEmotionCounts(List<dynamic> monthlyData) {
-    final counts = <String, int>{};
-    for (var entry in monthlyData) {
-      final emotion = entry['most_felt_emotion'];
-      if (counts.containsKey(emotion)) {
-        counts[emotion] = counts[emotion]! + 1;
-      } else {
-        counts[emotion] = 1;
-      }
-    }
-    return counts;
-  }
-
-  Map<DateTime, String> createMoodMap(Map<String, dynamic> moodData) {
-    final moodMap = <DateTime, String>{};
-    moodData.forEach((date, emotion) {
-      final parsedDate = DateTime.parse(date);
-      moodMap[parsedDate] = emotion;
-    });
-    return moodMap;
+  Widget buildDivider() {
+    return FractionallySizedBox(
+      widthFactor: 1,
+      child: Divider(
+        color: lightGray,
+        thickness: 3,
+      ),
+    );
   }
 }
 
-Map<String, double> calculateDailyMoodScores(List<dynamic> monthlyData) {
-  final dailyScores = <String, double>{};
-
-  for (var entry in monthlyData) {
-    final date = entry['entry_date'];
-    final emotionDistribution =
-        Map<String, dynamic>.from(entry['emotion_distribution']);
-
-    double dailyScore = 0.0;
-    double totalWeight = 0.0;
-
-    emotionDistribution.forEach((emotion, weight) {
-      final score = emotionScores[emotion] ?? 0.0;
-      dailyScore += score * (weight as double);
-      totalWeight += weight;
-    });
-
-    if (totalWeight > 0) {
-      dailyScore /= totalWeight;
-    }
-
-    dailyScores[date] = dailyScore;
-  }
-
-  return dailyScores;
-}
-
-double calculateAverageMoodScore(List<dynamic> monthlyData) {
-  double totalScore = 0.0;
-  int entryCount = 0;
-
-  for (var entry in monthlyData) {
-    final emotionDistribution =
-        Map<String, dynamic>.from(entry['emotion_distribution']);
-
-    double dailyScore = 0.0;
-    double totalWeight = 0.0;
-
-    emotionDistribution.forEach((emotion, weight) {
-      final score = emotionScores[emotion] ?? 0.0;
-      dailyScore += score * (weight as double);
-      totalWeight += weight;
-    });
-
-    if (totalWeight > 0) {
-      dailyScore /= totalWeight;
-    }
-
-    totalScore += dailyScore;
-    entryCount++;
-  }
-
-  if (entryCount == 0) return 0.0;
-
-  double averageScore = totalScore / entryCount;
-  return double.parse(averageScore.toStringAsFixed(2));
+Map<DateTime, String> createMoodMap(Map<String, dynamic> moodData) {
+  final moodMap = <DateTime, String>{};
+  moodData.forEach((date, emotion) {
+    final parsedDate = DateTime.parse(date);
+    moodMap[parsedDate] = emotion;
+  });
+  return moodMap;
 }

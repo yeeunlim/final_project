@@ -34,28 +34,26 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // args를 가져옴
     final args = ModalRoute.of(context)?.settings.arguments;
 
     try {
-      // args가 Map일 경우 (selectedDate가 있는 경우)
-      if (args is Map && args.containsKey('selectedDate')) {
+      if (args == null) {
+        print('No arguments received, using default date');
+        selectedDate = DateTime.now().toIso8601String().split('T')[0];
+      } else if (args is Map && args.containsKey('selectedDate')) {
         selectedDate = args['selectedDate'];
         print('Selected date received: $selectedDate');
       } else if (args is String) {
-        // args가 String일 경우 (토큰만 전달된 경우)
         final token = args;
         print('Token received: $token');
         selectedDate = DateTime.now().toIso8601String().split('T')[0];
       } else {
-        // args가 null이거나 다른 타입인 경우 예외 처리
         throw Exception('Invalid arguments received');
       }
     } catch (e) {
       print('Error: $e');
     }
   }
-
 
 
   @override
@@ -86,6 +84,12 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
     });
     try {
       final responseData = await diaryEntryService.createDiaryEntry(diaryText, selectedDate);
+
+      // responseData가 null인 경우 처리
+      if (responseData == null) {
+        throw Exception('Failed to create diary entry: No response data received');
+      }
+
       print('Received responseData: $responseData');
       print('Navigating to DailyAnalysisScreen with entryData: $responseData, entryDate: $selectedDate, diaryText: $diaryText');
       Navigator.pushNamed(
@@ -99,12 +103,17 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
       );
     } catch (e) {
       print('Error occurred: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Error: $e'),
+      ));
     } finally {
       setState(() {
         _isLoading = false; // 로딩 종료
       });
     }
   }
+
+
 
   void _showConfirmDialog() {
     showDialog(

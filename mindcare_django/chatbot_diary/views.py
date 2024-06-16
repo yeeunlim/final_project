@@ -62,8 +62,11 @@ class DiaryEntryViewSet(viewsets.ModelViewSet):
         if not diary_text or not entry_date:
             return Response({"error": "Diary text and entry date are required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        diary_entry = DiaryEntry(user=user, diary_text=diary_text, entry_date=entry_date)
-        diary_entry.save()
+        try:
+            diary_entry = DiaryEntry(user=user, diary_text=diary_text, entry_date=entry_date)
+            diary_entry.save()
+        except Exception as e:
+            return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         serializer = DiaryEntrySerializer(diary_entry)
         return Response(serializer.data, status=status.HTTP_201_CREATED)

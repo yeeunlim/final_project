@@ -67,8 +67,8 @@ class MoodScoreChartPainter extends CustomPainter {
       textDirection: ui.TextDirection.ltr,
     );
 
-    for (int i = -10; i <= 10; i += 5) {
-      final y = ((10 - i) / 20) * size.height;
+    for (int i = -100; i <= 100; i += 50) {
+      final y = ((100 - i) / 200) * size.height;
       textPainter.text = TextSpan(
         text: i.toString(),
         style: TextStyle(color: Colors.black, fontSize: 12), // 텍스트 크기 조정
@@ -106,7 +106,7 @@ class MoodScoreChartPainter extends CustomPainter {
       final parsedDate = DateTime.parse(dates[i]);
       final daysOffset = parsedDate.difference(minDate).inDays;
       final x = daysOffset * pixelInterval / 1; // 날짜 간격을 픽셀 단위로 고정
-      final y = ((10 - dailyMoodScores[dates[i]]!) / 20) * size.height;
+      final y = ((100 - dailyMoodScores[dates[i]]!) / 200) * size.height;
 
       if (isFirstPoint) {
         smoothPath.moveTo(x, y);
@@ -115,7 +115,7 @@ class MoodScoreChartPainter extends CustomPainter {
         final prevParsedDate = DateTime.parse(dates[i - 1]);
         final prevDaysOffset = prevParsedDate.difference(minDate).inDays;
         final prevX = prevDaysOffset * pixelInterval / 1;
-        final prevY = ((10 - dailyMoodScores[dates[i - 1]]!) / 20) * size.height;
+        final prevY = ((100 - dailyMoodScores[dates[i - 1]]!) / 200) * size.height;
         final controlX = (prevX + x) / 2;
         smoothPath.cubicTo(controlX, prevY, controlX, y, x, y);
       }

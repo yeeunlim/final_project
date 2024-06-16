@@ -21,7 +21,7 @@ class CommonCircle extends StatelessWidget {
           circleText,
           style: const TextStyle(
             color: deepPurple,
-            fontSize: 36,
+            fontSize: 48,
             fontWeight: FontWeight.bold,
           ),
         ),

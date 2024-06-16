@@ -3,100 +3,97 @@ from transformers import BertModel
 from .classifier import BERTClassifier, kobert_input
 from kobert_tokenizer import KoBERTTokenizer
 from django.conf import settings
+from pathlib import Path
+import global_vars  # 전역 변수 모듈 임포트
 
-# 모델 경로 및 디바이스 설정
-root_path = settings.BASE_DIR / 'kobert/'
-emotion_model = 'kobert-wellness-text-classification_감정.pth'
-background_model = 'kobert-wellness-text-classification_배경.pth'
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-# KoBERT 모델 및 토크나이저 초기화
-bertmodel_emotion = None
-bertmodel_background = None
-model_emotion = None
-model_background = None
-tokenizer = None
+# 전역 변수 정의는 global_vars에서 가져옴
+global_vars.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def initialize_kobert_models():
-    global bertmodel_emotion, bertmodel_background, model_emotion, model_background, tokenizer
+    global global_vars
 
-    if bertmodel_emotion is None:
-        bertmodel_emotion = BertModel.from_pretrained('skt/kobert-base-v1', return_dict=False)
-        model_emotion = BERTClassifier(bertmodel_emotion, num_labels=39)
+    root_path = settings.BASE_DIR / 'kobert/'
+    emotion_model = 'kobert-wellness-text-classification_감정.pth'
+    background_model = 'kobert-wellness-text-classification_배경.pth'
 
-    if bertmodel_background is None:
-        bertmodel_background = BertModel.from_pretrained('skt/kobert-base-v1', return_dict=False)
-        model_background = BERTClassifier(bertmodel_background, num_labels=25)
+    if global_vars.bertmodel_emotion is None:
+        global_vars.bertmodel_emotion = BertModel.from_pretrained('skt/kobert-base-v1', return_dict=False)
+        global_vars.model_emotion = BERTClassifier(global_vars.bertmodel_emotion, num_labels=39)
+
+    if global_vars.bertmodel_background is None:
+        global_vars.bertmodel_background = BertModel.from_pretrained('skt/kobert-base-v1', return_dict=False)
+        global_vars.model_background = BERTClassifier(global_vars.bertmodel_background, num_labels=25)
 
     # 감정 모델 가중치 로드
-    emotion_checkpoint = torch.load(root_path / emotion_model, map_location=device)
-    model_emotion.load_state_dict(emotion_checkpoint['model_state_dict'])
-    model_emotion.to(device)
-    model_emotion.eval()
+    emotion_checkpoint = torch.load(root_path / emotion_model, map_location=global_vars.device)
+    global_vars.model_emotion.load_state_dict(emotion_checkpoint['model_state_dict'])
+    global_vars.model_emotion.to(global_vars.device)
+    global_vars.model_emotion.eval()
 
     # 배경 모델 가중치 로드
-    background_checkpoint = torch.load(root_path / background_model, map_location=device)
-    model_background.load_state_dict(background_checkpoint['model_state_dict'])
-    model_background.to(device)
-    model_background.eval()
+    background_checkpoint = torch.load(root_path / background_model, map_location=global_vars.device)
+    global_vars.model_background.load_state_dict(background_checkpoint['model_state_dict'])
+    global_vars.model_background.to(global_vars.device)
+    global_vars.model_background.eval()
 
     # KoBERT 토크나이저 로드
-    if tokenizer is None:
-        tokenizer = KoBERTTokenizer.from_pretrained('skt/kobert-base-v1')
-
-# 감정, 배경 카테고리 불러오기
-def load_wellness_answer(filename):
-    path = root_path / filename
-    with open(path, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
-    category = {}
-    for line_num, line_data in enumerate(lines):
-        data = line_data.split('    ')
-        category[data[1][:-1]] = data[0]
-
-    return category
-    
-emotion_category = load_wellness_answer("wellness_dialog_category_감정.txt")
-background_category = load_wellness_answer("wellness_dialog_category_배경.txt")
+    if global_vars.tokenizer_kobert is None:
+        global_vars.tokenizer_kobert = KoBERTTokenizer.from_pretrained('skt/kobert-base-v1')
 
 def classify_emotion(sentence):
-    data = kobert_input(tokenizer, sentence, device, 512)
+    if global_vars.emotion_category is None:
+        print("Emotion categories not loaded")
+        return None
+
+    print(f"Classifying emotion for sentence: {sentence}")
+    data = kobert_input(global_vars.tokenizer_kobert, sentence, global_vars.device, 512)
+    print(f"Input data: {data}")
     
     # 모델에 입력하여 출력값 얻기
-    output = model_emotion(**data)
+    with torch.no_grad():
+        output = global_vars.model_emotion(**data)
     
     # 로짓 값 추출
     logits = output[0]
+    print(f"Logits: {logits}")
 
     # 소프트맥스 적용
     softmax_logits = torch.softmax(logits, dim=-1)
+    print(f"Softmax logits: {softmax_logits}")
     
     # 각 클래스의 확률 값 계산
-    emotion_probs = {emotion_category[str(i)]: softmax_logits[0][i].item() for i in range(len(emotion_category))}
+    emotion_probs = {global_vars.emotion_category[str(i)]: softmax_logits[0][i].item() for i in range(len(global_vars.emotion_category))}
+    print(f"Emotion probabilities: {emotion_probs}")
     
     # 가장 큰 확률을 가진 감정 찾기
     max_emotion = max(emotion_probs, key=emotion_probs.get)
     
-    # 확률 값을 출력하지 않고 가장 큰 감정만 반환
     return max_emotion
 
 def classify_background(sentence):
-    data = kobert_input(tokenizer, sentence, device, 512)
+    if global_vars.background_category is None:
+        print("Background categories not loaded")
+        return None
+
+    print(f"Classifying background for sentence: {sentence}")
+    data = kobert_input(global_vars.tokenizer_kobert, sentence, global_vars.device, 512)
+    print(f"Input data: {data}")
     
     # 모델에 입력하여 출력값 얻기
-    output = model_background(**data)
+    with torch.no_grad():
+        output = global_vars.model_background(**data)
     
     # 로짓 값 추출
     logits = output[0]
+    print(f"Logits: {logits}")
     
     # 소프트맥스 적용
     softmax_logits = torch.softmax(logits, dim=-1)
+    print(f"Softmax logits: {softmax_logits}")
     
-    # 각 클래스의 확률 값 계산
-    background_probs = {background_category[str(i)]: softmax_logits[0][i].item() for i in range(len(background_category))}
+    background_probs = {global_vars.background_category[str(i)]: softmax_logits[0][i].item() for i in range(len(global_vars.background_category))}
+    print(f"Background probabilities: {background_probs}")
     
-    # 가장 큰 확률을 가진 배경 찾기
     max_background = max(background_probs, key=background_probs.get)
     
-    # 확률 값을 출력하지 않고 가장 큰 배경만 반환
     return max_background

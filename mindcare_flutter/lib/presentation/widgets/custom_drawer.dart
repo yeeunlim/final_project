@@ -4,7 +4,7 @@ import 'package:mindcare_flutter/presentation/screens/htp_main_page.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test1_home.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test2_home.dart';
 import 'package:mindcare_flutter/presentation/screens/psy_test3_home.dart';
-import 'package:mindcare_flutter/routes/app_routes.dart'; // 라우트 경로를 가져오기 위해 추가
+import 'package:mindcare_flutter/core/routes/app_routes.dart'; // 라우트 경로를 가져오기 위해 추가
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomDrawer extends StatelessWidget {

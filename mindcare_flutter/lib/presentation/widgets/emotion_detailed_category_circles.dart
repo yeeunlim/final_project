@@ -34,7 +34,7 @@ class EmotionCircles extends StatelessWidget {
 
         for (var entry in emotionCounts.entries) {
           final proportion = entry.value / maxCount; // 비례 계산
-          final radius = 25 + (proportion * 25); // 반지름 계산 (최대 반지름 50으로 설정)
+          final radius = 20 + (proportion * 30); // 반지름 계산 (최대 반지름 50으로 설정)
           final emotion = entry.key;
           final majorCategory = emotionMajorCategory[emotion] ?? '중립'; // 대분류 구하기
           final color = emotionColors[majorCategory] ?? Colors.grey; // 색상 구하기

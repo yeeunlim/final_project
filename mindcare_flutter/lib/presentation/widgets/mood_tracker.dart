@@ -3,20 +3,37 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:mindcare_flutter/core/constants/colors.dart'; // 감정 색상을 정의한 모듈
 import 'package:intl/date_symbol_data_local.dart'; // 달력 언어 설정을 위해 추가
 import 'package:mindcare_flutter/core/constants/emotion_categories.dart';
-import 'package:mindcare_flutter/core/services/api_service.dart'; // API 서비스 추가
 
 class MoodTracker extends StatefulWidget {
   final Map<DateTime, String> moodData;
   final void Function(DateTime, bool) onDateSelected;
+  final void Function(DateTime) onPageChanged;
+  final DateTime initialFocusedMonth;
 
-  const MoodTracker({super.key, required this.moodData, required this.onDateSelected});
+  const MoodTracker({
+    super.key,
+    required this.moodData,
+    required this.onDateSelected,
+    required this.onPageChanged,
+    required this.initialFocusedMonth,
+  });
 
   @override
   _MoodTrackerState createState() => _MoodTrackerState();
 }
 
 class _MoodTrackerState extends State<MoodTracker> {
-  DateTime _focusedDay = DateTime.now(); // 현재 포커스된 날짜
+  late DateTime _focusedDay;
+  DateTime _selectedDay = DateTime.now(); // 현재 선택된 날짜
+
+  @override
+  void initState() {
+    super.initState();
+    _focusedDay = widget.initialFocusedMonth;
+    // 페이지가 처음 로드될 때 현재 월의 데이터를 불러옴
+    print('init state: moodtracker is focused at:$_focusedDay');
+    widget.onPageChanged(DateTime(_focusedDay.year, _focusedDay.month));
+  }
 
   // 감정 카테고리에 따라 색상을 반환하는 함수
   Color getMoodColor(String emotion) {
@@ -29,15 +46,9 @@ class _MoodTrackerState extends State<MoodTracker> {
     return day1.year == day2.year && day1.month == day2.month && day1.day == day2.day;
   }
 
-  // 특정 월의 일기 데이터 조회
-  Future<void> fetchMonthlyData(DateTime selectedMonth) async {
-    try {
-      final monthlyData = await MonthlyAnalysisService.fetchMonthlyData(selectedMonth);
-      // monthlyData를 사용하여 필요한 로직 추가
-      print('Fetched Monthly Data: $monthlyData');
-    } catch (e) {
-      print('Error in fetchMonthlyData: $e');
-    }
+  // 월 비교 함수 (년도와 월만 비교)
+  bool isSameMonth(DateTime day1, DateTime day2) {
+    return day1.year == day2.year && day1.month == day2.month;
   }
 
   @override
@@ -51,25 +62,33 @@ class _MoodTrackerState extends State<MoodTracker> {
         firstDay: DateTime.utc(2020, 1, 1), // 달력의 시작 날짜
         lastDay: DateTime.utc(2030, 12, 31), // 달력의 마지막 날짜
         focusedDay: _focusedDay, // 현재 날짜에 포커스
+        selectedDayPredicate: (day) {
+          return isSameDay(_selectedDay, day);
+        },
         calendarFormat: CalendarFormat.month, // 기본 형식을 월간 형식으로 설정
         availableCalendarFormats: const {
           CalendarFormat.month: 'Month', // 월간 형식만 사용
         },
         daysOfWeekHeight: 40.0, // 요일 텍스트와 날짜들 사이의 간격 조정
         onPageChanged: (focusedDay) {
-          setState(() {
-            _focusedDay = focusedDay; // 페이지 변경 시 포커스된 날짜 업데이트
-          });
-          fetchMonthlyData(focusedDay); // 새로운 월 데이터 가져오기
-        },
-        selectedDayPredicate: (day) {
-          // 선택된 날짜를 기준으로 색상을 설정
-          return widget.moodData.keys.any((d) => isSameDay(d, day));
+          final newFocusedDay = DateTime(focusedDay.year, focusedDay.month);
+          print('mood tracker is focused at: $newFocusedDay');
+          if (!isSameMonth(_focusedDay, newFocusedDay)) {
+            setState(() {
+              _focusedDay = newFocusedDay; // 페이지 변경 시 포커스된 월 업데이트
+            });
+            widget.onPageChanged(newFocusedDay); // 새로운 월 데이터 가져오기
+          }
         },
         onDaySelected: (selectedDay, focusedDay) {
+          print('Selected day in MoodTracker: $selectedDay, Focused day in MoodTracker: $focusedDay');
+          setState(() {
+            _selectedDay = selectedDay;
+            _focusedDay = focusedDay; // 선택된 날짜에 포커스 업데이트
+          });
           if (selectedDay.isAfter(DateTime.now())) return; // 미래 날짜 선택 방지
           final hasDiary = widget.moodData.keys.any((d) => isSameDay(d, selectedDay)); // 선택된 날짜에 감정 데이터가 있는지 확인
-          print('onDaySelected: selectedDay: $selectedDay, hasDiary: $hasDiary'); // 디버깅 정보 출력
+          print('Has diary for selected day: $hasDiary');
           widget.onDateSelected(selectedDay, hasDiary); // 날짜 선택 콜백 호출
         },
         headerStyle: HeaderStyle(
@@ -110,7 +129,7 @@ class _MoodTrackerState extends State<MoodTracker> {
                   child: Center(
                     child: Text(
                       day.day.toString(),
-                      style: TextStyle(color: Colors.white, fontSize: 18.0),
+                      style: const TextStyle(color: Colors.white, fontSize: 18.0),
                     ),
                   ),
                 ),
@@ -124,7 +143,7 @@ class _MoodTrackerState extends State<MoodTracker> {
                   child: Center(
                     child: Text(
                       day.day.toString(),
-                      style: TextStyle(color: textColor, fontSize: 18.0), // 현재 날짜 이전이면 회색 텍스트, 그렇지 않으면 검은색 텍스트, 크기 조정
+                      style: TextStyle(color: textColor, fontSize: 18.0), // 현재 날짜 이전이면 회색 텍스트, 그렇지 않으면 흰색 텍스트, 크기 조정
                     ),
                   ),
                 ),
@@ -151,7 +170,7 @@ class _MoodTrackerState extends State<MoodTracker> {
                   child: Center(
                     child: Text(
                       day.day.toString(),
-                      style: TextStyle(color: Colors.white, fontSize: 18.0),
+                      style: const TextStyle(color: Colors.white, fontSize: 18.0),
                     ),
                   ),
                 ),

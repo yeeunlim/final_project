@@ -63,6 +63,7 @@ class DiaryEntryService {
   Future<Map<String, dynamic>> createDiaryEntry(
       String diaryText, String entryDate) async {
     final token = await AuthHelpers.getToken();
+    print('Creating diary entry with text: $diaryText');
     final response = await http.post(
       Uri.parse('$chatbotDiaryUrl/diary_entries/'),
       headers: {

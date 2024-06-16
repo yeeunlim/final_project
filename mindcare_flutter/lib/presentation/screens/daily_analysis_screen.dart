@@ -133,6 +133,7 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
     final mostThoughtBackground = _entryData['most_thought_background'] ?? 'Unknown';
     final emotionCategory = emotionSubCategory[mostFeltEmotion]; // 감정 대분류 구하기
     final emotionColor = emotionColors[emotionCategory]; // 감정 색상 구하기
+    final backgroundColor = backgroundColors[mostThoughtBackground]; // 감정 색상 구하기
 
     return Scaffold(
       appBar: const CustomAppBar(), // 공통 AppBar 사용
@@ -285,9 +286,22 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 // 중앙 정렬
                                 children: [
-                                  EmotionPieChart(
-                                    emotionDistribution: emotionDistribution,
+
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                        '감정의 분포',
+                                        style: TextStyle(
+                                            fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      EmotionPieChart(
+                                        emotionDistribution: emotionDistribution,
+                                      ),
+                                    ],
                                   ),
+
                                   const SizedBox(height: 20),
                                   // 오늘의 감정과 오늘의 키워드를 담는 컨테이너의 너비 조정
                                   FractionallySizedBox(
@@ -349,7 +363,7 @@ class _DailyAnalysisScreenState extends State<DailyAnalysisScreen> {
                                                 Container(
                                                   width: 100,
                                                   height: 100,
-                                                  color: Colors.indigo,
+                                                  color: backgroundColor,
                                                   // 키워드 색상 (예시)
                                                   child: Center(
                                                     child: Text(

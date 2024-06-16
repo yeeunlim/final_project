@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'package:mindcare_flutter/core/services/auth_service.dart';
-import 'package:mindcare_flutter/routes/app_routes.dart';
+import 'package:mindcare_flutter/core/routes/app_routes.dart';
 import '../widgets/alert_dialog.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/custom_app_bar.dart';

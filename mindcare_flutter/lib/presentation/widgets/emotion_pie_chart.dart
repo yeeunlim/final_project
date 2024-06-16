@@ -49,33 +49,22 @@ class EmotionPieChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
-          '감정의 분포',
-          style: TextStyle(
-              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+        SizedBox(
+          width: 150,
+          height: 150,
+          child: PieChart(
+            PieChartData(
+              sections: getPieChartSections(),
+            ),
+          ),
         ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 150,
-              height: 150,
-              child: PieChart(
-                PieChartData(
-                  sections: getPieChartSections(),
-                ),
-              ),
-            ),
-            const SizedBox(width: 20),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: getEmotionLabels(),
-            ),
-          ],
+        const SizedBox(width: 50),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: getEmotionLabels(),
         ),
       ],
     );
