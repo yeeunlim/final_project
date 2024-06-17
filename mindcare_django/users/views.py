@@ -21,12 +21,8 @@ class CustomRegisterView(RegisterView):
     serializer_class = CustomRegisterSerializer
 
     def create(self, request, *args, **kwargs):
-        print("#"*50)
-        print(request.data)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        print('*'*20)
-        print(serializer.validated_data)  # 유효성 검사 후 데이터 확인
         user = self.perform_create(serializer)
 
 
@@ -100,7 +96,10 @@ class UserUpdateView(APIView):
             return Response(UserSerializer(user).data)
         print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
+
+
 class CheckUserNameView(APIView):
     permission_classes = [AllowAny]  # 이 뷰는 인증이 필요하지 않습니다.
 
