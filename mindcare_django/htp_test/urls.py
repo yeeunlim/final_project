@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UploadDrawing, FinalizeDiagnosis, HTPTestResultsView
+from .views import UploadDrawing, FinalizeDiagnosis, HTPTestResultsView, LoadYOLOModel
 
 app_name = 'htp_test'
 
@@ -8,4 +8,5 @@ urlpatterns = [
     path('finalize_diagnosis/', FinalizeDiagnosis.as_view(), name='finalize_diagnosis'),
     path('results/', HTPTestResultsView.as_view(), name='htp_test_results'),
     path('results/<int:pk>/', HTPTestResultsView.as_view(), name='htp_test_result_delete'), 
+    path('load_yolo_model/', LoadYOLOModel.as_view(), name='load_yolo_model'),
 ]
