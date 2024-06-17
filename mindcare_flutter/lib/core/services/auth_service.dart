@@ -233,14 +233,18 @@ class AuthHelpers {
       );
 
       final Map<String, dynamic> responseData = jsonDecode(response.body);
+      final errorMessage = utf8.decode(response.bodyBytes);
+      final decodedJson = jsonDecode(errorMessage);
 
+      // print(response.statusCode);
       if (response.statusCode == 200) {
-        print('Success: ${response.body}');
+        // print('Success: ${response.body}');
       } else {
         _handleError(responseData);
       }
     } catch (e) {
-      print('Exception: $e');
+
+      // print('Exception: $e');
       throw Exception(e);
     }
   }

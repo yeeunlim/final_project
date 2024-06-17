@@ -7,6 +7,7 @@ import '../widgets/confirm_dialog.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_drawer.dart';
 import 'package:mindcare_flutter/core/constants/colors.dart';
+import 'dart:convert';
 
 class MyPage extends StatefulWidget {
   const MyPage({super.key});
@@ -63,17 +64,19 @@ class _MyPageState extends State<MyPage> {
 
   void _showAlertDialog(String msg, bool errorFlag) {
     String errorMsg = '';
-    if(errorFlag){
-      // 문자열을 ':'로 분할하여 리스트로 변환
-      List<String> parts = msg.split(': ');
-      // 리스트의 마지막 요소를 가져옴
-      errorMsg = parts.last;
-    }
+    // if(errorFlag){
+    //   // 문자열을 ':'로 분할하여 리스트로 변환
+    //   List<String> parts = msg.split(': ');
+    //   // 리스트의 마지막 요소를 가져옴
+    //   errorMsg = parts.last;
+    // }
 
+    // final decodedJson = jsonDecode(msg);
+  
     AlertDialogHelper.showAlert(
       context,
       '마이페이지',
-      errorFlag ? '회원정보수정 실패:\n$errorMsg' : msg,
+      errorFlag ? '회원정보수정 실패:\n$msg' : msg,
     );
   }
 
@@ -97,7 +100,11 @@ class _MyPageState extends State<MyPage> {
 
       } catch (e) {
         // 오류 처리
-        print('Failed to update user info: $e');
+        // print('Failed to update user info: $e');
+        // final Map<String, dynamic> responseData = jsonDecode(response.body);
+        // final errorMessage = utf8.decode(response.bodyBytes);
+        // final decodedJson = jsonDecode(errorMessage);
+        // print(e);
         _showAlertDialog('$e', true);
       }
     }

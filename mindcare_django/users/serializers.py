@@ -29,18 +29,15 @@ class CustomRegisterSerializer(RegisterSerializer):
 
         if CustomUser.objects.filter(username=data['username']).exists():
             raise serializers.ValidationError("Username is already in use.")
-        # if CustomUser.objects.filter(nickname=data['nickname']).exists():
-        #     raise serializers.ValidationError("Nickname is already in use.")
-        if CustomUser.objects.filter(nickname=data['email']).exists():
+        if CustomUser.objects.filter(email=data['email']).exists():
             raise serializers.ValidationError("Email is already in use.")        
+
         return data
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(**validated_data)
         return user
-    
-        # print('vali: ', data)
-        # return data
+
 
     def save(self, request):
         user = super().save(request)
@@ -54,14 +51,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'name', 'nickname', 'birthdate']
-
-# class PasswordChangeSerializer(serializers.Serializer):
-#     old_password = serializers.CharField(required=True)
-#     new_password = serializers.CharField(required=True)
-
-#     def validate_new_password(self, value):
-#         validate_password(value)
-#         return value
     
 class UserUpdateSerializer(serializers.Serializer):
     email = serializers.CharField(required=True)
@@ -70,12 +59,6 @@ class UserUpdateSerializer(serializers.Serializer):
     birthdate = serializers.CharField(required=True)
     current_password = serializers.CharField(required=False)
     new_password = serializers.CharField(required=False)
-
-    # def validate_nickname(self, value):
-    #     user = self.context['request'].user
-    #     if CustomUser.objects.filter(nickname=value).exclude(id=user.id).exists():
-    #         raise serializers.ValidationError("Nickname is already in use.")
-    #     return value
 
     def validate_email(self, value):
         user = self.context['request'].user
@@ -87,14 +70,12 @@ class UserUpdateSerializer(serializers.Serializer):
         if value:
             user = self.context['request'].user
             if not user.check_password(value):
-                # raise serializers.ValidationError({"current_password1": "Current password is incorrect."})
                 raise serializers.ValidationError("Current password is incorrect.")
         return value
 
     def validate(self, data):
         if data.get('new_password') and not data.get('current_password'):
             raise serializers.ValidationError("Current password is required to set a new password.")
-            # raise serializers.ValidationError({"current_password2": "Current password is required to set a new password."})
         return data
 
     def update(self, instance, validated_data):

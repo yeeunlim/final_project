@@ -57,7 +57,7 @@ class CustomUser(AbstractBaseUser):
     username = models.CharField(max_length=30, unique=True)
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=50)
-    nickname = models.CharField(max_length=30, unique=True)
+    nickname = models.CharField(max_length=30)
     birthdate = models.CharField(max_length=8, help_text="8자리로 입력하세요")
 
     is_active = models.BooleanField(default=True)
