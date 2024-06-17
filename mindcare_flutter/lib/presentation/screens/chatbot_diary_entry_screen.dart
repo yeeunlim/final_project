@@ -30,18 +30,17 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
     super.initState();
     selectedDate = widget.selectedDate ?? DateTime.now().toIso8601String().split('T')[0];
     print('Selected date: $selectedDate');
-    _checkTodayDiary(); // 오늘 일기 확인 로직 추가
+    _checkDiaryForSelectedDate(); // 선택된 날짜 일기 확인 로직 추가
   }
 
-  Future<void> _checkTodayDiary() async {
+  Future<void> _checkDiaryForSelectedDate() async {
     try {
       final diaryEntryService = DiaryEntryService(context);
-      final today = DateTime.now().toIso8601String().split('T')[0];
-      final entries = await diaryEntryService.getDiaryEntries(entryDate: today);
+      final entries = await diaryEntryService.getDiaryEntries(entryDate: selectedDate);
 
       if (entries.isNotEmpty) {
         final diaryEntry = entries.firstWhere((entry) =>
-        entry['entry_date'] == today);
+            entry['entry_date'] == selectedDate);
 
         Navigator.pushReplacementNamed(
           context,
@@ -54,7 +53,7 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
         );
       }
     } catch (e) {
-      print('Error occurred while checking today\'s diary entry: $e');
+      print('Error occurred while checking diary entry for selected date: $e');
     }
   }
 
@@ -77,6 +76,7 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
       } else {
         throw Exception('Invalid arguments received');
       }
+      _checkDiaryForSelectedDate(); // 선택된 날짜에 대한 일기 확인 로직 호출
     } catch (e) {
       print('Error: $e');
     }
