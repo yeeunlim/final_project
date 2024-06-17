@@ -281,8 +281,5 @@ class AuthHelpers {
       MaterialPageRoute(builder: (context) => const LoginScreen()),
           (Route<dynamic> route) => false,
     );
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('토큰이 만료되었습니다. 다시 로그인해 주세요.')),
-    );
   }
 }
