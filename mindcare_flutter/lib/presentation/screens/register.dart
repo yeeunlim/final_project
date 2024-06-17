@@ -6,21 +6,6 @@ import 'package:mindcare_flutter/presentation/screens/login_screen.dart';
 import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
 
-// void main() {
-//   runApp(const MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return const MaterialApp(
-//       home: SignUpScreen(),
-//     );
-//   }
-// }
-
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -131,28 +116,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _showAlertDialog(String msg, bool move) {
     String errorMsg = '';
-    if(!move){
-      // 문자열을 ':'로 분할하여 리스트로 변환
-      List<String> parts = msg.split(':');
-      // 리스트의 마지막 요소를 가져옴
-      errorMsg = parts.last;
+    // if(!move){
+    //   // 문자열을 ':'로 분할하여 리스트로 변환
+    //   List<String> parts = msg.split(':');
+    //   // 리스트의 마지막 요소를 가져옴
+    //   errorMsg = parts.last;
 
-      if(!msg.contains('<')) {
-        if(errorMsg.contains('[') ){
-          // 대괄호를 제거하는 정규식 패턴과 대체 함수 정의
-          RegExp from = RegExp(r'\}|\"|\[|\]');
+      // if(!msg.contains('<')) {
+      //   if(errorMsg.contains('[') ){
+      //     // 대괄호를 제거하는 정규식 패턴과 대체 함수 정의
+      //     RegExp from = RegExp(r'\}|\"|\[|\]');
 
-          // 각 메시지에 대해 대괄호 제거
-          errorMsg = errorMsg.replaceAll(from, '');
-          // print(errorMsg);
-        }
-      }
-    }    
+      //     // 각 메시지에 대해 대괄호 제거
+      //     errorMsg = errorMsg.replaceAll(from, '');
+      //     // print(errorMsg);
+      //   }
+      // }
+    // }    
 
     AlertDialogHelper.showAlert(
       context,
       '회원가입',
-      move ? msg: '회원가입 실패:\n$errorMsg',
+      move ? msg: '회원가입 실패:\n$msg',
       // '회원가입 실패:\n$msg',
       onConfirm: move ? () {
         Navigator.pushReplacement(
@@ -165,40 +150,55 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
 
   Future<void> _signUp() async {
-    setState(() {
-      _usernameError = _validateUsername(_usernameController.text, false);
-      _emailError = _validateEmail(_emailController.text);
-      _passwordError = _validatePassword(_passwordController.text);
-      _passwordConfirmError = _validatePasswordConfirm(_passwordConfirmController.text);
-      _birthdateError = _validateBirthdate(_birthdateController.text);
-    });
+      setState(() {
+        _usernameError = _validateUsername(_usernameController.text, false);
+        _emailError = _validateEmail(_emailController.text);
+        _passwordError = _validatePassword(_passwordController.text);
+        _passwordConfirmError = _validatePasswordConfirm(_passwordConfirmController.text);
+        _birthdateError = _validateBirthdate(_birthdateController.text);
+      });
 
-    if (_usernameError == null &&
-        _emailError == null &&
-        _passwordError == null &&
-        _passwordConfirmError == null &&
-        _birthdateError == null) {
-      final response = await http.post(
-        Uri.parse('$userAuthUrl/custom/registration/'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'username': _usernameController.text,
-          'email': _emailController.text,
-          'password1': _passwordController.text,
-          'password2': _passwordController.text,
-          'name': _nameController.text,
-          'nickname': _nicknameController.text,
-          'birthdate': _birthdateController.text,
-        }),
-      );
+      if (_usernameError == null &&
+          _emailError == null &&
+          _passwordError == null &&
+          _passwordConfirmError == null &&
+          _birthdateError == null) {
+      try {
+        final response = await http.post(
+          Uri.parse('$userAuthUrl/custom/registration/'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'username': _usernameController.text,
+            'email': _emailController.text,
+            'password1': _passwordController.text,
+            'password2': _passwordController.text,
+            'name': _nameController.text,
+            'nickname': _nicknameController.text,
+            'birthdate': _birthdateController.text,
+          }),
+        );
 
-      if (response.statusCode == 201 || response.statusCode == 204) {
-        _showAlertDialog('회원가입 성공:\n로그인 해주세요.', true);
-      } else {
-        _showAlertDialog(response.body, false);
+        if (response.statusCode == 201 || response.statusCode == 204) {
+          _showAlertDialog('회원가입 성공:\n로그인 해주세요.', true);
+        } else {
+          final Map<String, dynamic> responseData = jsonDecode(response.body);
+          String errMsg = get_errormsg(responseData);
+          _showAlertDialog(errMsg, false);
+        }
+      } catch (e) {
+        _showAlertDialog('An error occurred: $e', false);
       }
     }
   }
+
+  static String get_errormsg(Map<String, dynamic> responseData) {
+    if (responseData.containsKey('non_field_errors')) {
+      return responseData['non_field_errors'][0];
+    } else {
+      return 'An unknown error occurred';
+    }
+  }
+
 
   Future<void> _checkUsernameAvailability() async {    
     setState(() {

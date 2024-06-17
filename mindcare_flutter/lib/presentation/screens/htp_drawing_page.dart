@@ -2,12 +2,14 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:mindcare_flutter/presentation/widgets/loading_screen.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:mindcare_flutter/core/services/drawing_provider.dart';
 import 'package:mindcare_flutter/core/constants/colors.dart';
 import 'package:mindcare_flutter/core/constants/urls.dart';
 import 'package:mindcare_flutter/presentation/widgets/alert_dialog.dart';
+import 'package:http/http.dart' as http;
 import '../../core/services/api_service.dart';
 import 'chatbot_diary_entry_screen.dart';
 import 'htp_result_page.dart';
@@ -33,6 +35,7 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
   int _step = 0;
   List<String> _drawingIds = [];
   double _devicePixelRatio = 1.0;
+  bool _isLoading = false; // Loading 상태를 나타내는 변수
 
   final List<String> _stepsText = [
     "집을 그려주세요",
@@ -46,7 +49,28 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
     setState(() {
       _devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
     });
+    // _loadYOLOModel(); // 페이지가 로드될 때 YOLO 모델 로드
   }
+
+  // Future<void> _loadYOLOModel() async {
+  //   final url = '$htpTestUrl/load_yolo_model/';
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse(url),
+  //       headers: {
+  //         'Authorization': 'Token ${widget.token}',
+  //         'Content-Type': 'application/json',
+  //       },
+  //     );
+  //     if (response.statusCode == 200) {
+  //       print('YOLO models loaded successfully');
+  //     } else {
+  //       print('Failed to load YOLO models: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     print('Error loading YOLO models: $e');
+  //   }
+  // }
 
   void _changeColor(Color color) {
     setState(() {
@@ -117,7 +141,9 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
   }
 
   Future<void> _finalizeDiagnosis() async {
-    HTPAlertDialogHelper.showLoadingDialog(context, '진단 중입니다...');
+    setState(() {
+      _isLoading = true; // 로딩 상태 시작
+    });
 
     var response = await ApiService.sendAuthenticatedRequest(
       context,
@@ -127,7 +153,10 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
         'drawingIds': _drawingIds,
       },
     );
-    Navigator.of(context).pop();
+
+    setState(() {
+      _isLoading = false; // 로딩 상태 종료
+    });
 
     if (response.statusCode == 200) {
       List<Map<String, dynamic>> results = List<Map<String, dynamic>>.from(jsonDecode(response.body));
@@ -198,7 +227,7 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
                         Navigator.of(context).pop();
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(builder: (context) => const ChatbotDiaryEntryScreen()),
-                              (Route<dynamic> route) => false,
+                          (Route<dynamic> route) => false,
                         );
                       },
                       child: const Text('종료', style: TextStyle(color: Colors.white)),
@@ -243,15 +272,15 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              const Text(
                 '그림이 지워집니다',
-                style: const TextStyle(color: Colors.white, fontSize: 20),
+                style: TextStyle(color: Colors.white, fontSize: 20),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 10),
-              Text(
+              const SizedBox(height: 10),
+              const Text(
                 '뒤로 가면 현재 그린 그림이 모두 지워집니다. 그래도 이동하시겠습니까?',
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(color: Colors.white, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20.0),
@@ -319,257 +348,266 @@ class _HTPDrawingPageState extends State<HTPDrawingPage> {
       child: Scaffold(
         appBar: const CustomAppBar(),
         drawer: CustomDrawer(token: widget.token),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth < fixedSize || constraints.maxHeight < fixedSize) {
-              return Center(
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
+        body: Stack(
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth < fixedSize || constraints.maxHeight < fixedSize) {
+                  return Center(
+                    child: Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage(ImageUrls.mainPageBackground),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.network(
+                            ImageUrls.sadRabbit,
+                            width: 150,
+                            height: 150,
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            '그림을 그리기에 캔버스 크기가 너무 작습니다. \n정확한 진단을 위해 화면(해상도 700x700이상)을 조정해주세요.',
+                            style: TextStyle(color: Colors.blue, fontSize: 16),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                return Container(
+                  decoration: const BoxDecoration(
                     image: DecorationImage(
                       image: NetworkImage(ImageUrls.mainPageBackground),
                       fit: BoxFit.cover,
                     ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.network(
-                        ImageUrls.sadRabbit,
-                        width: 150,
-                        height: 150,
+                  child: Center(
+                    child: Container(
+                      width: fixedSize,
+                      height: fixedSize,
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        '그림을 그리기에 캔버스 크기가 너무 작습니다. \n정확한 진단을 위해 화면(해상도 700x700이상)을 조정해주세요.',
-                        style: TextStyle(color: Colors.blue, fontSize: 16),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-            return Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(ImageUrls.mainPageBackground),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Center(
-                child: Container(
-                  width: fixedSize,
-                  height: fixedSize,
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade800,
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(8.0),
-                              bottomRight: Radius.circular(8.0),
-                            ),
-                          ),
-                          child: Text(
-                            'HTP 검사 - ${_stepsText[_step]}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 4,
-                              child: RepaintBoundary(
-                                key: _globalKey,
-                                child: Stack(
-                                  children: [
-                                    Container(
-                                      width: fixedSize,
-                                      height: fixedSize,
-                                      color: Colors.white,
-                                      child: GestureDetector(
-                                        onPanStart: (details) {
-                                          setState(() {
-                                            RenderBox renderBox = _globalKey.currentContext!.findRenderObject() as RenderBox;
-                                            Offset localPosition = renderBox.globalToLocal(details.globalPosition);
-
-                                            _points.add(DrawingPoints(
-                                              points: localPosition,
-                                              paint: Paint()
-                                                ..color = _isErasing ? Colors.white : _color
-                                                ..strokeCap = StrokeCap.round
-                                                ..isAntiAlias = true
-                                                ..strokeWidth = _isErasing ? _eraserSize : _brushSize,
-                                            ));
-                                          });
-                                        },
-                                        onPanUpdate: (details) {
-                                          setState(() {
-                                            RenderBox renderBox = _globalKey.currentContext!.findRenderObject() as RenderBox;
-                                            Offset localPosition = renderBox.globalToLocal(details.globalPosition);
-
-                                            if (localPosition.dx >= 0 &&
-                                                localPosition.dx <= renderBox.size.width &&
-                                                localPosition.dy >= 0 &&
-                                                localPosition.dy <= renderBox.size.height) {
-                                              _points.add(DrawingPoints(
-                                                points: localPosition,
-                                                paint: Paint()
-                                                  ..color = _isErasing ? Colors.white : _color
-                                                  ..strokeCap = StrokeCap.round
-                                                  ..isAntiAlias = true
-                                                  ..strokeWidth = _isErasing ? _eraserSize : _brushSize,
-                                              ));
-                                            }
-                                          });
-                                        },
-                                        onPanEnd: (details) {
-                                          setState(() {
-                                            _points.add(DrawingPoints(
-                                              points: Offset.infinite,
-                                              paint: Paint()..color = Colors.transparent,
-                                            ));
-                                          });
-                                        },
-                                        child: CustomPaint(
-                                          size: Size(fixedSize, fixedSize),
-                                          painter: DrawingPainter(pointsList: _points),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade800,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(8.0),
+                                  bottomRight: Radius.circular(8.0),
+                                ),
+                              ),
+                              child: Text(
+                                'HTP 검사 - ${_stepsText[_step]}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                            if (!isScreenSmall)
-                              Expanded(
-                                flex: 1,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 16.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          const Text("Pen: "),
-                                          IconButton(
-                                            icon: const Icon(Icons.create),
-                                            onPressed: () {
+                          ),
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: RepaintBoundary(
+                                    key: _globalKey,
+                                    child: Stack(
+                                      children: [
+                                        Container(
+                                          width: fixedSize,
+                                          height: fixedSize,
+                                          color: Colors.white,
+                                          child: GestureDetector(
+                                            onPanStart: (details) {
                                               setState(() {
-                                                _isErasing = false;
+                                                RenderBox renderBox = _globalKey.currentContext!.findRenderObject() as RenderBox;
+                                                Offset localPosition = renderBox.globalToLocal(details.globalPosition);
+
+                                                _points.add(DrawingPoints(
+                                                  points: localPosition,
+                                                  paint: Paint()
+                                                    ..color = _isErasing ? Colors.white : _color
+                                                    ..strokeCap = StrokeCap.round
+                                                    ..isAntiAlias = true
+                                                    ..strokeWidth = _isErasing ? _eraserSize : _brushSize,
+                                                ));
                                               });
                                             },
-                                          ),
-                                        ],
-                                      ),
-                                      Slider(
-                                        value: _brushSize,
-                                        min: 1.0,
-                                        max: 20.0,
-                                        onChanged: (value) {
-                                          _changeBrushSize(value);
-                                        },
-                                      ),
-                                      Row(
-                                        children: [
-                                          const Text("Color: "),
-                                          GestureDetector(
-                                            onTap: () {
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) => AlertDialog(
-                                                  title: const Text("Select Color"),
-                                                  content: SingleChildScrollView(
-                                                    child: BlockPicker(
-                                                      pickerColor: _color,
-                                                      onColorChanged: (color) {
-                                                        _changeColor(color);
-                                                        Navigator.of(context).pop();
-                                                      },
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
+                                            onPanUpdate: (details) {
+                                              setState(() {
+                                                RenderBox renderBox = _globalKey.currentContext!.findRenderObject() as RenderBox;
+                                                Offset localPosition = renderBox.globalToLocal(details.globalPosition);
+
+                                                if (localPosition.dx >= 0 &&
+                                                    localPosition.dx <= renderBox.size.width &&
+                                                    localPosition.dy >= 0 &&
+                                                    localPosition.dy <= renderBox.size.height) {
+                                                  _points.add(DrawingPoints(
+                                                    points: localPosition,
+                                                    paint: Paint()
+                                                      ..color = _isErasing ? Colors.white : _color
+                                                      ..strokeCap = StrokeCap.round
+                                                      ..isAntiAlias = true
+                                                      ..strokeWidth = _isErasing ? _eraserSize : _brushSize,
+                                                  ));
+                                                }
+                                              });
                                             },
-                                            child: Container(
-                                              width: 24,
-                                              height: 24,
-                                              color: _color,
-                                              margin: const EdgeInsets.only(bottom: 16.0),
+                                            onPanEnd: (details) {
+                                              setState(() {
+                                                _points.add(DrawingPoints(
+                                                  points: Offset.infinite,
+                                                  paint: Paint()..color = Colors.transparent,
+                                                ));
+                                              });
+                                            },
+                                            child: CustomPaint(
+                                              size: Size(fixedSize, fixedSize),
+                                              painter: DrawingPainter(pointsList: _points),
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                      Row(
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                if (!isScreenSmall)
+                                  Expanded(
+                                    flex: 1,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(left: 16.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          const Text("Eraser: "),
-                                          IconButton(
-                                            icon: const Icon(Icons.brush),
-                                            onPressed: _enableEraser,
+                                          Row(
+                                            children: [
+                                              const Text("Pen: "),
+                                              IconButton(
+                                                icon: const Icon(Icons.create),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _isErasing = false;
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                          Slider(
+                                            value: _brushSize,
+                                            min: 1.0,
+                                            max: 20.0,
+                                            onChanged: (value) {
+                                              _changeBrushSize(value);
+                                            },
+                                          ),
+                                          Row(
+                                            children: [
+                                              const Text("Color: "),
+                                              GestureDetector(
+                                                onTap: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) => AlertDialog(
+                                                      title: const Text("Select Color"),
+                                                      content: SingleChildScrollView(
+                                                        child: BlockPicker(
+                                                          pickerColor: _color,
+                                                          onColorChanged: (color) {
+                                                            _changeColor(color);
+                                                            Navigator.of(context).pop();
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                                child: Container(
+                                                  width: 24,
+                                                  height: 24,
+                                                  color: _color,
+                                                  margin: const EdgeInsets.only(bottom: 16.0),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              const Text("Eraser: "),
+                                              IconButton(
+                                                icon: const Icon(Icons.brush),
+                                                onPressed: _enableEraser,
+                                              ),
+                                            ],
+                                          ),
+                                          Slider(
+                                            value: _eraserSize,
+                                            min: 5.0,
+                                            max: 25.0,
+                                            onChanged: (value) {
+                                              _changeEraserSize(value);
+                                            },
                                           ),
                                         ],
                                       ),
-                                      Slider(
-                                        value: _eraserSize,
-                                        min: 5.0,
-                                        max: 25.0,
-                                        onChanged: (value) {
-                                          _changeEraserSize(value);
-                                        },
-                                      ),
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ElevatedButton(
-                            onPressed: _confirmCancel,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
+                              ],
                             ),
-                            child: const Text('취소'),
                           ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: _nextStep,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor,
-                              foregroundColor: secondaryColor,
-                            ),
-                            child: Text(_step < 2 ? '다음' : '진단'),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ElevatedButton(
+                                onPressed: _confirmCancel,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: const Text('취소'),
+                              ),
+                              const SizedBox(width: 8),
+                              ElevatedButton(
+                                onPressed: _nextStep,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: primaryColor,
+                                  foregroundColor: secondaryColor,
+                                ),
+                                child: Text(_step < 2 ? '다음' : '진단'),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                );
+              },
+            ),
+            if (_isLoading)
+              const LoadingScreen(
+                isLoading: true,
+                upperText: '진단 중입니다...',
               ),
-            );
-          },
+          ],
         ),
       ),
     );
@@ -585,7 +623,7 @@ class DrawingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (int i = 0; i < pointsList.length - 1; i++) {
       if (pointsList[i].points != Offset.infinite && pointsList[i + 1].points != Offset.infinite) {
-        canvas.drawLine(pointsList[i].points, pointsList[i + 1].points, pointsList[i].paint);
+canvas.drawLine(pointsList[i].points, pointsList[i + 1].points, pointsList[i].paint);
       } else if (pointsList[i].points != Offset.infinite && pointsList[i + 1].points == Offset.infinite) {
         canvas.drawPoints(ui.PointMode.points, [pointsList[i].points], pointsList[i].paint);
       }
@@ -595,3 +633,5 @@ class DrawingPainter extends CustomPainter {
   @override
   bool shouldRepaint(DrawingPainter oldDelegate) => true;
 }
+
+

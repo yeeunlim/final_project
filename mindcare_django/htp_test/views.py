@@ -421,7 +421,6 @@ from .models import Drawing
 from .serializers import DrawingSerializer
 from PIL import Image as PILImage
 from io import BytesIO
-import torch
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.font_manager as fm
@@ -429,10 +428,10 @@ import requests
 import uuid
 import boto3
 import base64
+from django.apps import apps
 
 # JSON 파일 경로 설정
 ANALYSIS_DATA_PATH = os.path.join(settings.BASE_DIR, 'yolov5/analysis_data.json')
-
 
 class UploadDrawing(APIView):
     parser_classes = [JSONParser]
@@ -479,7 +478,7 @@ class UploadDrawing(APIView):
 
 class FinalizeDiagnosis(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request, *args, **kwargs):
         drawing_ids = request.data.get('drawingIds', [])
         user = request.user
@@ -493,11 +492,7 @@ class FinalizeDiagnosis(APIView):
             return Response({'error': 'Not all drawings found'}, status=400)
 
         s3 = boto3.client('s3')
-        model_paths = {
-            'house': '../mindcare_django/yolov5/House/best.pt',
-            'tree': '../mindcare_django/yolov5/Tree/best.pt',
-            'person': '../mindcare_django/yolov5/Person/best.pt',
-        }
+        app_config = apps.get_app_config('htp_test')
 
         analysis_results = []
 
@@ -518,17 +513,22 @@ class FinalizeDiagnosis(APIView):
             try:
                 # 타입 변환
                 drawing_type = type_mapping.get(drawing.type, drawing.type)
-                model_path = model_paths.get(drawing_type)
-                if model_path is None:
+                if drawing_type == 'house':
+                    model = app_config.house_model
+                elif drawing_type == 'tree':
+                    model = app_config.tree_model
+                elif drawing_type == 'person':
+                    model = app_config.person_model
+                else:
                     continue
 
                 response = requests.get(drawing.image_url)
                 img = PILImage.open(BytesIO(response.content))
                 img_width, img_height = img.size
 
-                model = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path)
-                results = self.predict(model, img)
-                detections_info = self.extract_detections(results, model, img_width, img_height)
+                # YOLO 모델 예측
+                results = model.predict(img)
+                detections_info = model.extract_detections(results, img_width, img_height)
 
                 if not detections_info:
                     # 감지된 객체가 없을 경우
@@ -575,94 +575,9 @@ class FinalizeDiagnosis(APIView):
                     'result': result_text
                 })
             except Exception as e:
-                pass
-                # print(f"Error processing drawing {drawing.id}: {e}")
+                print(f"Error processing drawing {drawing.id}: {e}")
 
         return Response(analysis_results, content_type="application/json; charset=utf-8")
-
-    def predict(self, model, img):
-        results = model(img)
-        return results
-
-    def extract_detections(self, results, model, img_width, img_height):
-        try:
-            detections = results.pandas().xyxy[0]  # 결과를 pandas DataFrame으로 변환
-            # print(detections)  # 데이터 확인용 출력
-            if detections.empty:
-                print("No detections found")
-                return []
-        except Exception as e:
-            pass
-            # print(f"Error converting results to DataFrame: {e}")
-            return []
-
-        detections_info = []
-        for index, row in detections.iterrows():
-            try:
-                x1, y1, x2, y2 = float(row['xmin']), float(row['ymin']), float(row['xmax']), float(row['ymax'])
-                conf, cls = float(row['confidence']), int(row['class'])
-                width = x2 - x1
-                height = y2 - y1
-                center_x = x1 + width / 2
-                center_y = y1 + height / 2
-                cls_name = model.names[int(cls)]
-                name = row.get('name', cls_name)  # 'name' 필드가 존재하지 않을 경우 cls_name 사용
-                # print(f"Detection: x1={x1}, y1={y1}, x2={x2}, y2={y2}, class={cls_name}, name={name}")  # 데이터 확인용 출력
-            except Exception as e:
-                # print(f"Error extracting detection values: {e}")
-                continue
-
-            left_threshold = 0.3
-            right_threshold = 0.7
-            top_threshold = 0.3
-            bottom_threshold = 0.7
-
-            center_x_ratio = center_x / img_width
-            center_y_ratio = center_y / img_height
-
-            if center_x_ratio < left_threshold:
-                x_position = "left"
-            elif center_x_ratio > right_threshold:
-                x_position = "right"
-            else:
-                x_position = "center"
-
-            if center_y_ratio < top_threshold:
-                y_position = "top"
-            elif center_y_ratio > bottom_threshold:
-                y_position = "bottom"
-            else:
-                y_position = "center"
-
-            if x_position == "center" and y_position == "center":
-                centered_position = "center"
-            elif x_position == "center":
-                centered_position = y_position
-            elif y_position == "center":
-                centered_position = x_position
-            else:
-                centered_position = f"{x_position}-{y_position}"
-
-            detections_info.append({
-                "class": cls_name,
-                "name": name,
-                "x1": x1,
-                "y1": y1,
-                "x2": x2,
-                "y2": y2,
-                "width": width,
-                "height": height,
-                "center_x": center_x,
-                "center_y": center_y,
-                "width_ratio": width / img_width,
-                "height_ratio": height / img_height,
-                "center_x_ratio": center_x_ratio,
-                "center_y_ratio": center_y_ratio,
-                "confidence": conf,
-                "centered_position": centered_position
-            })
-
-        return detections_info
 
     def analyze_detections(self, detections_info, class_counts, drawing_type, analysis_conditions, class_stats):
         analysis_texts = set()
@@ -715,8 +630,7 @@ class FinalizeDiagnosis(APIView):
                                 if check_function(*args_to_pass):
                                     analysis.add(cond["result"])
                             except Exception as e:
-                                pass
-                                # print(f"Error evaluating condition '{cond['check']}']: {e}")
+                                print(f"Error evaluating condition '{cond['check']}']: {e}")
 
                 if analysis:
                     analysis_text = f"{cls_name}: {' '.join(analysis)}"
@@ -746,8 +660,7 @@ class FinalizeDiagnosis(APIView):
                                 if check_function(*args_to_pass):
                                     analysis.add(cond["result"])
                             except Exception as e:
-                                pass
-                                # print(f"Error evaluating condition '{cond['check']}']: {e}")
+                                print(f"Error evaluating condition '{cond['check']}']: {e}")
 
                 if analysis:
                     analysis_text = f"{cls_name}: {' '.join(analysis)}"
@@ -777,7 +690,7 @@ class FinalizeDiagnosis(APIView):
 
         analysis_list.insert(0, additional_text)
         return analysis_list
-    
+
     def visualize_and_upload(self, img, detections_info, model, user_id, drawing_type):
         plt.figure(figsize=(10, 10))
         plt.imshow(img)
@@ -816,7 +729,7 @@ class HTPTestResultsView(APIView):
         user = request.user
         drawings = Drawing.objects.filter(user=user).order_by('-created_at')
         serializer = DrawingSerializer(drawings, many=True)
-        return Response(serializer.data,  content_type='application/json; charset=utf-8')
+        return Response(serializer.data, content_type='application/json; charset=utf-8')
 
     def delete(self, request, pk, *args, **kwargs):
         try:
@@ -825,4 +738,21 @@ class HTPTestResultsView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Drawing.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+       
 
+
+
+
+
+class LoadYOLOModel(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        app_config = apps.get_app_config('htp_test')
+
+        # YOLO 모델을 미리 로드합니다.
+        app_config.house_model.model
+        app_config.tree_model.model
+        app_config.person_model.model
+
+        return Response({'status': 'YOLO models loaded'}, status=status.HTTP_200_OK)

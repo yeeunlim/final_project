@@ -108,31 +108,22 @@ class CustomDrawer extends StatelessWidget {
                     title: const Text('불안 민감도 검사', style: TextStyle(color: Colors.white)),
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const AnxietyTestResults()),  // 불안 민감도 검사 홈 페이지로 이동합니다
-                      );
-                    },
+                      Navigator.pushNamed(context, AppRoutes.psytest1);  // 심리검사 페이지로 이동
+                    },                    
                   ),
                   ListTile(
                     title: const Text('스트레스 자각 검사', style: TextStyle(color: Colors.white)),
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const StressTestResults()),  //
-                      );
-                    },
+                      Navigator.pushNamed(context, AppRoutes.psytest2);  // 심리검사 페이지로 이동
+                    },   
                   ),
                   ListTile(
                     title: const Text('노바코 분노 검사', style: TextStyle(color: Colors.white)),
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const AngerTestResults()),  // 노바코 분노 검사 페이지로 이동합니다
-                      );
-                    },
+                      Navigator.pushNamed(context, AppRoutes.psytest3);  // 심리검사 페이지로 이동
+                    },   
                   ),
                 ],
               ),
