@@ -23,6 +23,9 @@ class CustomRegisterSerializer(RegisterSerializer):
 
     def validate(self, data):
         data = super().validate(data)
+        data['name'] = self.initial_data.get('name')
+        data['nickname'] = self.initial_data.get('nickname')
+        data['birthdate'] = self.initial_data.get('birthdate')
 
         if CustomUser.objects.filter(username=data['username']).exists():
             raise serializers.ValidationError("Username is already in use.")
@@ -36,11 +39,10 @@ class CustomRegisterSerializer(RegisterSerializer):
         return user
 
     def save(self, request):
-        validated_data = self.get_cleaned_data()
-        user = super().save(request, validated_data=validated_data)
-        user.name = validated_data.get('name')
-        user.nickname = validated_data.get('nickname')
-        user.birthdate = validated_data.get('birthdate')
+        user = super().save(request)
+        user.name = self.validated_data.get('name')
+        user.nickname = self.validated_data.get('nickname')
+        user.birthdate = self.validated_data.get('birthdate')
         user.save()
         return user
     
