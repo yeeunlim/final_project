@@ -3,7 +3,6 @@ import 'package:mindcare_flutter/presentation/widgets/common_button.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_app_bar.dart';
 import 'package:mindcare_flutter/presentation/widgets/custom_drawer.dart';
 import 'package:mindcare_flutter/presentation/widgets/loading_screen.dart';
-
 import '../../core/constants/urls.dart';
 import '../../core/services/chatbot_service.dart';
 import '../widgets/confirm_dialog.dart';
@@ -28,8 +27,7 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
   @override
   void initState() {
     super.initState();
-    selectedDate =
-        widget.selectedDate ?? DateTime.now().toIso8601String().split('T')[0];
+    selectedDate = widget.selectedDate ?? DateTime.now().toIso8601String().split('T')[0];
     print('Selected date: $selectedDate');
     _checkDiaryForSelectedDate(); // 선택된 날짜 일기 확인 로직 추가
   }
@@ -37,8 +35,7 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
   Future<void> _checkDiaryForSelectedDate() async {
     try {
       final diaryEntryService = DiaryEntryService(context);
-      final entries = await diaryEntryService.getDiaryEntries(
-          entryDate: selectedDate);
+      final entries = await diaryEntryService.getDiaryEntries(entryDate: selectedDate);
 
       if (entries.isNotEmpty) {
         final diaryEntry = entries.firstWhere((entry) =>
@@ -62,10 +59,7 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute
-        .of(context)
-        ?.settings
-        .arguments;
+    final args = ModalRoute.of(context)?.settings.arguments;
 
     try {
       if (args == null) {
@@ -111,16 +105,13 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
 
     setState(() {
       _isLoading = true; // 로딩 시작
-      print(
-          'saveDiary started with diaryText: $diaryText, entryDate: $selectedDate'); // 시작 로그
+      print('saveDiary started with diaryText: $diaryText, entryDate: $selectedDate'); // 시작 로그
     });
     try {
-      final responseData = await diaryEntryService.createDiaryEntry(
-          diaryText, selectedDate);
+      final responseData = await diaryEntryService.createDiaryEntry(diaryText, selectedDate);
 
       print('Received responseData: $responseData');
-      print(
-          'Navigating to DailyAnalysisScreen with entryData: $responseData, entryDate: $selectedDate, diaryText: $diaryText');
+      print('Navigating to DailyAnalysisScreen with entryData: $responseData, entryDate: $selectedDate, diaryText: $diaryText');
       Navigator.pushNamed(
         context,
         '/daily_analysis',
@@ -155,20 +146,16 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
           onCancel: () {
             Navigator.of(context).pop(); // 다이얼로그 닫기
           },
-          message: '저장하시겠습니까?',
-          // 메시지 전달
-          confirmButtonText: '저장',
-          // 확인 버튼 텍스트
+          message: '저장하시겠습니까?', // 메시지 전달
+          confirmButtonText: '저장', // 확인 버튼 텍스트
           cancelButtonText: '취소', // 취소 버튼 텍스트
         );
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600; // 특정 크기 이하일 때 조건
-
     return Scaffold(
       appBar: const CustomAppBar(), // 공통 AppBar 사용
       drawer: const CustomDrawer(), // 공통 Drawer 사용
@@ -184,8 +171,8 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
           ),
           Center(
             child: Container(
-              width: MediaQuery.of(context).size.width * (isSmallScreen ? 0.9 : 0.5),
-              height: MediaQuery.of(context).size.height * (isSmallScreen ? 0.8 : 0.7),
+              width: MediaQuery.of(context).size.width * 0.5,
+              height: MediaQuery.of(context).size.height * 0.7,
               padding: const EdgeInsets.all(30.0),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.5),
@@ -226,12 +213,53 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
                   Expanded(
                     child: SizedBox(
                       height: MediaQuery.of(context).size.height * 0.5,
-                      child: isSmallScreen ?
-                      Column(
-                        children: _buildDiaryAndEmotionWidgets(), // 세로로 배치
-                      ) :
-                      Row(
-                        children: _buildDiaryAndEmotionWidgets(), // 가로로 배치
+                      child: Column(
+                        children: <Widget>[
+                          Expanded(
+                            child: FractionallySizedBox(
+                              widthFactor: 0.9,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.all(20.0),
+                                child: TextField(
+                                  keyboardType: TextInputType.multiline,
+                                  maxLines: null,
+                                  controller: _inputController,
+                                  focusNode: _inputFocusNode,
+                                  decoration: const InputDecoration(
+                                    hintText: '미아에게 마음을 터놓으세요.',
+                                    border: InputBorder.none,
+                                  ),
+                                  textInputAction: TextInputAction.go,
+                                  onChanged: (_) {
+                                    setState(() {});
+                                  },
+                                  onSubmitted: (text) {
+                                    _inputFocusNode.requestFocus();
+                                    final lines = text.split('\n');
+                                    if (lines.isNotEmpty) {
+                                      sendMessage(context, lines.last);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          FractionallySizedBox(
+                            widthFactor: 0.9,
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: CommonButton(
+                                text: '저장',
+                                onPressed: _showConfirmDialog, // 저장 버튼 클릭 시 다이얼로그 표시
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -247,54 +275,4 @@ class _ChatbotDiaryEntryScreenState extends State<ChatbotDiaryEntryScreen> {
       ),
     );
   }
-
-  List<Widget> _buildDiaryAndEmotionWidgets() {
-    return [
-      Expanded(
-        child: FractionallySizedBox(
-          widthFactor: 0.9,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.all(20.0),
-            child: TextField(
-              keyboardType: TextInputType.multiline,
-              maxLines: null,
-              controller: _inputController,
-              focusNode: _inputFocusNode,
-              decoration: const InputDecoration(
-                hintText: '미아에게 마음을 터놓으세요.',
-                border: InputBorder.none,
-              ),
-              textInputAction: TextInputAction.go,
-              onChanged: (_) {
-                setState(() {});
-              },
-              onSubmitted: (text) {
-                _inputFocusNode.requestFocus();
-                final lines = text.split('\n');
-                if (lines.isNotEmpty) {
-                  sendMessage(context, lines.last);
-                }
-              },
-            ),
-          ),
-        ),
-      ),
-      const SizedBox(height: 10),
-      FractionallySizedBox(
-        widthFactor: 0.9,
-        child: Align(
-          alignment: Alignment.centerRight,
-          child: CommonButton(
-            text: '저장',
-            onPressed: _showConfirmDialog, // 저장 버튼 클릭 시 다이얼로그 표시
-          ),
-        ),
-      ),
-    ];
-  }
-
 }

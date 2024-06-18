@@ -50,13 +50,23 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 Navigator.of(context).pushNamed(AppRoutes.chatbotDiary);
               }
             },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: Row(
+                children: const [
+                  Icon(Icons.book, color: Colors.white),
+                  SizedBox(width: 5),
+                  Text('일기 분석', style: TextStyle(color: Colors.white)),
+                ],
+              ),
+            ),
           ),
         ),
         MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: () {
-              Navigator.of(context).pushNamed(AppRoutes.mypage); // 마이페이지 버튼 클릭 시 이동할 경로 설정
+              Navigator.of(context).pushNamed(AppRoutes.mypage);
             },
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 10.0),

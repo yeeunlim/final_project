@@ -20,10 +20,10 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = True
 
 # local 서버로 돌릴때
-# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = []
 
 # aws 서버로 동작할때
-ALLOWED_HOSTS = ['3.38.40.106', 'ec2-3-38-40-106.ap-northeast-2.compute.amazonaws.com']
+# ALLOWED_HOSTS = ['3.38.40.106', 'ec2-3-38-40-106.ap-northeast-2.compute.amazonaws.com']
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
