@@ -16,10 +16,10 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = True
 
 # local 서버로 돌릴때
-# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = []
 
 # aws 서버로 동작할때
-ALLOWED_HOSTS = ['43.203.224.198', 'ec2-43-203-224-198.ap-northeast-2.compute.amazonaws.com']
+ALLOWED_HOSTS = ['13.209.175', 'ec2-13-209-175-99.ap-northeast-2.compute.amazonaws.com']
 
 # cors 설정
 CORS_ALLOWED_ORIGINS = [
