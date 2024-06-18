@@ -3,15 +3,11 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 환경 변수 설정
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
@@ -20,10 +16,22 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = True
 
 # local 서버로 돌릴때
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
 
 # aws 서버로 동작할때
-# ALLOWED_HOSTS = ['3.38.40.106', 'ec2-3-38-40-106.ap-northeast-2.compute.amazonaws.com']
+ALLOWED_HOSTS = ['3.38.40.106', 'ec2-3-38-40-106.ap-northeast-2.compute.amazonaws.com']
+
+# cors 설정
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://localhost:8080",
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:8080",
+    "http://3.38.40.106",
+    "http://3.38.40.106:8000",  # 만약 다른 포트에서 접근하려는 경우 포트도 추가
+    "http://3.38.40.106:8080",  # 만약 다른 포트에서 접근하려는 경우 포트도 추가
+    "http://ec2-3-38-40-106.ap-northeast-2.compute.amazonaws.com"  # EC2 퍼블릭 DNS 이름을 사용하는 경우
+]
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
@@ -221,26 +229,10 @@ ACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 
-# CORS 설정
-CORS_ALLOW_ALL_ORIGINS = True
-
 # 이미지 안 사라지게
 AWS_QUERYSTRING_AUTH = False
-
-# 최희정 추가
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",
-    "http://localhost:8080",
-    "http://127.0.0.1:8000",
-    "http://127.0.0.1:8080",
-    "http://3.38.40.106",
-    "http://3.38.40.106:8000",  # 만약 다른 포트에서 접근하려는 경우 포트도 추가
-    "http://3.38.40.106:8080",  # 만약 다른 포트에서 접근하려는 경우 포트도 추가
-    "http://ec2-3-38-40-106.ap-northeast-2.compute.amazonaws.com"  # EC2 퍼블릭 DNS 이름을 사용하는 경우
-]
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',  # 기본 인증 백엔드
     'allauth.account.auth_backends.AuthenticationBackend',  # allauth 인증 백엔드
 )
-
