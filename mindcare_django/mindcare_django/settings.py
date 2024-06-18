@@ -19,7 +19,7 @@ DEBUG = True
 # ALLOWED_HOSTS = []
 
 # aws 서버로 동작할때
-ALLOWED_HOSTS = ['3.38.40.106', 'ec2-3-38-40-106.ap-northeast-2.compute.amazonaws.com']
+ALLOWED_HOSTS = ['43.203.224.198', 'ec2-43-203-224-198.ap-northeast-2.compute.amazonaws.com']
 
 # cors 설정
 CORS_ALLOWED_ORIGINS = [
@@ -27,11 +27,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://127.0.0.1:8000",
     "http://127.0.0.1:8080",
-    "http://3.38.40.106",
-    "http://3.38.40.106:8000",  # 만약 다른 포트에서 접근하려는 경우 포트도 추가
-    "http://3.38.40.106:8080",  # 만약 다른 포트에서 접근하려는 경우 포트도 추가
-    "http://ec2-3-38-40-106.ap-northeast-2.compute.amazonaws.com"  # EC2 퍼블릭 DNS 이름을 사용하는 경우
+    "http://43.203.224.198",
+    "http://ec2-43-203-224-198.ap-northeast-2.compute.amazonaws.com"  # EC2 퍼블릭 DNS 이름을 사용하는 경우
+    
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
