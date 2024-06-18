@@ -13,8 +13,8 @@ def initialize_kobert_models():
     global global_vars
 
     root_path = settings.BASE_DIR / 'kobert/'
-    emotion_model = 'kobert-wellness-text-classification_감정.pth'
-    background_model = 'kobert-wellness-text-classification_배경.pth'
+    emotion_model = 'kobert-wellness-text-classification_emotion.pth'
+    background_model = 'kobert-wellness-text-classification_background.pth'
 
     if global_vars.bertmodel_emotion is None:
         global_vars.bertmodel_emotion = BertModel.from_pretrained('skt/kobert-base-v1', return_dict=False)
