@@ -19,7 +19,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # aws 서버로 동작할때
-ALLOWED_HOSTS = ['13.209.175', 'ec2-13-209-175-99.ap-northeast-2.compute.amazonaws.com']
+ALLOWED_HOSTS = ['13.209.175.99', 'ec2-13-209-175-99.ap-northeast-2.compute.amazonaws.com']
 
 # cors 설정
 CORS_ALLOWED_ORIGINS = [
@@ -159,9 +159,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ko-kr"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Seoul"
 
 USE_I18N = True
 
