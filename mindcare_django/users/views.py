@@ -22,9 +22,11 @@ class CustomRegisterView(RegisterView):
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            print("Validation failed:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
         user = self.perform_create(serializer)
-
 
         if user is None:
             print("User creation failed")
@@ -36,8 +38,30 @@ class CustomRegisterView(RegisterView):
         return Response(data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
-        user = serializer.save(self.request)
+        user = serializer.save(request=self.request)
         return user
+    
+# class CustomRegisterView(RegisterView):
+#     serializer_class = CustomRegisterSerializer
+
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         user = self.perform_create(serializer)
+
+
+#         if user is None:
+#             print("User creation failed")
+#         else:
+#             print("User created successfully:", user)
+
+#         headers = self.get_success_headers(serializer.data)
+#         data = self.get_response_data(user)
+#         return Response(data, status=status.HTTP_201_CREATED, headers=headers)
+
+#     def perform_create(self, serializer):
+#         user = serializer.save(self.request)
+#         return user
     
 
 
