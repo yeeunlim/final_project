@@ -18,14 +18,11 @@ class CustomRegisterSerializer(RegisterSerializer):
             'nickname': self.validated_data.get('nickname', ''),
             'birthdate': self.validated_data.get('birthdate', ''),
         })
+
         return data
 
     def validate(self, data):
-        # 기존의 유효성 검사 로직을 포함하여 추가 필드도 포함되도록 합니다.
         data = super().validate(data)
-        data['name'] = self.initial_data.get('name')
-        data['nickname'] = self.initial_data.get('nickname')
-        data['birthdate'] = self.initial_data.get('birthdate')
 
         if CustomUser.objects.filter(username=data['username']).exists():
             raise serializers.ValidationError("Username is already in use.")
@@ -38,14 +35,59 @@ class CustomRegisterSerializer(RegisterSerializer):
         user = CustomUser.objects.create_user(**validated_data)
         return user
 
-
     def save(self, request):
-        user = super().save(request)
-        user.name = self.validated_data.get('name')
-        user.nickname = self.validated_data.get('nickname')
-        user.birthdate = self.validated_data.get('birthdate')
+        validated_data = self.get_cleaned_data()
+        user = super().save(request, validated_data=validated_data)
+        user.name = validated_data.get('name')
+        user.nickname = validated_data.get('nickname')
+        user.birthdate = validated_data.get('birthdate')
         user.save()
         return user
+    
+# class CustomRegisterSerializer(RegisterSerializer):
+#     name = serializers.CharField(required=True)
+#     nickname = serializers.CharField(required=True)
+#     birthdate = serializers.CharField(required=True)
+
+#     class Meta:
+#         model = CustomUser
+#         fields = ('username', 'email', 'password1', 'password2', 'name', 'nickname', 'birthdate')
+
+#     def get_cleaned_data(self):
+#         data = super().get_cleaned_data()
+#         data.update({
+#             'name': self.validated_data.get('name', ''),
+#             'nickname': self.validated_data.get('nickname', ''),
+#             'birthdate': self.validated_data.get('birthdate', ''),
+#         })
+#         return data
+
+#     def validate(self, data):
+#         # 기존의 유효성 검사 로직을 포함하여 추가 필드도 포함되도록 합니다.
+#         data = super().validate(data)
+#         data['name'] = self.initial_data.get('name')
+#         data['nickname'] = self.initial_data.get('nickname')
+#         data['birthdate'] = self.initial_data.get('birthdate')
+
+#         if CustomUser.objects.filter(username=data['username']).exists():
+#             raise serializers.ValidationError("Username is already in use.")
+#         if CustomUser.objects.filter(email=data['email']).exists():
+#             raise serializers.ValidationError("Email is already in use.")        
+
+#         return data
+
+#     def create(self, validated_data):
+#         user = CustomUser.objects.create_user(**validated_data)
+#         return user
+
+
+#     def save(self, request):
+#         user = super().save(request)
+#         user.name = self.validated_data.get('name')
+#         user.nickname = self.validated_data.get('nickname')
+#         user.birthdate = self.validated_data.get('birthdate')
+#         user.save()
+#         return user
     
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
