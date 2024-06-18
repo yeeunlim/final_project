@@ -27,8 +27,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://127.0.0.1:8000",
     "http://127.0.0.1:8080",
-    "http://43.203.224.198",
-    "http://ec2-43-203-224-198.ap-northeast-2.compute.amazonaws.com"  # EC2 퍼블릭 DNS 이름을 사용하는 경우
+    "http://13.209.175.99",
+    "http://ec2-13-209-175-99.ap-northeast-2.compute.amazonaws.com"  # EC2 퍼블릭 DNS 이름을 사용하는 경우
     
 ]
 
