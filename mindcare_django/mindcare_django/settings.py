@@ -9,34 +9,33 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# local 서버로 돌릴때
 # ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['13.209.175.99', 'ec2-13-209-175-99.ap-northeast-2.compute.amazonaws.com']
 
-# aws 서버로 동작할때
-ALLOWED_HOSTS = ['43.203.224.198', 'ec2-43-203-224-198.ap-northeast-2.compute.amazonaws.com']
-
-# cors 설정
+# CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://localhost:8080",
-    "http://127.0.0.1:8000",
     "http://127.0.0.1:8080",
-    "http://43.203.224.198",
-    "http://ec2-43-203-224-198.ap-northeast-2.compute.amazonaws.com"  # EC2 퍼블릭 DNS 이름을 사용하는 경우
+    "http://127.0.0.1:8000",
+    "http://13.209.175.99",
+    "http://ec2-13-209-175-99.ap-northeast-2.compute.amazonaws.com",
     
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = [
+    'ec2-13-209-175-99.ap-northeast-2.compute.amazonaws.com',
+    "http://localhost:8000",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:8000",
+]
 
 AUTH_USER_MODEL = 'users.CustomUser'
-
-# Application definition
 
 INSTALLED_APPS = [
     # Django 기본 앱
