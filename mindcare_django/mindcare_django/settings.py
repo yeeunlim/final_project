@@ -16,21 +16,21 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = True
 
 # local 서버로 돌릴때
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # aws 서버로 동작할때
-ALLOWED_HOSTS = ['13.209.175.99', 'ec2-13-209-175-99.ap-northeast-2.compute.amazonaws.com']
-
+# ALLOWED_HOSTS = ['13.209.175.99', 'ec2-13-209-175-99.ap-northeast-2.compute.amazonaws.com']
+# CSRF_TRUSTED_ORIGINS = ["http://ec2-13-209-175-99.ap-northeast-2.compute.amazonaws.com"]
 # cors 설정
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",
-    "http://localhost:8080",
-    "http://127.0.0.1:8000",
-    "http://127.0.0.1:8080",
-    "http://13.209.175.99",
-    "http://ec2-13-209-175-99.ap-northeast-2.compute.amazonaws.com"  # EC2 퍼블릭 DNS 이름을 사용하는 경우
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:8000",
+#     "http://localhost:8080",
+#     "http://127.0.0.1:8000",
+#     "http://127.0.0.1:8080",
+#     "http://13.209.175.99",
+#     "http://ec2-13-209-175-99.ap-northeast-2.compute.amazonaws.com"  # EC2 퍼블릭 DNS 이름을 사용하는 경우
     
-]
+# ]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
