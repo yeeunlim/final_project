@@ -28,6 +28,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    "http://13.209.175.99",
     "http://ec2-13-209-175-99.ap-northeast-2.compute.amazonaws.com",
     "http://localhost:8000",
     "http://localhost:8080",
